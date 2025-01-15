@@ -13,3 +13,9 @@ Transform result data
 - where hostnames not in ("localhost", "::1", "fe00::0", "ff00::0", "ff02::1", "ff02::2")
 - JSON_EXTRACT(json(data), '$.EventData.LocalPort') AS "source-port",
 - SPLIT(message, ',', 1) AS protocol,
+
+
+Uninstall Secure Client with scripts
+- do a query to search for installed files
+- execute the predefined script: Execute Powershell cmdlet:
+-- add the following string to uninstall e.g. Secure Client: wmic product where "name like 'Cisco Secure Client%'" call uninstall
