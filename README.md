@@ -21,3 +21,4 @@ Uninstall Secure Client with scripts
 -- add the following string to uninstall e.g. Secure Client: wmic product where "name like 'Cisco Secure Client%'" call uninstall
 
   ![image](https://github.com/user-attachments/assets/dffa6baa-818b-483d-b185-c59ced880086)
+
