@@ -2,6 +2,7 @@
 SQL queries for Orbital
 
 This is a summary of SQL queries, which can be used with Orbital. It includes customized SQL queries to tweak result output.
+Learn more about SQL under: https://www.w3schools.com/sql/
 
 Transform result data
 - datetime(table_column_name, "unixepoch", "UTC")
