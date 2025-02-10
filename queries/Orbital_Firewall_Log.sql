@@ -30,4 +30,4 @@ WHERE
   AND ApplicationPath not like "%sfc.exe"
   AND ApplicationPath not like "%Cisco Secure Client%"
 ORDER BY datetime DESC
-LIMIT 500 OFFSET 0;
+LIMIT 5 OFFSET 0;
