@@ -40,7 +40,8 @@ FROM
 WHERE
   channel = 'CiscoSecureEndpoint/Events'
   AND eventid IN (1801, 1800)
-  AND direction = 'OUTGOING'
+  AND direction IN ('OUTGOING', 'INCOMING')
   AND ApplicationPath NOT LIKE '%sfc.exe'
+  AND ApplicationPath not like "%Cisco Secure Client%"
 ORDER BY datetime DESC
 LIMIT 10 OFFSET 0;
