@@ -5,9 +5,26 @@ path
 FROM processes
 
 where path like "%cisco%"
-OR name in ("acnvmagent.exe", "cscm.exe", "csc_cmid.exe", "csc_cms", "csc_pm.exe", "orbital.exe", "osqueryd.exe", "sfc.exe", "vpnagent.exe")
+OR name in (
+    "acnamagent.exe",
+    "acnvmagent.exe",
+    "acnamlogonagent.exe",
+    "acumbrellaagent.exe",
+    "cscm.exe", 
+    "csc_cmid.exe", 
+    "csc_cms", 
+    "csc_pm.exe",
+    "csc_iseagent.exe",
+    "csc_iseposture.exe",
+    "csc_ui.exe", 
+    "orbital.exe", 
+    "osqueryd.exe", 
+    "sfc.exe", 
+    "vpnagent.exe", 
+    "dnscryptproxy.exe",
+    "csc_zta_agent.exe",
+    "DUO Desktop,exe",
+    "vpnagent.exe")
 
-
-
-ORDER BY total_size
-DESC LIMIT 100;
+ORDER BY name ASC
+LIMIT 100;
