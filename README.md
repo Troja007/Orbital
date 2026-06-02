@@ -23,3 +23,4 @@ This is a summary of SQL queries and scripts, which can be used with Orbital.
 
   ![image](https://github.com/user-attachments/assets/dffa6baa-818b-483d-b185-c59ced880086)
 
+## Codex Project
