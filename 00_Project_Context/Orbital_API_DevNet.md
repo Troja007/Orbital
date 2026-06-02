@@ -67,6 +67,20 @@ The page links API operations and models in these major areas:
 - Webhook operations: create, fetch, update, delete, ping, jobs, and sending existing results.
 - Model/schema pages: request and response schemas for queries, scripts, results, webhooks, errors, jobs, and related objects.
 
+## Catalog Access Relationship
+
+The Orbital Catalog is available through both the authenticated product UI and the Orbital API.
+
+Use the product UI to understand user-facing terminology, table columns, filters, detail drawers, and routes. Use the API to retrieve, create, update, disable, and automate catalog queries and scripts.
+
+When comparing UI and API data, map both `Name` and `ID`. The UI shows `ID` as the product/catalog reference key; API schemas may expose the same concept through operation-specific fields.
+
+For stock catalog API access, the relevant versioned API path is `/v0/stock` using the digit zero. Do not write this as `/vo/stock`.
+
+For query-specific source mapping, use `Orbital_Query_Catalog_Source_Map.md`.
+
+For target/device/endpoint/node terminology and Query API selector prefixes, use `Orbital_Target_Node_Selectors.md`. The Query API documents target selection under `Specifying Nodes`, and request bodies use the `nodes` array.
+
 ## Operation Link Index
 
 ### Query Operations

@@ -1,0 +1,1724 @@
+{
+  "source_url": "https://osquery.io/schema/5.23.0/",
+  "retrieved": "2026-06-02",
+  "schema_version": "5.23.0",
+  "table_count": 286,
+  "tables": [
+    {
+      "name": "account_policy_data",
+      "evented": false,
+      "column_count": 5,
+      "description": "Additional macOS user account data from the AccountPolicy section of OpenDirectory."
+    },
+    {
+      "name": "acpi_tables",
+      "evented": false,
+      "column_count": 3,
+      "description": "Firmware ACPI functional table common metadata and content."
+    },
+    {
+      "name": "ad_config",
+      "evented": false,
+      "column_count": 4,
+      "description": "macOS Active Directory configuration."
+    },
+    {
+      "name": "alf",
+      "evented": false,
+      "column_count": 7,
+      "description": "macOS application layer firewall (ALF) service details."
+    },
+    {
+      "name": "alf_exceptions",
+      "evented": false,
+      "column_count": 2,
+      "description": "macOS application layer firewall (ALF) service exceptions."
+    },
+    {
+      "name": "alf_explicit_auths",
+      "evented": false,
+      "column_count": 1,
+      "description": "ALF services explicitly allowed to perform networking. Not supported on macOS 15+ (returns no results)."
+    },
+    {
+      "name": "app_schemes",
+      "evented": false,
+      "column_count": 5,
+      "description": "macOS application schemes and handlers (e.g., http, file, mailto)."
+    },
+    {
+      "name": "apparmor_events",
+      "evented": true,
+      "column_count": 22,
+      "description": "Track AppArmor events."
+    },
+    {
+      "name": "apparmor_profiles",
+      "evented": false,
+      "column_count": 6,
+      "description": "Track active AppArmor profiles."
+    },
+    {
+      "name": "appcompat_shims",
+      "evented": false,
+      "column_count": 6,
+      "description": "Application Compatibility shims are a way to persist malware. This table presents the AppCompat Shim information from the registry in a nice format. See http://files.brucon.org/2015/Tomczak_and_Ballenthin_Shims_for_the_Win.pdf for more details."
+    },
+    {
+      "name": "apps",
+      "evented": false,
+      "column_count": 19,
+      "description": "macOS applications installed in known search paths (e.g., /Applications)."
+    },
+    {
+      "name": "apt_sources",
+      "evented": false,
+      "column_count": 9,
+      "description": "Current list of APT repositories or software channels."
+    },
+    {
+      "name": "arp_cache",
+      "evented": false,
+      "column_count": 4,
+      "description": "Address resolution cache, both static and dynamic (from ARP, NDP)."
+    },
+    {
+      "name": "asl",
+      "evented": false,
+      "column_count": 13,
+      "description": "Queries the Apple System Log data structure for system events."
+    },
+    {
+      "name": "augeas",
+      "evented": false,
+      "column_count": 4,
+      "description": "Configuration files parsed by augeas."
+    },
+    {
+      "name": "authenticode",
+      "evented": false,
+      "column_count": 6,
+      "description": "File (executable, bundle, installer, disk) code signing status."
+    },
+    {
+      "name": "authorization_mechanisms",
+      "evented": false,
+      "column_count": 5,
+      "description": "macOS Authorization mechanisms database."
+    },
+    {
+      "name": "authorizations",
+      "evented": false,
+      "column_count": 12,
+      "description": "macOS Authorization rights database."
+    },
+    {
+      "name": "authorized_keys",
+      "evented": false,
+      "column_count": 7,
+      "description": "A line-delimited authorized_keys table."
+    },
+    {
+      "name": "autoexec",
+      "evented": false,
+      "column_count": 3,
+      "description": "Aggregate of executables that will automatically execute on the target machine. This is an amalgamation of other tables like services, scheduled_tasks, startup_items and more."
+    },
+    {
+      "name": "azure_instance_metadata",
+      "evented": false,
+      "column_count": 16,
+      "description": "Azure instance metadata."
+    },
+    {
+      "name": "azure_instance_tags",
+      "evented": false,
+      "column_count": 3,
+      "description": "Azure instance tags."
+    },
+    {
+      "name": "background_activities_moderator",
+      "evented": false,
+      "column_count": 3,
+      "description": "Background Activities Moderator (BAM) tracks application execution."
+    },
+    {
+      "name": "battery",
+      "evented": false,
+      "column_count": 19,
+      "description": "Provides information about the internal battery of a laptop. Note: On Windows, columns with Ah or mAh units assume that the battery is 12V."
+    },
+    {
+      "name": "bitlocker_info",
+      "evented": false,
+      "column_count": 9,
+      "description": "Retrieve bitlocker status of the machine."
+    },
+    {
+      "name": "block_devices",
+      "evented": false,
+      "column_count": 10,
+      "description": "Block (buffered access) device file nodes: disks, ramdisks, and DMG containers."
+    },
+    {
+      "name": "bpf_process_events",
+      "evented": true,
+      "column_count": 17,
+      "description": "Track time/action process executions."
+    },
+    {
+      "name": "bpf_socket_events",
+      "evented": true,
+      "column_count": 22,
+      "description": "Track network socket opens and closes."
+    },
+    {
+      "name": "browser_plugins",
+      "evented": false,
+      "column_count": 10,
+      "description": "All C/NPAPI browser plugin details for all users. C/NPAPI has been deprecated on all major browsers. To query for plugins on modern browsers, try: `chrome_extensions` `firefox_addons` `safari_extensions`."
+    },
+    {
+      "name": "carbon_black_info",
+      "evented": false,
+      "column_count": 21,
+      "description": "Returns info about a Carbon Black sensor install."
+    },
+    {
+      "name": "carves",
+      "evented": false,
+      "column_count": 8,
+      "description": "List the set of completed and in-progress carves. If carve=1 then the query is treated as a new carve request."
+    },
+    {
+      "name": "certificate_trust_settings",
+      "evented": false,
+      "column_count": 8,
+      "description": "Certificate Authorities trust settings installed in Keychains/ca-bundles."
+    },
+    {
+      "name": "certificates",
+      "evented": false,
+      "column_count": 23,
+      "description": "Certificate Authorities installed in Keychains/ca-bundles. NOTE: osquery limits frequent access to keychain files on macOS. This limit is controlled by keychain_access_interval flag. On macOS, 'path' may point to either a keychain file or a DER/PEM-encoded certificate file; non-keychain files are parsed as DER/PEM."
+    },
+    {
+      "name": "chassis_info",
+      "evented": false,
+      "column_count": 13,
+      "description": "Display information pertaining to the chassis and its security status."
+    },
+    {
+      "name": "chocolatey_packages",
+      "evented": false,
+      "column_count": 6,
+      "description": "Chocolatey packages installed in a system."
+    },
+    {
+      "name": "chrome_extension_content_scripts",
+      "evented": false,
+      "column_count": 9,
+      "description": "Chrome browser extension content scripts."
+    },
+    {
+      "name": "chrome_extensions",
+      "evented": false,
+      "column_count": 27,
+      "description": "Chrome-based browser extensions."
+    },
+    {
+      "name": "connected_displays",
+      "evented": false,
+      "column_count": 16,
+      "description": "Provides information about the connected displays of the machine."
+    },
+    {
+      "name": "connectivity",
+      "evented": false,
+      "column_count": 9,
+      "description": "Provides the overall system's network state."
+    },
+    {
+      "name": "cpu_info",
+      "evented": false,
+      "column_count": 15,
+      "description": "Retrieve cpu hardware info of the machine."
+    },
+    {
+      "name": "cpu_time",
+      "evented": false,
+      "column_count": 11,
+      "description": "Displays information from /proc/stat file about the time the cpu cores spent in different parts of the system."
+    },
+    {
+      "name": "cpuid",
+      "evented": false,
+      "column_count": 5,
+      "description": "Useful CPU features from the cpuid ASM call."
+    },
+    {
+      "name": "crashes",
+      "evented": false,
+      "column_count": 16,
+      "description": "Application, System, and Mobile App crash logs."
+    },
+    {
+      "name": "crontab",
+      "evented": false,
+      "column_count": 9,
+      "description": "Line parsed values from system and user cron/tab."
+    },
+    {
+      "name": "cups_destinations",
+      "evented": false,
+      "column_count": 3,
+      "description": "Returns all configured printers."
+    },
+    {
+      "name": "cups_jobs",
+      "evented": false,
+      "column_count": 8,
+      "description": "Returns all completed print jobs from cups."
+    },
+    {
+      "name": "curl",
+      "evented": false,
+      "column_count": 7,
+      "description": "Perform an http request and return stats about it."
+    },
+    {
+      "name": "curl_certificate",
+      "evented": false,
+      "column_count": 32,
+      "description": "Inspect TLS certificates by connecting to input hostnames."
+    },
+    {
+      "name": "deb_package_files",
+      "evented": false,
+      "column_count": 3,
+      "description": "Installed files from DEB packages that are currently installed on the system."
+    },
+    {
+      "name": "deb_packages",
+      "evented": false,
+      "column_count": 13,
+      "description": "The installed DEB package database."
+    },
+    {
+      "name": "default_environment",
+      "evented": false,
+      "column_count": 3,
+      "description": "Default environment variables and values."
+    },
+    {
+      "name": "device_file",
+      "evented": false,
+      "column_count": 15,
+      "description": "Similar to the file table, but use TSK and allow block address access."
+    },
+    {
+      "name": "device_firmware",
+      "evented": false,
+      "column_count": 3,
+      "description": "A best-effort list of discovered firmware versions."
+    },
+    {
+      "name": "device_hash",
+      "evented": false,
+      "column_count": 6,
+      "description": "Similar to the hash table, but use TSK and allow block address access."
+    },
+    {
+      "name": "device_partitions",
+      "evented": false,
+      "column_count": 9,
+      "description": "Use TSK to enumerate details about partitions on a disk device."
+    },
+    {
+      "name": "deviceguard_status",
+      "evented": false,
+      "column_count": 7,
+      "description": "Retrieve DeviceGuard info of the machine."
+    },
+    {
+      "name": "disk_encryption",
+      "evented": false,
+      "column_count": 8,
+      "description": "Disk encryption status and information."
+    },
+    {
+      "name": "disk_events",
+      "evented": true,
+      "column_count": 16,
+      "description": "Track DMG disk image events (appearance/disappearance) when opened."
+    },
+    {
+      "name": "disk_info",
+      "evented": false,
+      "column_count": 11,
+      "description": "Retrieve basic information about the physical disks of a system."
+    },
+    {
+      "name": "dns_cache",
+      "evented": false,
+      "column_count": 3,
+      "description": "Enumerate the DNS cache using the undocumented DnsGetCacheDataTable function in dnsapi.dll."
+    },
+    {
+      "name": "dns_lookup_events",
+      "evented": true,
+      "column_count": 12,
+      "description": "DNS lookups performed through the Windows DNS stack."
+    },
+    {
+      "name": "dns_resolvers",
+      "evented": false,
+      "column_count": 6,
+      "description": "Resolvers used by this host. Note: On Windows this data is available in the interface_details table."
+    },
+    {
+      "name": "docker_container_envs",
+      "evented": false,
+      "column_count": 3,
+      "description": "Docker container environment variables."
+    },
+    {
+      "name": "docker_container_fs_changes",
+      "evented": false,
+      "column_count": 3,
+      "description": "Changes to files or directories on container's filesystem."
+    },
+    {
+      "name": "docker_container_labels",
+      "evented": false,
+      "column_count": 3,
+      "description": "Docker container labels."
+    },
+    {
+      "name": "docker_container_mounts",
+      "evented": false,
+      "column_count": 9,
+      "description": "Docker container mounts."
+    },
+    {
+      "name": "docker_container_networks",
+      "evented": false,
+      "column_count": 11,
+      "description": "Docker container networks."
+    },
+    {
+      "name": "docker_container_ports",
+      "evented": false,
+      "column_count": 5,
+      "description": "Docker container ports."
+    },
+    {
+      "name": "docker_container_processes",
+      "evented": false,
+      "column_count": 23,
+      "description": "Docker container processes."
+    },
+    {
+      "name": "docker_container_stats",
+      "evented": false,
+      "column_count": 27,
+      "description": "Docker container statistics. Queries on this table take at least one second."
+    },
+    {
+      "name": "docker_containers",
+      "evented": false,
+      "column_count": 24,
+      "description": "Docker containers information."
+    },
+    {
+      "name": "docker_image_history",
+      "evented": false,
+      "column_count": 6,
+      "description": "Docker image history information."
+    },
+    {
+      "name": "docker_image_labels",
+      "evented": false,
+      "column_count": 3,
+      "description": "Docker image labels."
+    },
+    {
+      "name": "docker_image_layers",
+      "evented": false,
+      "column_count": 3,
+      "description": "Docker image layers information."
+    },
+    {
+      "name": "docker_images",
+      "evented": false,
+      "column_count": 4,
+      "description": "Docker images information."
+    },
+    {
+      "name": "docker_info",
+      "evented": false,
+      "column_count": 32,
+      "description": "Docker system information."
+    },
+    {
+      "name": "docker_network_labels",
+      "evented": false,
+      "column_count": 3,
+      "description": "Docker network labels."
+    },
+    {
+      "name": "docker_networks",
+      "evented": false,
+      "column_count": 7,
+      "description": "Docker networks information."
+    },
+    {
+      "name": "docker_version",
+      "evented": false,
+      "column_count": 9,
+      "description": "Docker version information."
+    },
+    {
+      "name": "docker_volume_labels",
+      "evented": false,
+      "column_count": 3,
+      "description": "Docker volume labels."
+    },
+    {
+      "name": "docker_volumes",
+      "evented": false,
+      "column_count": 4,
+      "description": "Docker volumes information."
+    },
+    {
+      "name": "drivers",
+      "evented": false,
+      "column_count": 14,
+      "description": "Details for in-use Windows device drivers. This does not display installed but unused drivers."
+    },
+    {
+      "name": "ec2_instance_metadata",
+      "evented": false,
+      "column_count": 14,
+      "description": "EC2 instance metadata."
+    },
+    {
+      "name": "ec2_instance_tags",
+      "evented": false,
+      "column_count": 3,
+      "description": "EC2 instance tag key value pairs."
+    },
+    {
+      "name": "es_process_events",
+      "evented": true,
+      "column_count": 32,
+      "description": "Process execution events from EndpointSecurity."
+    },
+    {
+      "name": "es_process_file_events",
+      "evented": true,
+      "column_count": 11,
+      "description": "File integrity monitoring events from EndpointSecurity including process context."
+    },
+    {
+      "name": "etc_hosts",
+      "evented": false,
+      "column_count": 3,
+      "description": "Line-parsed /etc/hosts."
+    },
+    {
+      "name": "etc_protocols",
+      "evented": false,
+      "column_count": 4,
+      "description": "Line-parsed /etc/protocols."
+    },
+    {
+      "name": "etc_services",
+      "evented": false,
+      "column_count": 5,
+      "description": "Line-parsed /etc/services."
+    },
+    {
+      "name": "event_taps",
+      "evented": false,
+      "column_count": 5,
+      "description": "Returns information about installed event taps."
+    },
+    {
+      "name": "extended_attributes",
+      "evented": false,
+      "column_count": 5,
+      "description": "Returns the extended attributes for files (similar to Windows ADS)."
+    },
+    {
+      "name": "fan_speed_sensors",
+      "evented": false,
+      "column_count": 6,
+      "description": "Fan speeds."
+    },
+    {
+      "name": "file",
+      "evented": false,
+      "column_count": 33,
+      "description": "Interactive filesystem attributes and metadata."
+    },
+    {
+      "name": "file_events",
+      "evented": true,
+      "column_count": 18,
+      "description": "Track time/action changes to files specified in configuration data."
+    },
+    {
+      "name": "firefox_addons",
+      "evented": false,
+      "column_count": 14,
+      "description": "Firefox browser extensions, webapps, and addons."
+    },
+    {
+      "name": "gatekeeper",
+      "evented": false,
+      "column_count": 4,
+      "description": "macOS Gatekeeper Details."
+    },
+    {
+      "name": "gatekeeper_approved_apps",
+      "evented": false,
+      "column_count": 4,
+      "description": "Gatekeeper apps a user has allowed to run."
+    },
+    {
+      "name": "groups",
+      "evented": false,
+      "column_count": 7,
+      "description": "Local system groups."
+    },
+    {
+      "name": "hardware_events",
+      "evented": true,
+      "column_count": 12,
+      "description": "Hardware (PCI/USB/HID) events from UDEV or IOKit."
+    },
+    {
+      "name": "hash",
+      "evented": false,
+      "column_count": 7,
+      "description": "Filesystem hash data."
+    },
+    {
+      "name": "homebrew_packages",
+      "evented": false,
+      "column_count": 7,
+      "description": "The installed homebrew package database."
+    },
+    {
+      "name": "ibridge_info",
+      "evented": false,
+      "column_count": 4,
+      "description": "Information about the Apple iBridge hardware controller."
+    },
+    {
+      "name": "ie_extensions",
+      "evented": false,
+      "column_count": 4,
+      "description": "Internet Explorer browser extensions."
+    },
+    {
+      "name": "intel_me_info",
+      "evented": false,
+      "column_count": 1,
+      "description": "Intel ME/CSE Info."
+    },
+    {
+      "name": "interface_addresses",
+      "evented": false,
+      "column_count": 7,
+      "description": "Network interfaces and relevant metadata."
+    },
+    {
+      "name": "interface_details",
+      "evented": false,
+      "column_count": 35,
+      "description": "Detailed information and stats of network interfaces."
+    },
+    {
+      "name": "interface_ipv6",
+      "evented": false,
+      "column_count": 5,
+      "description": "IPv6 configuration and stats of network interfaces."
+    },
+    {
+      "name": "iokit_devicetree",
+      "evented": false,
+      "column_count": 9,
+      "description": "The IOKit registry matching the DeviceTree plane."
+    },
+    {
+      "name": "iokit_registry",
+      "evented": false,
+      "column_count": 7,
+      "description": "The full IOKit registry without selecting a plane."
+    },
+    {
+      "name": "iptables",
+      "evented": false,
+      "column_count": 18,
+      "description": "Linux IP packet filtering and NAT tool."
+    },
+    {
+      "name": "jetbrains_plugins",
+      "evented": false,
+      "column_count": 6,
+      "description": "JetBrains IDEs plugins."
+    },
+    {
+      "name": "kernel_extensions",
+      "evented": false,
+      "column_count": 7,
+      "description": "macOS's kernel extensions, both loaded and within the load search path."
+    },
+    {
+      "name": "kernel_info",
+      "evented": false,
+      "column_count": 4,
+      "description": "Basic active kernel information."
+    },
+    {
+      "name": "kernel_keys",
+      "evented": false,
+      "column_count": 9,
+      "description": "List of security data, authentication keys and encryption keys."
+    },
+    {
+      "name": "kernel_modules",
+      "evented": false,
+      "column_count": 5,
+      "description": "Linux kernel modules both loaded and within the load search path."
+    },
+    {
+      "name": "kernel_panics",
+      "evented": false,
+      "column_count": 13,
+      "description": "System kernel panic logs."
+    },
+    {
+      "name": "keychain_acls",
+      "evented": false,
+      "column_count": 5,
+      "description": "Applications that have ACL entries in the keychain. NOTE: osquery limits frequent access to keychain files. This limit is controlled by keychain_access_interval flag."
+    },
+    {
+      "name": "keychain_items",
+      "evented": false,
+      "column_count": 9,
+      "description": "Generic details about keychain items. NOTE: osquery limits frequent access to keychain files. This limit is controlled by keychain_access_interval flag."
+    },
+    {
+      "name": "known_hosts",
+      "evented": false,
+      "column_count": 3,
+      "description": "A line-delimited known_hosts table."
+    },
+    {
+      "name": "kva_speculative_info",
+      "evented": false,
+      "column_count": 11,
+      "description": "Display kernel virtual address and speculative execution information for the system."
+    },
+    {
+      "name": "last",
+      "evented": false,
+      "column_count": 7,
+      "description": "System logins and logouts."
+    },
+    {
+      "name": "launchd",
+      "evented": false,
+      "column_count": 21,
+      "description": "LaunchAgents and LaunchDaemons from default search paths."
+    },
+    {
+      "name": "launchd_overrides",
+      "evented": false,
+      "column_count": 5,
+      "description": "Override keys, per user, for LaunchDaemons and Agents."
+    },
+    {
+      "name": "listening_ports",
+      "evented": false,
+      "column_count": 9,
+      "description": "Processes with listening (bound) network sockets/ports."
+    },
+    {
+      "name": "load_average",
+      "evented": false,
+      "column_count": 2,
+      "description": "Displays information about the system wide load averages."
+    },
+    {
+      "name": "location_services",
+      "evented": false,
+      "column_count": 1,
+      "description": "Reports the status of the Location Services feature of the OS."
+    },
+    {
+      "name": "logged_in_users",
+      "evented": false,
+      "column_count": 8,
+      "description": "Users with an active shell on the system."
+    },
+    {
+      "name": "logical_drives",
+      "evented": false,
+      "column_count": 7,
+      "description": "Details for logical drives on the system. A logical drive generally represents a single partition."
+    },
+    {
+      "name": "logon_sessions",
+      "evented": false,
+      "column_count": 15,
+      "description": "Windows Logon Session."
+    },
+    {
+      "name": "lxd_certificates",
+      "evented": false,
+      "column_count": 4,
+      "description": "LXD certificates information."
+    },
+    {
+      "name": "lxd_cluster",
+      "evented": false,
+      "column_count": 7,
+      "description": "LXD cluster information."
+    },
+    {
+      "name": "lxd_cluster_members",
+      "evented": false,
+      "column_count": 5,
+      "description": "LXD cluster members information."
+    },
+    {
+      "name": "lxd_images",
+      "evented": false,
+      "column_count": 19,
+      "description": "LXD images information."
+    },
+    {
+      "name": "lxd_instance_config",
+      "evented": false,
+      "column_count": 3,
+      "description": "LXD instance configuration information."
+    },
+    {
+      "name": "lxd_instance_devices",
+      "evented": false,
+      "column_count": 5,
+      "description": "LXD instance devices information."
+    },
+    {
+      "name": "lxd_instances",
+      "evented": false,
+      "column_count": 11,
+      "description": "LXD instances information."
+    },
+    {
+      "name": "lxd_networks",
+      "evented": false,
+      "column_count": 13,
+      "description": "LXD network information."
+    },
+    {
+      "name": "lxd_storage_pools",
+      "evented": false,
+      "column_count": 8,
+      "description": "LXD storage pool information."
+    },
+    {
+      "name": "magic",
+      "evented": false,
+      "column_count": 5,
+      "description": "Magic number recognition library table."
+    },
+    {
+      "name": "managed_policies",
+      "evented": false,
+      "column_count": 6,
+      "description": "The managed configuration policies from AD, MDM, MCX, etc."
+    },
+    {
+      "name": "md_devices",
+      "evented": false,
+      "column_count": 31,
+      "description": "Software RAID array settings."
+    },
+    {
+      "name": "md_drives",
+      "evented": false,
+      "column_count": 4,
+      "description": "Drive devices used for Software RAID."
+    },
+    {
+      "name": "md_personalities",
+      "evented": false,
+      "column_count": 1,
+      "description": "Software RAID setting supported by the kernel."
+    },
+    {
+      "name": "mdfind",
+      "evented": false,
+      "column_count": 2,
+      "description": "Run searches against the spotlight database."
+    },
+    {
+      "name": "mdls",
+      "evented": false,
+      "column_count": 4,
+      "description": "Query file metadata in the Spotlight database."
+    },
+    {
+      "name": "memory_array_mapped_addresses",
+      "evented": false,
+      "column_count": 5,
+      "description": "Data associated for address mapping of physical memory arrays."
+    },
+    {
+      "name": "memory_arrays",
+      "evented": false,
+      "column_count": 7,
+      "description": "Data associated with collection of memory devices that operate to form a memory address."
+    },
+    {
+      "name": "memory_device_mapped_addresses",
+      "evented": false,
+      "column_count": 8,
+      "description": "Data associated for address mapping of physical memory devices."
+    },
+    {
+      "name": "memory_devices",
+      "evented": false,
+      "column_count": 20,
+      "description": "Physical memory device (type 17) information retrieved from SMBIOS."
+    },
+    {
+      "name": "memory_error_info",
+      "evented": false,
+      "column_count": 8,
+      "description": "Data associated with errors of a physical memory array."
+    },
+    {
+      "name": "memory_info",
+      "evented": false,
+      "column_count": 10,
+      "description": "Main memory information in bytes."
+    },
+    {
+      "name": "memory_map",
+      "evented": false,
+      "column_count": 3,
+      "description": "OS memory region map."
+    },
+    {
+      "name": "mounts",
+      "evented": false,
+      "column_count": 11,
+      "description": "System mounted devices and filesystems (not process specific)."
+    },
+    {
+      "name": "msr",
+      "evented": false,
+      "column_count": 10,
+      "description": "Various pieces of data stored in the model specific register per processor. NOTE: the msr kernel module must be enabled, and osquery must be run as root."
+    },
+    {
+      "name": "nfs_shares",
+      "evented": false,
+      "column_count": 3,
+      "description": "NFS shares exported by the host."
+    },
+    {
+      "name": "npm_packages",
+      "evented": false,
+      "column_count": 12,
+      "description": "Node packages installed in a system."
+    },
+    {
+      "name": "ntdomains",
+      "evented": false,
+      "column_count": 8,
+      "description": "Display basic NT domain information of a Windows machine."
+    },
+    {
+      "name": "ntfs_acl_permissions",
+      "evented": false,
+      "column_count": 5,
+      "description": "Retrieve NTFS ACL permission information for files and directories."
+    },
+    {
+      "name": "ntfs_journal_events",
+      "evented": true,
+      "column_count": 13,
+      "description": "Track time/action changes to files specified in configuration data."
+    },
+    {
+      "name": "nvram",
+      "evented": false,
+      "column_count": 3,
+      "description": "Apple NVRAM variable listing."
+    },
+    {
+      "name": "oem_strings",
+      "evented": false,
+      "column_count": 3,
+      "description": "OEM defined strings retrieved from SMBIOS."
+    },
+    {
+      "name": "office_mru",
+      "evented": false,
+      "column_count": 5,
+      "description": "View recently opened Office documents."
+    },
+    {
+      "name": "os_version",
+      "evented": false,
+      "column_count": 15,
+      "description": "A single row containing the operating system name and version."
+    },
+    {
+      "name": "osquery_events",
+      "evented": false,
+      "column_count": 7,
+      "description": "Information about the event publishers and subscribers."
+    },
+    {
+      "name": "osquery_extensions",
+      "evented": false,
+      "column_count": 6,
+      "description": "List of active osquery extensions."
+    },
+    {
+      "name": "osquery_flags",
+      "evented": false,
+      "column_count": 6,
+      "description": "Configurable flags that modify osquery's behavior."
+    },
+    {
+      "name": "osquery_info",
+      "evented": false,
+      "column_count": 12,
+      "description": "Top level information about the running version of osquery."
+    },
+    {
+      "name": "osquery_packs",
+      "evented": false,
+      "column_count": 7,
+      "description": "Information about the current query packs that are loaded in osquery."
+    },
+    {
+      "name": "osquery_registry",
+      "evented": false,
+      "column_count": 5,
+      "description": "List the osquery registry plugins."
+    },
+    {
+      "name": "osquery_schedule",
+      "evented": false,
+      "column_count": 16,
+      "description": "Information about the current queries that are scheduled in osquery."
+    },
+    {
+      "name": "package_bom",
+      "evented": false,
+      "column_count": 7,
+      "description": "macOS package bill of materials (BOM) file list."
+    },
+    {
+      "name": "package_install_history",
+      "evented": false,
+      "column_count": 6,
+      "description": "macOS package install history."
+    },
+    {
+      "name": "package_receipts",
+      "evented": false,
+      "column_count": 7,
+      "description": "macOS package receipt details."
+    },
+    {
+      "name": "password_policy",
+      "evented": false,
+      "column_count": 6,
+      "description": "OpenDirectory account policies for macOS including password content, authentication, and password change policies."
+    },
+    {
+      "name": "patches",
+      "evented": false,
+      "column_count": 8,
+      "description": "Lists all the patches applied. Note: This does not include patches applied via MSI or downloaded from Windows Update (e.g. Service Packs)."
+    },
+    {
+      "name": "pci_devices",
+      "evented": false,
+      "column_count": 14,
+      "description": "PCI devices active on the host system."
+    },
+    {
+      "name": "physical_disk_performance",
+      "evented": false,
+      "column_count": 12,
+      "description": "Provides provides raw data from performance counters that monitor hard or fixed disk drives on the system."
+    },
+    {
+      "name": "pipes",
+      "evented": false,
+      "column_count": 5,
+      "description": "Named and Anonymous pipes."
+    },
+    {
+      "name": "platform_info",
+      "evented": false,
+      "column_count": 9,
+      "description": "Information about EFI/UEFI/ROM and platform/boot."
+    },
+    {
+      "name": "plist",
+      "evented": false,
+      "column_count": 4,
+      "description": "Read and parse a plist file."
+    },
+    {
+      "name": "portage_keywords",
+      "evented": false,
+      "column_count": 5,
+      "description": "A summary about portage configurations like keywords, mask and unmask."
+    },
+    {
+      "name": "portage_packages",
+      "evented": false,
+      "column_count": 8,
+      "description": "List of currently installed packages."
+    },
+    {
+      "name": "portage_use",
+      "evented": false,
+      "column_count": 3,
+      "description": "List of enabled portage USE values for specific package."
+    },
+    {
+      "name": "power_sensors",
+      "evented": false,
+      "column_count": 4,
+      "description": "Machine power (currents, voltages, wattages, etc) sensors."
+    },
+    {
+      "name": "powershell_events",
+      "evented": true,
+      "column_count": 8,
+      "description": "Powershell script blocks reconstructed to their full script content, this table requires script block logging to be enabled."
+    },
+    {
+      "name": "preferences",
+      "evented": false,
+      "column_count": 7,
+      "description": "macOS defaults and managed preferences."
+    },
+    {
+      "name": "prefetch",
+      "evented": false,
+      "column_count": 13,
+      "description": "Prefetch files show metadata related to file execution."
+    },
+    {
+      "name": "process_envs",
+      "evented": false,
+      "column_count": 3,
+      "description": "A key/value table of environment variables for each process."
+    },
+    {
+      "name": "process_etw_events",
+      "evented": true,
+      "column_count": 19,
+      "description": "Windows process execution events."
+    },
+    {
+      "name": "process_events",
+      "evented": true,
+      "column_count": 31,
+      "description": "Track time/action process executions."
+    },
+    {
+      "name": "process_file_events",
+      "evented": true,
+      "column_count": 20,
+      "description": "A File Integrity Monitor implementation using the audit service."
+    },
+    {
+      "name": "process_memory_map",
+      "evented": false,
+      "column_count": 9,
+      "description": "Process memory mapped files and pseudo device/regions."
+    },
+    {
+      "name": "process_namespaces",
+      "evented": false,
+      "column_count": 8,
+      "description": "Linux namespaces for processes running on the host system."
+    },
+    {
+      "name": "process_open_files",
+      "evented": false,
+      "column_count": 3,
+      "description": "File descriptors for each process."
+    },
+    {
+      "name": "process_open_handles NEW",
+      "evented": false,
+      "column_count": 10,
+      "description": "Enumerate open handles for a specified process. Defaults to the osquery process if no pid constraint is provided."
+    },
+    {
+      "name": "process_open_pipes",
+      "evented": false,
+      "column_count": 8,
+      "description": "Pipes and partner processes for each process."
+    },
+    {
+      "name": "process_open_sockets",
+      "evented": false,
+      "column_count": 12,
+      "description": "Processes which have open network sockets on the system."
+    },
+    {
+      "name": "processes",
+      "evented": false,
+      "column_count": 39,
+      "description": "All running processes on the host system."
+    },
+    {
+      "name": "programs",
+      "evented": false,
+      "column_count": 11,
+      "description": "Represents products as they are installed by Windows Installer. A product generally correlates to one installation package on Windows. Some fields may be blank as Windows installation details are left to the discretion of the product author."
+    },
+    {
+      "name": "prometheus_metrics",
+      "evented": false,
+      "column_count": 4,
+      "description": "Retrieve metrics from a Prometheus server."
+    },
+    {
+      "name": "python_packages",
+      "evented": false,
+      "column_count": 9,
+      "description": "Python packages installed in a system. NOTE: when querying on windows, even without a users cross join, all user installed python packages will be returned. This special behavior is to not break original functionality."
+    },
+    {
+      "name": "quicklook_cache",
+      "evented": false,
+      "column_count": 12,
+      "description": "Files and thumbnails within macOS's Quicklook Cache."
+    },
+    {
+      "name": "recent_files",
+      "evented": false,
+      "column_count": 6,
+      "description": "Recently files (as displayed in Start Menu or File Explorer)."
+    },
+    {
+      "name": "registry",
+      "evented": false,
+      "column_count": 6,
+      "description": "All of the Windows registry hives."
+    },
+    {
+      "name": "routes",
+      "evented": false,
+      "column_count": 10,
+      "description": "The active route table for the host system."
+    },
+    {
+      "name": "rpm_package_files",
+      "evented": false,
+      "column_count": 7,
+      "description": "Installed files from RPM packages that are currently installed on the system."
+    },
+    {
+      "name": "rpm_packages",
+      "evented": false,
+      "column_count": 13,
+      "description": "RPM packages that are currently installed on the host system."
+    },
+    {
+      "name": "running_apps",
+      "evented": false,
+      "column_count": 3,
+      "description": "macOS applications currently running on the host system."
+    },
+    {
+      "name": "safari_extensions",
+      "evented": false,
+      "column_count": 9,
+      "description": "Safari browser extension details for all users. This table requires Full Disk Access (FDA) permission."
+    },
+    {
+      "name": "sandboxes",
+      "evented": false,
+      "column_count": 6,
+      "description": "macOS application sandboxes container details."
+    },
+    {
+      "name": "scheduled_tasks",
+      "evented": false,
+      "column_count": 10,
+      "description": "Lists all of the tasks in the Windows task scheduler."
+    },
+    {
+      "name": "screenlock",
+      "evented": false,
+      "column_count": 2,
+      "description": "macOS screenlock status. Note: only fetches results for osquery's current logged-in user context. The user must also have recently logged in."
+    },
+    {
+      "name": "seccomp_events",
+      "evented": true,
+      "column_count": 15,
+      "description": "A virtual table that tracks seccomp events."
+    },
+    {
+      "name": "secureboot",
+      "evented": false,
+      "column_count": 6,
+      "description": "Secure Boot UEFI Settings."
+    },
+    {
+      "name": "secureboot_certificates NEW",
+      "evented": false,
+      "column_count": 17,
+      "description": "X.509 certificates from UEFI Secure Boot signature databases (db and dbx EFI variables). Useful for monitoring CA expiry and adoption of updated certificates (e.g. Microsoft UEFI CA 2023)."
+    },
+    {
+      "name": "security_profile_info",
+      "evented": false,
+      "column_count": 23,
+      "description": "Information on the security profile of a given system by listing the system Account and Audit Policies. This table mimics the exported securitypolicy output from the secedit tool."
+    },
+    {
+      "name": "selinux_events",
+      "evented": true,
+      "column_count": 5,
+      "description": "Track SELinux events."
+    },
+    {
+      "name": "selinux_settings",
+      "evented": false,
+      "column_count": 3,
+      "description": "Track active SELinux settings."
+    },
+    {
+      "name": "services",
+      "evented": false,
+      "column_count": 12,
+      "description": "Lists all installed Windows services and their relevant data."
+    },
+    {
+      "name": "shadow",
+      "evented": false,
+      "column_count": 10,
+      "description": "Local system users encrypted passwords and related information. Please note, that you usually need superuser rights to access `/etc/shadow`."
+    },
+    {
+      "name": "shared_folders",
+      "evented": false,
+      "column_count": 2,
+      "description": "Folders available to others via SMB or AFP."
+    },
+    {
+      "name": "shared_memory",
+      "evented": false,
+      "column_count": 13,
+      "description": "OS shared memory regions."
+    },
+    {
+      "name": "shared_resources",
+      "evented": false,
+      "column_count": 9,
+      "description": "Displays shared resources on a computer system running Windows. This may be a disk drive, printer, interprocess communication, or other sharable device."
+    },
+    {
+      "name": "sharing_preferences",
+      "evented": false,
+      "column_count": 10,
+      "description": "macOS Sharing preferences."
+    },
+    {
+      "name": "shell_history",
+      "evented": false,
+      "column_count": 4,
+      "description": "A line-delimited (command) table of per-user .*_history data."
+    },
+    {
+      "name": "shellbags",
+      "evented": false,
+      "column_count": 8,
+      "description": "Shows directories accessed via Windows Explorer."
+    },
+    {
+      "name": "shimcache",
+      "evented": false,
+      "column_count": 4,
+      "description": "Application Compatibility Cache, contains artifacts of execution."
+    },
+    {
+      "name": "signature",
+      "evented": false,
+      "column_count": 10,
+      "description": "File (executable, bundle, installer, disk) code signing status."
+    },
+    {
+      "name": "sip_config",
+      "evented": false,
+      "column_count": 3,
+      "description": "Apple's System Integrity Protection (rootless) status."
+    },
+    {
+      "name": "smbios_tables",
+      "evented": false,
+      "column_count": 7,
+      "description": "BIOS (DMI) structure common details and content."
+    },
+    {
+      "name": "smc_keys",
+      "evented": false,
+      "column_count": 5,
+      "description": "Apple's system management controller keys."
+    },
+    {
+      "name": "socket_events",
+      "evented": true,
+      "column_count": 17,
+      "description": "Track network socket bind, connect, and accepts."
+    },
+    {
+      "name": "ssh_configs",
+      "evented": false,
+      "column_count": 4,
+      "description": "A table of parsed ssh_configs."
+    },
+    {
+      "name": "startup_items",
+      "evented": false,
+      "column_count": 7,
+      "description": "Applications and binaries set as startup items."
+    },
+    {
+      "name": "sudoers",
+      "evented": false,
+      "column_count": 3,
+      "description": "Rules for running commands as other users via sudo."
+    },
+    {
+      "name": "suid_bin",
+      "evented": false,
+      "column_count": 5,
+      "description": "suid binaries in common locations."
+    },
+    {
+      "name": "syslog_events",
+      "evented": true,
+      "column_count": 8,
+      "description": ""
+    },
+    {
+      "name": "system_controls",
+      "evented": false,
+      "column_count": 7,
+      "description": "sysctl names, values, and settings information."
+    },
+    {
+      "name": "system_extensions",
+      "evented": false,
+      "column_count": 9,
+      "description": "macOS (>= 10.15) system extension table."
+    },
+    {
+      "name": "system_info",
+      "evented": false,
+      "column_count": 21,
+      "description": "System information for identification."
+    },
+    {
+      "name": "system_profiler",
+      "evented": false,
+      "column_count": 2,
+      "description": "Query system_profiler data types and return the full result as JSON. Returns only the data types specified in the constraints. See available data types with `system_profiler -listDataTypes`."
+    },
+    {
+      "name": "systemd_units",
+      "evented": false,
+      "column_count": 14,
+      "description": "Track systemd units."
+    },
+    {
+      "name": "temperature_sensors",
+      "evented": false,
+      "column_count": 4,
+      "description": "Machine's temperature sensors."
+    },
+    {
+      "name": "time",
+      "evented": false,
+      "column_count": 14,
+      "description": "Track current date and time in UTC."
+    },
+    {
+      "name": "time_machine_backups",
+      "evented": false,
+      "column_count": 2,
+      "description": "Backups to drives using TimeMachine. This table requires Full Disk Access (FDA) permission."
+    },
+    {
+      "name": "time_machine_destinations",
+      "evented": false,
+      "column_count": 7,
+      "description": "Locations backed up to using Time Machine. This table requires Full Disk Access (FDA) permission."
+    },
+    {
+      "name": "tpm_info",
+      "evented": false,
+      "column_count": 9,
+      "description": "A table that lists the TPM related information."
+    },
+    {
+      "name": "ulimit_info",
+      "evented": false,
+      "column_count": 3,
+      "description": "System resource usage limits."
+    },
+    {
+      "name": "unified_log",
+      "evented": false,
+      "column_count": 14,
+      "description": "Queries the OSLog framework for entries in the system log. The maximum number of rows returned is limited for performance issues. Use timestamp > or >= constraints to optimize query performance. This table introduces a new idiom for extracting sequential data in batches using multiple queries, ordered by timestamp. To trigger it, the user should include the condition \"timestamp > -1\", and the table will handle pagination. Note that the saved pagination counter is incremented globally across all queries and table invocations within a query. To avoid multiple table invocations within a query, use only AND and = constraints in WHERE clause."
+    },
+    {
+      "name": "uptime",
+      "evented": false,
+      "column_count": 5,
+      "description": "Track time passed since last boot. Some systems track this as calendar time, some as runtime."
+    },
+    {
+      "name": "usb_devices",
+      "evented": false,
+      "column_count": 12,
+      "description": "USB devices that are actively plugged into the host system."
+    },
+    {
+      "name": "user_events",
+      "evented": true,
+      "column_count": 11,
+      "description": "Track user events from the audit framework."
+    },
+    {
+      "name": "user_groups",
+      "evented": false,
+      "column_count": 2,
+      "description": "Local system user group relationships."
+    },
+    {
+      "name": "user_interaction_events",
+      "evented": true,
+      "column_count": 1,
+      "description": "Track user interaction events from macOS' event tapping framework."
+    },
+    {
+      "name": "user_ssh_keys",
+      "evented": false,
+      "column_count": 8,
+      "description": "Returns the private keys in the users ~/.ssh directory and whether or not they are encrypted."
+    },
+    {
+      "name": "userassist",
+      "evented": false,
+      "column_count": 4,
+      "description": "UserAssist Registry Key tracks when a user executes an application from Windows Explorer."
+    },
+    {
+      "name": "users",
+      "evented": false,
+      "column_count": 13,
+      "description": "Local user accounts (including domain accounts that have logged on locally (Windows))."
+    },
+    {
+      "name": "video_info",
+      "evented": false,
+      "column_count": 8,
+      "description": "Retrieve video card information of the machine."
+    },
+    {
+      "name": "virtual_memory_info",
+      "evented": false,
+      "column_count": 22,
+      "description": "Darwin Virtual Memory statistics."
+    },
+    {
+      "name": "vscode_extensions",
+      "evented": false,
+      "column_count": 10,
+      "description": "Lists all vscode extensions."
+    },
+    {
+      "name": "wifi_networks",
+      "evented": false,
+      "column_count": 20,
+      "description": "macOS known/remembered Wi-Fi networks list."
+    },
+    {
+      "name": "wifi_status",
+      "evented": false,
+      "column_count": 13,
+      "description": "macOS current WiFi status. This table requires Full Disk Access (FDA) permission to retrieve network_name."
+    },
+    {
+      "name": "wifi_survey",
+      "evented": false,
+      "column_count": 10,
+      "description": "Scan for nearby WiFi networks."
+    },
+    {
+      "name": "winbaseobj",
+      "evented": false,
+      "column_count": 3,
+      "description": "Lists named Windows objects in the default object directories, across all terminal services sessions. Example Windows object types include Mutexes, Events, Jobs and Semaphors."
+    },
+    {
+      "name": "windows_crashes",
+      "evented": false,
+      "column_count": 21,
+      "description": "Extracted information from Windows crash logs (Minidumps)."
+    },
+    {
+      "name": "windows_eventlog",
+      "evented": false,
+      "column_count": 15,
+      "description": "Table for querying all recorded Windows event logs."
+    },
+    {
+      "name": "windows_events",
+      "evented": true,
+      "column_count": 12,
+      "description": "Windows Event logs."
+    },
+    {
+      "name": "windows_firewall_rules",
+      "evented": false,
+      "column_count": 16,
+      "description": "Provides the list of Windows firewall rules."
+    },
+    {
+      "name": "windows_optional_features",
+      "evented": false,
+      "column_count": 4,
+      "description": "Lists names and installation states of windows features. Maps to Win32_OptionalFeature WMI class."
+    },
+    {
+      "name": "windows_search",
+      "evented": false,
+      "column_count": 12,
+      "description": "Run searches against the Windows system index database using Advanced Query Syntax. See https://learn.microsoft.com/en-us/windows/win32/search/-search-3x-advancedquerysyntax for details."
+    },
+    {
+      "name": "windows_security_center",
+      "evented": false,
+      "column_count": 7,
+      "description": "The health status of Window Security features. Health values can be \"Good\", \"Poor\". \"Snoozed\", \"Not Monitored\", and \"Error\"."
+    },
+    {
+      "name": "windows_security_products",
+      "evented": false,
+      "column_count": 6,
+      "description": "Enumeration of registered Windows security products. Note: Not compatible with Windows Server."
+    },
+    {
+      "name": "windows_update_history",
+      "evented": false,
+      "column_count": 12,
+      "description": "Provides the history of the windows update events."
+    },
+    {
+      "name": "wmi_bios_info",
+      "evented": false,
+      "column_count": 2,
+      "description": "Lists important information from the system bios."
+    },
+    {
+      "name": "wmi_cli_event_consumers",
+      "evented": false,
+      "column_count": 6,
+      "description": "WMI CommandLineEventConsumer, which can be used for persistence on Windows. See https://www.blackhat.com/docs/us-15/materials/us-15-Graeber-Abusing-Windows-Management-Instrumentation-WMI-To-Build-A-Persistent%20Asynchronous-And-Fileless-Backdoor-wp.pdf for more details."
+    },
+    {
+      "name": "wmi_event_filters",
+      "evented": false,
+      "column_count": 6,
+      "description": "Lists WMI event filters."
+    },
+    {
+      "name": "wmi_filter_consumer_binding",
+      "evented": false,
+      "column_count": 5,
+      "description": "Lists the relationship between event consumers and filters."
+    },
+    {
+      "name": "wmi_script_event_consumers",
+      "evented": false,
+      "column_count": 7,
+      "description": "WMI ActiveScriptEventConsumer, which can be used for persistence on Windows. See https://www.blackhat.com/docs/us-15/materials/us-15-Graeber-Abusing-Windows-Management-Instrumentation-WMI-To-Build-A-Persistent%20Asynchronous-And-Fileless-Backdoor-wp.pdf for more details."
+    },
+    {
+      "name": "xprotect_entries",
+      "evented": false,
+      "column_count": 7,
+      "description": "Database of the machine's XProtect signatures."
+    },
+    {
+      "name": "xprotect_meta",
+      "evented": false,
+      "column_count": 4,
+      "description": "Database of the machine's XProtect browser-related signatures."
+    },
+    {
+      "name": "xprotect_reports",
+      "evented": false,
+      "column_count": 3,
+      "description": "Database of XProtect matches (if user generated/sent an XProtect report)."
+    },
+    {
+      "name": "yara_events",
+      "evented": true,
+      "column_count": 10,
+      "description": "Track YARA matches for files specified in configuration data."
+    },
+    {
+      "name": "yara_file NEW",
+      "evented": false,
+      "column_count": 10,
+      "description": "Triggers one-off YARA query for files at the specified path. Additionally requires one of `sig_group`, `sigfile`, or `sigrule`."
+    },
+    {
+      "name": "yara_process NEW",
+      "evented": false,
+      "column_count": 10,
+      "description": "Triggers one-off YARA query for process memory of the specified pid. Additionally requires one of `sig_group`, `sigfile`, or `sigrule`."
+    },
+    {
+      "name": "ycloud_instance_metadata",
+      "evented": false,
+      "column_count": 10,
+      "description": "Yandex.Cloud instance metadata."
+    },
+    {
+      "name": "yum_sources",
+      "evented": false,
+      "column_count": 9,
+      "description": "Current list of Yum repositories or software channels."
+    }
+  ]
+}
