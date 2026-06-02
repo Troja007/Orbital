@@ -1,0 +1,28 @@
+# Secrets and local environment
+.env
+.env.*
+*.env
+!*.env.example
+02_Working_Files/*credentials*.env
+
+# Local Codex/app runtime state
+.codex/
+skills/
+shell_snapshots/
+tmp/
+.tmp/
+local/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+installation_id
+
+# macOS / editor noise
+.DS_Store
+**/.DS_Store
+
+# Source-folder scratch files
+01_Source_Files/Orbital_Repo_Source/temp.json
+
+# API snapshots can contain tenant-specific catalog data. Regenerate locally.
+01_Source_Files/API_References/Orbital_Catalog_API/
