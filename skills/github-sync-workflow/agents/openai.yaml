@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Sync Workflow"
+  short_description: "Pull, push, and reconcile GitHub content"
+  default_prompt: "Use $github-sync-workflow to pull, push, or reconcile this project with GitHub safely."

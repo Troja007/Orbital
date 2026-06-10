@@ -1,0 +1,237 @@
+---
+name: orbital-run-osquery-live-query
+description: Run generic Cisco Orbital live API queries with arbitrary osquery SQL against explicit target selectors. Use when Codex needs to validate osquery tables or columns from project context, check required inputs such as targets and SQL, execute POST /query/run, use Orbital target/node selectors such as host, hostname, ip, ipv4, netmask, orb, amp, cm, machine, os, random, or queryId, parse live query results, or present endpoint rows from any supported osquery table.
+---
+
+# Orbital Run osquery Live Query
+
+Use this skill to run a Cisco Orbital live query through the API against explicit target endpoints. The skill is generic: it can use any osquery table or SQL statement after validating the requested table/column assumptions against project context.
+
+Use `orbital-api-access` for API connectivity tests, authentication troubleshooting, and catalog download/import work. Use `orbital-query-method-memory` to speed up query design by reusing prior query methods and catalog/osquery mappings. Keep these skills separated unless the user explicitly confirms a larger skill scope change.
+
+## Required Inputs
+
+Before executing anything, confirm these inputs are defined:
+
+- Well-defined target selector: at least one explicit Orbital target selector, for example `host:MONIKA`, `ipv4:10.0.0.1`, `netmask:192.168.1.168/24`, `orb:<id>`, or `queryId:<id>`.
+- SQL: either user-provided SQL or enough user intent to build SQL.
+- Query purpose: a short label/name for the live query.
+- Region/credentials: project credentials through env vars or `02_Working_Files/orbital_credentials.env`.
+- Network-enabled Codex runtime: before API calls, verify the current Codex shell is not running with `CODEX_SANDBOX_NETWORK_DISABLED=1`.
+
+If the query target is not well-defined, stop before any API call and ask for clarification. Do not execute the query, run a preview, or infer a broader target while target scope is unclear.
+
+If the user says "target", "device", "endpoint", "host", "node", "ID", or "GUID" ambiguously, ask for clarification before running the query. Do not guess between Catalog `ID`, Orbital endpoint ID, Secure Endpoint GUID, Secure Client GUID, AnyConnect UDID, `queryId`, or `orbital_queryID`.
+
+Important ID distinction:
+
+- `orbital_queryID`: the `ID` returned by `POST /v0/query/run`. It identifies the cloud-stored query/job and is used with `GET /v0/jobs/{{orbital_queryID}}` and `GET /v0/jobs/{{orbital_queryID}}/results`.
+- `queryId:<id>`: a target selector in the `nodes` array that reuses an existing query definition. It is not the same as `orbital_queryID`.
+
+## Project Context Checks
+
+When inside this Orbital workspace, read these files as needed:
+
+- `AGENTS.md` for project rules.
+- `00_Project_Context/Orbital_Target_Node_Selectors.md` for target/node selector syntax.
+- `00_Project_Context/Orbital_Queries.md` for live query, scheduled query, prefix, dynamic/static, and `allowOS` behavior.
+- `00_Project_Context/Orbital_API_DevNet.md` for API endpoint and authentication context.
+- `00_Project_Context/Osquery_Schema_5_23_0.md` and `01_Source_Files/API_References/osquery_schema_5_23_0.json` for table and column validation.
+- `00_Project_Context/Orbital_Query_Catalog_Source_Map.md` when the query comes from a catalog item or should be compared with catalog/API/UI metadata.
+- `04_Notes/Codex_Network_Access_Fix.md` if DNS or network calls fail inside Codex but work from the user's terminal.
+- `02_Working_Files/Query_Methods` through `orbital-query-method-memory` when the user asks for investigation guidance, SQL construction, table selection, catalog reuse, or repeated query patterns.
+
+## Query Preparation Workflow
+
+0. Check network state before any API call:
+
+```bash
+env | sort | rg -i 'CODEX_SANDBOX|NETWORK|SANDBOX'
+python3 - <<'PY'
+import socket
+s = socket.socket()
+s.settimeout(2)
+try:
+    s.connect(("8.8.8.8", 53))
+    print("network_ok")
+except Exception as exc:
+    print(type(exc).__name__, exc)
+finally:
+    s.close()
+PY
+```
+
+If the output shows `CODEX_SANDBOX_NETWORK_DISABLED=1` or socket calls fail with `Operation not permitted`, do not treat it as an Orbital credential failure. Tell the user this Codex thread needs to be restarted with network-enabled sandbox settings, or ask the user to run the project helper in Terminal and then inspect the refreshed files locally.
+
+1. Identify the intended target set and convert it to API `nodes` selectors.
+2. Validate that the target is well-defined before any API call:
+   - each target must have an explicit selector prefix and value, except only deliberately approved `all`
+   - ambiguous identifiers such as a bare hostname, bare GUID, bare ID, or vague phrase like "all Windows hosts" require clarification or explicit conversion to a selector
+   - broad targeting such as `all`, `random`, large wildcards, large network ranges, or OS-only targeting requires explicit user approval before execution
+   - if the target cannot be written as the exact `nodes` array to submit, stop and ask for clarification
+3. Reject or clarify broad targeting such as `all`, `random`, large wildcards, or large network ranges unless the user explicitly approves the scope.
+4. Before writing new SQL, use `orbital-query-method-memory` when the task involves investigation logic, table selection, catalog reuse, or a repeated query pattern:
+   - search `02_Working_Files/Query_Methods` for prior methods
+   - search Orbital Catalog/API context for matching catalog entries
+   - reuse or adapt proven SQL patterns when they fit
+5. Build or inspect SQL.
+6. Verify table names and column names against `osquery_schema_5_23_0.json` when the query uses upstream osquery tables.
+7. Check platform assumptions, evented tables, required constraints, expensive tables, and whether `os` or `allowOS` filters are needed.
+8. Choose a short, generic query label. Prefer `codex_<table_or_goal>`.
+9. Before executing, show the user:
+   - the exact SQL query
+   - the exact target selector list
+   - relevant OS or `allowOS` filters
+10. Only proceed when the target selector list is explicit and approved enough for execution.
+11. Request network permission before calling the Orbital API when the tool is available. If the current session lacks that permission path, report the sandbox limitation clearly.
+12. Run `scripts/run_live_query.py`.
+13. After completion, always report:
+   - `orbital_queryID` from the response `ID` field if the API returned one
+   - how many endpoints answered
+   - row count
+   - target metadata/timestamp if useful
+   - the result rows as a Markdown table whose columns match the SQL query result shape
+   - only the result columns relevant to the user request
+14. If `orbital_queryID` is available, explain that Orbital stores the query in the cloud and it can be checked later through:
+   - `GET /v0/jobs/{{orbital_queryID}}`
+   - `GET /v0/jobs/{{orbital_queryID}}/results`
+15. When waiting for a query to finish, do not execute the same live query again and do not use `queryId:` for monitoring. Use the returned `orbital_queryID` and monitor status/results with `/v0/jobs/{{orbital_queryID}}` or `/v0/jobs/{{orbital_queryID}}/results`.
+16. Default waiting behavior after a new query returns `orbital_queryID`:
+   - wait 10 seconds, then call `GET /v0/jobs/{{orbital_queryID}}`
+   - show how many endpoints responded, using `done_count` when present
+   - check at most until 20 seconds after submission
+   - if `done_count` does not increase between checks, stop waiting and show a message with the `orbital_queryID`
+   - if the 20 second maximum is reached, stop waiting and show a message with the `orbital_queryID`
+17. If the SQL/table/caveat pattern is reusable, ask whether to save or update it through `orbital-query-method-memory`. Save only the method, not endpoint result rows or tenant-specific output.
+
+## Live Query Helper Script
+
+Run the helper from the Orbital project root. It reads credentials from environment variables and, by default, from `02_Working_Files/orbital_credentials.env` if that file exists. Never print or store tokens.
+
+```bash
+python3 /Users/tschranz/.codex/skills/orbital-run-osquery-live-query/scripts/run_live_query.py \
+  --target host:MONIKA \
+  --label codex_processes \
+  --name "codex live processes lookup" \
+  --sql-file /tmp/query.sql
+```
+
+The SQL can also be piped through stdin:
+
+```bash
+printf '%s\n' "SELECT pid, name, path, cmdline FROM processes ORDER BY pid LIMIT 50;" \
+  | python3 /Users/tschranz/.codex/skills/orbital-run-osquery-live-query/scripts/run_live_query.py \
+      --target host:MONIKA \
+      --label codex_processes \
+      --name "codex live process inventory"
+```
+
+To check an existing cloud-stored query/job without rerunning the live query:
+
+```bash
+python3 /Users/tschranz/.codex/skills/orbital-run-osquery-live-query/scripts/run_live_query.py \
+  --job-id "{{orbital_queryID}}"
+```
+
+To fetch stored results for an existing query/job:
+
+```bash
+python3 /Users/tschranz/.codex/skills/orbital-run-osquery-live-query/scripts/run_live_query.py \
+  --job-id "{{orbital_queryID}}" \
+  --job-results
+```
+
+The helper polls job status briefly after new query submission by default when the response includes `orbital_queryID`. To disable this behavior:
+
+```bash
+python3 /Users/tschranz/.codex/skills/orbital-run-osquery-live-query/scripts/run_live_query.py \
+  --target host:MONIKA \
+  --label codex_processes \
+  --sql-file /tmp/query.sql \
+  --no-status-poll
+```
+
+Multiple target selectors are allowed:
+
+```bash
+python3 /Users/tschranz/.codex/skills/orbital-run-osquery-live-query/scripts/run_live_query.py \
+  --target host:MONIKA \
+  --target ipv4:192.168.1.% \
+  --allow-os windows \
+  --label codex_logged_in_users \
+  --name "codex live logged in users" \
+  --sql-file /tmp/query.sql
+```
+
+Supported credential inputs:
+
+- `ORBITAL_API_TOKEN`, `ORBITAL_TOKEN`, `SECUREX_TOKEN`, `CISCO_SECUREX_TOKEN`, or `CISCO_TOKEN`
+- `ORBITAL_CLIENT_ID` plus `ORBITAL_CLIENT_SECRET`
+- `SECUREX_CLIENT_ID` plus `SECUREX_CLIENT_SECRET`
+- `ORBITAL_REGION`, defaulting to `eu`; supported values: `eu`, `us`, `na`, `apjc`
+
+## Target Selector Rules
+
+Use documented selectors from `Orbital_Target_Node_Selectors.md`. Examples:
+
+- `host:MONIKA`
+- `hostname:MONIKA`
+- `ipv4:192.168.1.%`
+- `ip:10.0.0.1`
+- `netmask:192.168.1.168/24`
+- `mac:02:42:c8:1f:7d:fa`
+- `orb:<orbital_id>`
+- `amp:<secure_endpoint_guid>`
+- `cm:<secure_client_guid>`
+- `machine:<machine_id>`
+- `os:windows`
+- `queryId:<query_id>`
+
+Prefer exact host or exact endpoint identifiers for first tests. Treat `%` wildcard selectors as dynamic targeting. Use `netmask` for IPv4 CIDR ranges. Do not assume IPv6 wildcard or subnet support.
+
+Do not confuse `queryId:<query_id>` with `orbital_queryID`. `queryId:<query_id>` is a target selector for reusing an existing query definition. `orbital_queryID` is returned by a live query response and is used for `/v0/jobs/...` status and results lookup.
+
+## Result Handling
+
+The helper emits JSON:
+
+- `submitted_sql`: SQL submitted to Orbital.
+- `query_label`: label submitted to Orbital.
+- `targets`: target selectors submitted to Orbital.
+- `orbital_queryID`: Orbital query ID from the API response `ID` field. Show this in user-facing output so the user can verify the same query in Postman or another API client.
+- `response_id`: compatibility alias for `orbital_queryID`.
+- `answered_endpoint_count`: number of endpoint result objects returned by Orbital.
+- `job_status_polls`: short `/v0/jobs/{{orbital_queryID}}` status checks after submission, including `done_count` when present.
+- `wait_status`: why Codex stopped waiting. If progress stalls or 20 seconds is reached, use the `orbital_queryID` for follow-up instead of rerunning.
+- `table_columns`: ordered column names to use for the user-facing Markdown result table.
+- `meta`: host, node ID, and reported timestamp where returned.
+- `rows`: parsed row dictionaries.
+- `errors`: API-level errors if present.
+
+Orbital stores live query jobs/results in the cloud. When the API returns `ID`, treat it as `orbital_queryID` and use it for follow-up checks:
+
+- `GET /v0/jobs/{{orbital_queryID}}` shows the query/job metadata.
+- `GET /v0/jobs/{{orbital_queryID}}/results` retrieves the stored results.
+
+Important: never rerun the same live query just to monitor waiting status. Reuse `orbital_queryID` and call the job endpoints. Do not use the `queryId:` target selector for monitoring a submitted live query.
+
+If `rows` is empty and the API returned target metadata, report that the live query succeeded but found no matching rows. If no result appears for a target, explain that live queries only return data from online/resolvable endpoints at execution time.
+
+For non-empty results, present the user-facing result as a Markdown table:
+
+- Use the SQL result columns as table headers in the same order returned by Orbital.
+- Include endpoint identity columns such as `host` or `nodeId` when results combine multiple endpoints or when those fields are needed to interpret the rows.
+- Do not present raw JSON as the primary result unless the user asks for raw output or troubleshooting requires it.
+- If the result has many rows, show a useful preview table and state the total `row_count`.
+
+## Safety Rules
+
+- Never run live queries without an explicit target selector.
+- Never run live queries while the target is ambiguous, incomplete, or not expressible as the exact `nodes` array.
+- Never silently broaden a target from one host to `all`, `random`, wildcard, or network range.
+- Never store bearer tokens or client secrets in the skill, project context, or GitHub.
+- In this lab project, a local credentials env file may exist under `02_Working_Files`; never print its values in chat or command output.
+- Keep API/catalog access workflow in `orbital-api-access`; larger skill scope changes require explicit user confirmation.
+- Use `orbital-query-method-memory` to speed up and improve query design, but never store returned endpoint data there.
+- Avoid `SELECT *` for broad or expensive tables unless the user explicitly asks for full rows.
+- Prefer `LIMIT` for exploratory queries.

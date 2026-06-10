@@ -7,7 +7,9 @@
 
 # Local Codex/app runtime state
 .codex/
-skills/
+skills/*
+!skills/github-sync-workflow/
+!skills/github-sync-workflow/**
 shell_snapshots/
 tmp/
 .tmp/

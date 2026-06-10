@@ -16,6 +16,7 @@ Current project context files:
 - `Orbital_Scripts.md`: Structured script behavior notes, including Python response actions, node concurrency, disabling, and linked scripts.
 - `Orbital_Script_Page_Linked_Context.md`: Consolidated import of all help-topic links visible from the Script page.
 - `Orbital_API_DevNet.md`: Cisco DevNet Orbital API context, server/auth notes, operation links, and model/schema link index.
+- `Orbital_Catalog_API_Import.md`: Latest read-only Orbital catalog API import summary and raw response file pointers.
 - `Orbital_Target_Node_Selectors.md`: Cross-reference for target/device/endpoint/node terminology and API `nodes` selector prefixes.
 - `Osquery_Schema_5_23_0.md`: osquery 5.23.0 schema import summary and pointers to structured table/column JSON files.
 - `Orbital_Query_Catalog_Source_Map.md`: Cross-reference linking osquery schema, Orbital Catalog API, and authenticated UI terminology for query work.

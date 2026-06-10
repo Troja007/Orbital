@@ -1,0 +1,263 @@
+title: "Get SHA256 hashes for running processes"
+status: "draft"
+created: "2026-06-10"
+updated: "2026-06-10"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "How can I collect SHA256 hashes for currently running processes?"
+    - "Find process hashes for suspicious running executables."
+  keywords:
+    - "sha256"
+    - "running processes"
+    - "process hash"
+    - "processes"
+    - "hash"
+  threat_context:
+    category: "suspicious_process"
+    platforms:
+      - "cross_platform"
+
+query_goal:
+  question: "Identify currently running processes and calculate SHA256 hashes for their executable paths."
+  expected_information:
+    - "process id"
+    - "process name"
+    - "process path"
+    - "command line"
+    - "process state"
+    - "SHA256 hash"
+  not_for:
+    - "Historical process execution after the process has exited."
+    - "Fileless activity where no executable path can be hashed."
+
+catalog_context:
+  searched_terms:
+    - "sha256"
+    - "running processes"
+  matches:
+    - name: "SHA256 Hash Of Running Processes"
+      id: "process_hashes"
+      source: "catalog_query_file"
+      relevance: "Cisco-managed catalog query joins running processes to file hashes by executable path."
+      os: []
+      category: "Live Acquisition Of Volatile Data"
+      mitre: []
+      updated: "2023-11-14 18:51:59"
+  notes:
+    - "Catalog metadata comes from the project catalog source map and local catalog query file."
+
+catalog_table_context:
+  - table: "processes"
+    matches:
+      - name: "SHA256 Hash Of Running Processes"
+        id: "process_hashes"
+        source: "stock_catalog"
+        relevance: "Catalog query uses processes to enumerate currently running processes before joining executable paths to hash."
+        os:
+          - "windows"
+          - "darwin"
+          - "linux"
+        categories:
+          - id: "live-acquisition-of-volatile-data"
+            title: "Live Acquisition Of Volatile Data"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+    notes:
+      - "No MITRE mapping was present for the matching stock catalog entry."
+  - table: "hash"
+    matches:
+      - name: "SHA256 Hash Of Running Processes"
+        id: "process_hashes"
+        source: "stock_catalog"
+        relevance: "Catalog query uses hash to calculate SHA256 for executable paths associated with running processes."
+        os:
+          - "windows"
+          - "darwin"
+          - "linux"
+        categories:
+          - id: "live-acquisition-of-volatile-data"
+            title: "Live Acquisition Of Volatile Data"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+    notes:
+      - "No MITRE mapping was present for the matching stock catalog entry."
+
+related_table_ttp_context:
+  - table: "processes"
+    source: "Orbital stock catalog entries that use this table"
+    caution: "Related TTP context helps future process-query design; it does not mean process hashing alone detects every listed TTP."
+    categories:
+      - id: "threat-hunting"
+        title: "Threat Hunting"
+      - id: "posture-assessment"
+        title: "Posture Assessment"
+      - id: "live-acquisition-of-volatile-data"
+        title: "Live Acquisition Of Volatile Data"
+    mitre:
+      tactics:
+        - id: "TA0002"
+          title: "Execution"
+        - id: "TA0004"
+          title: "Privilege Escalation"
+        - id: "TA0005"
+          title: "Defense Evasion"
+        - id: "TA0011"
+          title: "Command and Control"
+      techniques:
+        - id: "T1036"
+          title: "Masquerading"
+        - id: "T1055"
+          title: "Process Injection"
+        - id: "T1071"
+          title: "Application Layer Protocol"
+        - id: "T1102"
+          title: "Web Service"
+        - id: "T1219"
+          title: "Remote Access Software"
+        - id: "T1571"
+          title: "Non-Standard Port"
+      subtechniques:
+        - id: "T1055.012"
+          title: "Process Hollowing"
+    example_catalog_entries:
+      - name: "Microsoft Equation Editor Child Processes Monitoring"
+        id: "eqnedt32_child_processes_monitoring"
+        relevance: "Process table context for suspicious child process behavior."
+      - name: "Processes With Network Connections"
+        id: "processes_with_network_connections"
+        relevance: "Process table context for C2-like process network behavior."
+      - name: "Loaded Modules Monitoring"
+        id: "loaded_modules_monitoring"
+        relevance: "Process table context for module/process injection investigations."
+  - table: "hash"
+    source: "Orbital stock catalog entries that use this table"
+    caution: "Related TTP context helps future file-hash query design; the exact process_hashes catalog query has no MITRE mapping."
+    categories:
+      - id: "threat-hunting"
+        title: "Threat Hunting"
+      - id: "posture-assessment"
+        title: "Posture Assessment"
+      - id: "forensics"
+        title: "Forensics"
+    mitre:
+      tactics:
+        - id: "TA0001"
+          title: "Initial Access"
+        - id: "TA0003"
+          title: "Persistence"
+        - id: "TA0005"
+          title: "Defense Evasion"
+      techniques:
+        - id: "T1053.005"
+          title: "Scheduled Task"
+        - id: "T1543.003"
+          title: "Windows Service"
+        - id: "T1547.001"
+          title: "Registry Run Keys / Startup Folder"
+        - id: "T1547.015"
+          title: "Login Items"
+        - id: "T1546.008"
+          title: "Accessibility Features"
+        - id: "T1564.001"
+          title: "Hidden Files and Directories"
+        - id: "T1566.001"
+          title: "Spearphishing Attachment"
+      subtechniques: []
+    example_catalog_entries:
+      - name: "Windows executables that automatically execute"
+        id: "auto_execs"
+        relevance: "Hash table context for autorun/persistence file verification."
+      - name: "Accessibility Features File Replacement Monitoring"
+        id: "file_replacement_monitoring"
+        relevance: "Hash table context for modified/replaced binaries."
+      - name: "Outlook Email Attachments Monitoring"
+        id: "outlook_email_attachments_monitoring"
+        relevance: "Hash table context for file evidence tied to initial access."
+
+osquery_context:
+  tables:
+    - name: "processes"
+      columns:
+        - "pid"
+        - "name"
+        - "path"
+        - "cmdline"
+        - "state"
+      platform_notes:
+        - "Validate platform behavior and Orbital availability before broad use."
+        - "Querying the processes table itself has low performance impact on the endpoint."
+    - name: "hash"
+      columns:
+        - "path"
+        - "sha256"
+      platform_notes:
+        - "Hash calculation can be more expensive than simple process enumeration."
+  joins:
+    - "processes.path = hash.path"
+  constraints:
+    - "Consider filtering by process name, path, or target scope before broad execution."
+
+orbital_guidance:
+  preferred_query_type: "live_query"
+  allow_os: []
+  target_selector_guidance:
+    - "Prefer exact endpoint selectors for active triage."
+    - "Use broad selectors only after considering hash calculation cost and target count."
+  broad_targeting_risk:
+    level: "medium"
+    notes:
+      - "Joining process inventory to file hashing can add endpoint work on large target sets."
+
+sql_patterns:
+  - name: "Catalog pattern"
+    description: "Start from the Cisco-managed catalog query when current running process hashes are needed."
+    sql: |
+      SELECT
+        p.pid,
+        p.name,
+        p.path,
+        p.cmdline,
+        p.state,
+        h.sha256
+      FROM processes p
+      INNER JOIN hash h
+        ON p.path = h.path;
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: true
+  live_query_tested: false
+  notes:
+    - "SQL pattern is from the local 1:1 catalog query source and source-map example. Live execution has not been tested by this method record."
+
+lessons:
+  - date: "2026-06-10"
+    note: "Use this as a method for current-state process hash triage, not as historical process evidence."
+  - date: "2026-06-10"
+    note: "User update: querying the osquery processes table generates low performance impact on the endpoint. Keep separate performance caution for joins to hash because file hashing adds work beyond process enumeration."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<process_name>"
+    - "<path>"
+    - "<sha256>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

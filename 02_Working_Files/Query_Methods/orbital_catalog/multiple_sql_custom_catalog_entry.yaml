@@ -1,0 +1,194 @@
+title: "Multiple SQL statements in Orbital catalog and API requests"
+status: "validated"
+created: "2026-06-10"
+updated: "2026-06-10"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Build one Orbital custom catalog query that contains multiple labeled SQL queries."
+    - "Show how Orbital represents multiple SQL queries within one custom catalog entry."
+    - "Put multiple SQL queries into a single Orbital API request body."
+    - "Explain this Orbital API query body in natural language."
+  raw_input_handling:
+    store_raw_chat: false
+    sanitization_required: true
+    notes:
+      - "Store only the reusable catalog-shape lesson, not raw API responses or organization-specific metadata."
+  keywords:
+    - "custom catalog query"
+    - "multiple SQL queries"
+    - "config.osquery"
+    - "osQuery"
+    - "natural language explanation"
+    - "API query context"
+    - "osquery array"
+  threat_context:
+    category: "other"
+    platforms:
+      - "cross_platform"
+
+query_goal:
+  question: "How should Orbital represent multiple SQL statements in catalog definitions and API request bodies?"
+  expected_information:
+    - "Catalog request/response shape for multiple labeled osquery SQL blocks."
+    - "Live or scheduled API request shape for multiple labeled osQuery SQL blocks."
+    - "Natural-language summary of what the query targets, how long it runs, and what endpoint evidence each SQL block collects."
+  answers:
+    - "A single organization catalog query can contain multiple objects under config.osquery."
+    - "A single API query request can contain multiple objects under osQuery."
+    - "Each SQL block should have its own label and sql string; name and types are optional per API schema."
+    - "A provided API query body can be contextualized by translating nodes, interval, expiry, and each osQuery label/sql pair into analyst-facing intent."
+  use_when:
+    - "Creating a reusable custom catalog entry that should run several related SQL queries together."
+    - "Converting a set of investigation SQL snippets into one Orbital catalog definition."
+    - "Submitting one Orbital API query request that should run several related SQL queries against the same target set."
+    - "Explaining an existing Orbital API query body in natural language for review, documentation, or handoff."
+  do_not_use_when:
+    - "The user wants a single SQL result set; use one SQL statement with joins or unions where valid."
+    - "The user wants a live query executed immediately; use the live-query API/request shape instead."
+    - "The user needs a guarantee that all referenced osquery tables are enabled in Orbital; verify table availability separately."
+  does_not_answer:
+    - "Whether every SQL statement is safe or performant on broad targets."
+    - "Whether a specific table is enabled in Orbital on every platform."
+  preferred_next_queries:
+    - "Validate each SQL block independently against the osquery schema and Orbital table availability."
+    - "Apply allowOS and target selector guidance for platform-specific SQL blocks."
+
+catalog_context:
+  searched_terms:
+    - "<redacted organization catalog search term>"
+    - "multiple queries"
+  matches:
+    - name: "<redacted organization catalog query name>"
+      id: "org:<opaque_identifier>"
+      source: "organization_catalog"
+      relevance: "Organization catalog example demonstrating multiple SQL queries in one custom catalog query."
+      os: []
+      category: ""
+      mitre: []
+      updated: "0001-01-01T00:00:00Z"
+  notes:
+    - "The example uses config.osquery, lowercase, as an array of query objects."
+    - "The catalog entry was refreshed from the Orbital Catalog API on 2026-06-10 and then redacted for public project storage."
+    - "Cisco DevNet API docs show osQuery, camelCase, as an array for Create Query and Create Live Query request bodies."
+
+osquery_context:
+  tables:
+    - name: "processes"
+      columns:
+        - "*"
+      platform_notes:
+        - "Used by the organization catalog example as a generic process inventory query."
+    - name: "arp_cache"
+      columns:
+        - "*"
+      platform_notes:
+        - "Used by the organization catalog example as a generic network cache query."
+  joins: []
+  constraints:
+    - "Each config.osquery item is a separate SQL statement; do not concatenate unrelated SQL into one string."
+    - "When explaining an API body, preserve the difference between targeting fields such as nodes/os/allowOS and SQL collection blocks under osQuery."
+
+orbital_guidance:
+  preferred_query_type: "depends"
+  allow_os:
+    - "windows"
+    - "darwin"
+    - "linux"
+  target_selector_guidance:
+    - "Catalog definitions describe reusable query content; execution still needs explicit target selectors or queryId usage."
+  broad_targeting_risk:
+    level: "depends"
+    notes:
+      - "Risk depends on the SQL blocks included and the target scope used when the catalog query is run."
+      - "For API request bodies, all osQuery entries share the same target selectors and lifecycle fields in the request."
+
+sql_patterns:
+  - name: "Catalog config pattern"
+    description: "Use this shape for one custom catalog query with multiple SQL blocks."
+    sql: |
+      {
+        "title": "<catalog title>",
+        "config": {
+          "description": "<catalog description>",
+          "osquery": [
+            {
+              "label": "<first query label>",
+              "sql": "SELECT ...;"
+            },
+            {
+              "label": "<second query label>",
+              "sql": "SELECT ...;"
+            }
+          ]
+        }
+      }
+  - name: "API request pattern"
+    description: "Use this shape for one live or scheduled API request with multiple SQL blocks."
+    sql: |
+      {
+        "name": "<query name>",
+        "nodes": ["os:windows"],
+        "interval": 86400,
+        "expiry": 0,
+        "osQuery": [
+          {
+            "label": "<first query label>",
+            "sql": "SELECT ...;"
+          },
+          {
+            "label": "<second query label>",
+            "sql": "SELECT ...;"
+          }
+        ]
+      }
+  - name: "Natural-language interpretation pattern"
+    description: "Use this checklist to explain a supplied Orbital API body."
+    sql: |
+      1. Identify the query type from the endpoint/body fields:
+         - POST /query uses interval and expiry for scheduled/query jobs.
+         - POST /query/run uses expiryInMinutes for live probes.
+      2. Translate nodes into target scope, for example os:windows means Windows endpoints.
+      3. Translate interval and expiry into timing/lifecycle behavior.
+      4. Treat each osQuery item as a separate labeled endpoint evidence collection step.
+      5. Summarize each label by the endpoint state it collects, such as system inventory,
+         encryption status, processes, scheduled tasks, users, timezone, security products,
+         firewall registry state, or installer registry evidence.
+      6. Call out broad-targeting and table-availability caveats.
+
+validation:
+  osquery_schema_checked: false
+  orbital_catalog_checked: true
+  live_query_tested: false
+  notes:
+    - "Validated against a refreshed organization catalog API entry; tenant-specific name and ID are redacted."
+    - "Validated against Cisco DevNet Create Query, Create Live Query, QueryRequest, OSQueries, and OSQuery documentation."
+    - "No endpoint query was executed."
+
+lessons:
+  - date: "2026-06-10"
+    note: "For Orbital organization catalog queries, represent multiple SQL statements as separate objects in config.osquery, each with label and sql."
+  - date: "2026-06-10"
+    note: "For Orbital API query requests, represent multiple SQL statements as separate objects in osQuery, each with label and sql. Use expiry for scheduled /query and expiryInMinutes for live /query/run."
+  - date: "2026-06-10"
+    note: "Use this structure to contextualize a provided Orbital API query in natural language by mapping target selectors, lifecycle fields, and each labeled osQuery SQL block to the investigation intent."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<catalog title>"
+    - "<catalog description>"
+    - "<first query label>"
+    - "<second query label>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

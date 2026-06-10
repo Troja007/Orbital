@@ -1,0 +1,164 @@
+title: "Inventory Orbital computer names"
+status: "tested"
+created: "2026-06-10"
+updated: "2026-06-10"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Query all computers and show the computer name only."
+    - "Use the system information table to return endpoint computer names."
+  keywords:
+    - "computer_name"
+    - "computer name"
+    - "system_info"
+    - "systeminfo"
+    - "endpoint inventory"
+  threat_context:
+    category: "orbital_health"
+    platforms:
+      - "cross_platform"
+
+query_goal:
+  question: "List computer names for endpoints that respond to an Orbital live query."
+  expected_information:
+    - "computer name"
+  not_for:
+    - "Listing offline endpoints that do not respond to live queries."
+    - "Collecting full hardware or operating system inventory."
+
+catalog_context:
+  searched_terms:
+    - "system_info"
+    - "computer_name"
+    - "Inventory System Information"
+  matches:
+    - name: "Inventory System Information"
+      id: "system_info"
+      source: "stock_catalog"
+      relevance: "Stock catalog context for endpoint identity and hardware inventory from the system_info table."
+      os:
+        - "windows"
+        - "darwin"
+        - "linux"
+      category: "Posture Assessment"
+      mitre: []
+      updated: "2023-11-14T17:51:59.150055646Z"
+  notes:
+    - "User wording may say systeminfo, but Orbital catalog and osquery SQL use system_info."
+    - "The stock catalog includes examples that select computer_name from system_info even though the local upstream osquery 5.23 schema snapshot does not list computer_name."
+
+catalog_table_context:
+  - table: "system_info"
+    matches:
+      - name: "Inventory System Information"
+        id: "system_info"
+        source: "stock_catalog"
+        relevance: "Catalog query maps system_info to endpoint identity and hardware inventory fields."
+        os:
+          - "windows"
+          - "darwin"
+          - "linux"
+        categories:
+          - id: "posture-assessment"
+            title: "Posture Assessment"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+    notes:
+      - "No MITRE mapping was present for the matching stock catalog entry."
+      - "computer_name was validated by Orbital live query behavior, not by the upstream osquery 5.23 schema file."
+
+related_table_ttp_context:
+  - table: "system_info"
+    source: "Orbital stock catalog entries that use this table"
+    caution: "Related TTP context helps future inventory and posture query design; this computer-name inventory method itself is not a threat detection."
+    categories:
+      - id: "posture-assessment"
+        title: "Posture Assessment"
+      - id: "forensics"
+        title: "Forensics"
+      - id: "live-acquisition-of-volatile-data"
+        title: "Live Acquisition Of Volatile Data"
+    mitre:
+      tactics:
+        - id: "TA0005"
+          title: "Defense Evasion"
+      techniques: []
+      subtechniques: []
+    example_catalog_entries:
+      - name: "Inventory System Information"
+        id: "system_info"
+        relevance: "Exact table catalog context for host identity and hardware inventory."
+      - name: "Find Hosts Where Certain Process not Running"
+        id: "windows_macos_linux_process_not_running"
+        relevance: "Related system_info use with Defense Evasion context in the stock catalog."
+      - name: "Forensic Snapshot Linux 0.0.9"
+        id: "forensic-snapshot-linux-0.0.9"
+        relevance: "Related system_info use in forensic/live acquisition snapshots."
+
+osquery_context:
+  tables:
+    - name: "system_info"
+      columns:
+        - "computer_name"
+      platform_notes:
+        - "Orbital live query returned computer_name from system_info on 2026-06-10."
+        - "The project osquery 5.23 schema snapshot lists system_info but does not list computer_name; verify against Orbital behavior when portability outside Orbital matters."
+  joins: []
+  constraints:
+    - "No WHERE constraint is required because system_info is a single-row inventory table."
+
+orbital_guidance:
+  preferred_query_type: "live_query"
+  allow_os:
+    - "windows"
+    - "darwin"
+    - "linux"
+  target_selector_guidance:
+    - "Use exact host or endpoint selectors for normal tests."
+    - "Use all only when the user explicitly requests all computers and the query is lightweight."
+  broad_targeting_risk:
+    level: "low"
+    notes:
+      - "system_info is a low-cost inventory table, but all still targets every available endpoint."
+
+sql_patterns:
+  - name: "Computer name only"
+    description: "Return only the Orbital computer_name value from system_info."
+    sql: |
+      SELECT computer_name FROM system_info;
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: true
+  live_query_tested: true
+  notes:
+    - "Local upstream osquery 5.23 schema snapshot found system_info but did not include computer_name."
+    - "Orbital stock catalog context found system_info and examples containing computer_name."
+    - "Live Orbital query against target all returned rows on 2026-06-10."
+
+lessons:
+  - date: "2026-06-10"
+    note: "When user asks for systeminfo, translate to system_info and mention the correction if presenting SQL."
+  - date: "2026-06-10"
+    note: "For Orbital-only computer-name inventory, computer_name from system_info is usable despite the upstream schema mismatch."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<computer_name>"
+    - "<hostname>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

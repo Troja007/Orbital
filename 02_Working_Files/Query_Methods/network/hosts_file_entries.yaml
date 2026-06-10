@@ -1,0 +1,222 @@
+title: "Check endpoints for non-default hosts file entries"
+status: "tested"
+created: "2026-06-10"
+updated: "2026-06-10"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Check all endpoints if there is any entry in the hosts file."
+  keywords:
+    - "hosts file"
+    - "etc_hosts"
+    - "hostnames"
+    - "name resolution"
+    - "dns redirect"
+  threat_context:
+    category: "network"
+    platforms:
+      - "cross_platform"
+
+query_goal:
+  question: "Find non-default hosts-file mappings on endpoints that respond to Orbital."
+  expected_information:
+    - "computer name"
+    - "mapped address"
+    - "mapped hostnames"
+  not_for:
+    - "Proving whether a hosts-file entry is malicious without review of the mapped domain/IP."
+    - "Finding endpoints that were offline or did not respond to the live query."
+
+catalog_context:
+  searched_terms:
+    - "etc_hosts"
+    - "hosts file"
+    - "hosts_file"
+  matches:
+    - name: "Hosts File Monitoring"
+      id: "etc_hosts_monitoring"
+      source: "stock_catalog"
+      relevance: "Cisco-managed catalog query checks the local hosts file and excludes common localhost-style defaults."
+      os:
+        - "windows"
+        - "linux"
+        - "darwin"
+      category: "Posture Assessment"
+      mitre:
+        - "TA0011 Command and Control"
+        - "T1008 Fallback Channels"
+        - "T1102 Web Service"
+      updated: "2023-11-14T17:51:59.150055646Z"
+  notes:
+    - "Catalog description says hosts-file entries can redirect traffic, block legitimate content such as AV updates, or be legitimate local configuration."
+
+catalog_table_context:
+  - table: "etc_hosts"
+    matches:
+      - name: "Hosts File Monitoring"
+        id: "etc_hosts_monitoring"
+        source: "stock_catalog"
+        relevance: "Catalog query directly uses etc_hosts to list address-to-hostname mappings from the local hosts file."
+        os:
+          - "windows"
+          - "linux"
+          - "darwin"
+        categories:
+          - id: "posture-assessment"
+            title: "Posture Assessment"
+        mitre:
+          tactics:
+            - id: "TA0011"
+              title: "Command and Control"
+          techniques:
+            - id: "T1008"
+              title: "Fallback Channels"
+            - id: "T1102"
+              title: "Web Service"
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+    notes:
+      - "MITRE mapping is present in the stock catalog for this query."
+  - table: "system_info"
+    matches:
+      - name: "Inventory System Information"
+        id: "system_info"
+        source: "stock_catalog"
+        relevance: "Used to add hostname/computer name to cross-endpoint output."
+        os:
+          - "windows"
+          - "darwin"
+          - "linux"
+        categories:
+          - id: "posture-assessment"
+            title: "Posture Assessment"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+    notes:
+      - "No MITRE mapping was present for the matching system_info stock catalog entry."
+
+related_table_ttp_context:
+  - table: "etc_hosts"
+    source: "Orbital stock catalog entries that use this table"
+    caution: "This TTP context comes from the exact Hosts File Monitoring catalog entry and should guide review, not replace analyst judgment."
+    categories:
+      - id: "posture-assessment"
+        title: "Posture Assessment"
+      - id: "forensics"
+        title: "Forensics"
+      - id: "live-acquisition-of-volatile-data"
+        title: "Live Acquisition Of Volatile Data"
+    mitre:
+      tactics:
+        - id: "TA0011"
+          title: "Command and Control"
+      techniques:
+        - id: "T1008"
+          title: "Fallback Channels"
+        - id: "T1102"
+          title: "Web Service"
+      subtechniques: []
+    example_catalog_entries:
+      - name: "Hosts File Monitoring"
+        id: "etc_hosts_monitoring"
+        relevance: "Exact table catalog context for hosts-file redirects and blocked destinations."
+      - name: "Forensic Snapshot Windows 0.0.9"
+        id: "forensic-snapshot-windows-0.0.9"
+        relevance: "Related etc_hosts use in forensic/live acquisition snapshots."
+      - name: "Forensic Snapshot Linux 0.0.9"
+        id: "forensic-snapshot-linux-0.0.9"
+        relevance: "Related etc_hosts use in forensic/live acquisition snapshots."
+  - table: "system_info"
+    source: "Orbital stock catalog entries that use this table"
+    caution: "The exact system_info catalog entry has no MITRE mapping; it is included for endpoint identity context."
+    categories:
+      - id: "posture-assessment"
+        title: "Posture Assessment"
+    mitre:
+      tactics: []
+      techniques: []
+      subtechniques: []
+    example_catalog_entries:
+      - name: "Inventory System Information"
+        id: "system_info"
+        relevance: "Host identity and inventory context."
+
+osquery_context:
+  tables:
+    - name: "etc_hosts"
+      columns:
+        - "address"
+        - "hostnames"
+      platform_notes:
+        - "Line-parsed hosts-file table."
+        - "Cross-platform in the stock catalog for Windows, Linux, and macOS."
+    - name: "system_info"
+      columns:
+        - "hostname"
+      platform_notes:
+        - "Used to identify the endpoint in cross-endpoint output."
+  joins: []
+  constraints:
+    - "Exclude common default hostnames such as localhost and IPv6 multicast defaults to reduce noise."
+
+orbital_guidance:
+  preferred_query_type: "live_query"
+  allow_os:
+    - "windows"
+    - "linux"
+    - "darwin"
+  target_selector_guidance:
+    - "Use explicit endpoint selectors for triage, or all only after broad-scope approval."
+    - "No OS filter is required when checking all endpoint platforms."
+  broad_targeting_risk:
+    level: "low"
+    notes:
+      - "The query reads parsed hosts-file entries and filters defaults; expected endpoint impact is low."
+
+sql_patterns:
+  - name: "Non-default hosts file entries"
+    description: "List non-default hosts-file entries with endpoint hostname."
+    sql: |
+      SELECT
+        (SELECT hostname FROM system_info LIMIT 1) AS computer_name,
+        address,
+        hostnames
+      FROM etc_hosts
+      WHERE hostnames NOT IN ('localhost', '::1', 'fe00::0', 'ff00::0', 'ff02::1', 'ff02::2')
+      ORDER BY computer_name ASC, address ASC, hostnames ASC;
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: true
+  live_query_tested: true
+  notes:
+    - "Live query against all endpoints completed on 2026-06-10."
+    - "Method record intentionally does not store returned hosts-file rows."
+
+lessons:
+  - date: "2026-06-10"
+    note: "Use the stock catalog query etc_hosts_monitoring as the starting point for hosts-file checks."
+  - date: "2026-06-10"
+    note: "Include system_info.hostname when showing cross-endpoint hosts-file entries."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<mapped_address>"
+    - "<mapped_hostname>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

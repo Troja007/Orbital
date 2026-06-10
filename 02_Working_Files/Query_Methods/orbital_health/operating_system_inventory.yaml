@@ -1,0 +1,262 @@
+title: "Inventory operating systems on Orbital endpoints"
+status: "tested"
+created: "2026-06-10"
+updated: "2026-06-10"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Query all Windows hosts and tell me the operating system where Orbital is installed."
+    - "Query all Linux hosts and tell me the operating system where Orbital is installed."
+  keywords:
+    - "operating system"
+    - "os_version"
+    - "system_info"
+    - "orbital installed"
+    - "endpoint inventory"
+  threat_context:
+    category: "orbital_health"
+    platforms:
+      - "cross_platform"
+
+query_goal:
+  question: "List operating system details for endpoints that respond to Orbital live queries."
+  expected_information:
+    - "computer name"
+    - "operating system"
+    - "version"
+    - "platform"
+    - "architecture"
+  not_for:
+    - "Confirming historical endpoint enrollment."
+    - "Listing offline endpoints that do not respond to live queries."
+
+catalog_context:
+  searched_terms:
+    - "os_version"
+    - "system_info"
+    - "operating system"
+  matches:
+    - name: "Operating System Attributes"
+      id: "os_info"
+      source: "stock_catalog"
+      relevance: "Stock catalog context for querying operating system name, version, platform, codename, and install date."
+      os:
+        - "windows"
+        - "darwin"
+        - "linux"
+      category: "Posture Assessment; Forensics"
+      mitre: []
+      updated: "2023-11-14T17:51:59.150055646Z"
+    - name: "Inventory System Information"
+      id: "system_info"
+      source: "stock_catalog"
+      relevance: "Stock catalog context for host identity fields such as hostname."
+      os:
+        - "windows"
+        - "darwin"
+        - "linux"
+      category: "Posture Assessment"
+      mitre: []
+      updated: "2023-11-14T17:51:59.150055646Z"
+  notes:
+    - "Catalog matches provide context for the tables used; the live query can be narrowed to a specific OS target selector."
+
+catalog_table_context:
+  - table: "os_version"
+    matches:
+      - name: "Operating System Attributes"
+        id: "os_info"
+        source: "stock_catalog"
+        relevance: "Catalog query maps os_version to operating system inventory fields."
+        os:
+          - "windows"
+          - "darwin"
+          - "linux"
+        categories:
+          - id: "forensics"
+            title: "Forensics"
+          - id: "posture-assessment"
+            title: "Posture Assessment"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+    notes:
+      - "No MITRE mapping was present for the matching stock catalog entry."
+  - table: "system_info"
+    matches:
+      - name: "Inventory System Information"
+        id: "system_info"
+        source: "stock_catalog"
+        relevance: "Catalog query maps system_info to endpoint identity and hardware inventory fields; this method uses hostname."
+        os:
+          - "windows"
+          - "darwin"
+          - "linux"
+        categories:
+          - id: "posture-assessment"
+            title: "Posture Assessment"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+    notes:
+      - "No MITRE mapping was present for the matching stock catalog entry."
+
+related_table_ttp_context:
+  - table: "os_version"
+    source: "Orbital stock catalog entries that use this table"
+    caution: "Related TTP context helps future OS/posture query design; this OS inventory method itself is not a vulnerability or threat detection."
+    categories:
+      - id: "posture-assessment"
+        title: "Posture Assessment"
+      - id: "forensics"
+        title: "Forensics"
+      - id: "live-acquisition-of-volatile-data"
+        title: "Live Acquisition Of Volatile Data"
+    mitre:
+      tactics:
+        - id: "TA0002"
+          title: "Execution"
+        - id: "TA0004"
+          title: "Privilege Escalation"
+        - id: "TA0006"
+          title: "Credential Access"
+        - id: "TA0007"
+          title: "Discovery"
+        - id: "TA0008"
+          title: "Lateral Movement"
+      techniques:
+        - id: "T1068"
+          title: "Exploitation for Privilege Escalation"
+        - id: "T1082"
+          title: "System Information Discovery"
+        - id: "T1135"
+          title: "Network Share Discovery"
+        - id: "T1203"
+          title: "Exploitation for Client Execution"
+        - id: "T1210"
+          title: "Exploitation of Remote Services"
+        - id: "T1212"
+          title: "Exploitation for Credential Access"
+      subtechniques: []
+    example_catalog_entries:
+      - name: "Operating System Attributes"
+        id: "os_info"
+        relevance: "Exact table catalog context for OS inventory."
+      - name: "Windows HotFixes Monitoring"
+        id: "windows_hotfixes_monitoring"
+        relevance: "Related os_version use for system information and patch posture."
+      - name: "CVE-2020-0796 Monitoring"
+        id: "cve_2020_0796_monitoring"
+        relevance: "Related os_version use in vulnerability/posture assessment."
+      - name: "CVE-2020-1472 Monitoring 2.0.0"
+        id: "windows_cve_2020_1472_monitoring_v2"
+        relevance: "Related os_version use in vulnerability/posture assessment."
+  - table: "system_info"
+    source: "Orbital stock catalog entries that use this table"
+    caution: "Related TTP context helps future inventory and posture query design; the exact system_info catalog entry has no MITRE mapping."
+    categories:
+      - id: "posture-assessment"
+        title: "Posture Assessment"
+      - id: "forensics"
+        title: "Forensics"
+      - id: "live-acquisition-of-volatile-data"
+        title: "Live Acquisition Of Volatile Data"
+    mitre:
+      tactics:
+        - id: "TA0005"
+          title: "Defense Evasion"
+      techniques: []
+      subtechniques: []
+    example_catalog_entries:
+      - name: "Inventory System Information"
+        id: "system_info"
+        relevance: "Exact table catalog context for endpoint identity and hardware inventory."
+      - name: "Find Hosts Where Certain Process not Running"
+        id: "windows_macos_linux_process_not_running"
+        relevance: "Related system_info use with Defense Evasion context in the stock catalog."
+
+osquery_context:
+  tables:
+    - name: "os_version"
+      columns:
+        - "name"
+        - "version"
+        - "platform"
+        - "platform_like"
+        - "arch"
+      platform_notes:
+        - "Single-row table containing operating system name and version."
+    - name: "system_info"
+      columns:
+        - "hostname"
+      platform_notes:
+        - "Used to include computer name for cross-endpoint inventory display."
+  joins:
+    - "CROSS JOIN system_info to include hostname with os_version."
+  constraints:
+    - "Use an Orbital OS selector such as os:windows, os:linux, or all with OS targeting."
+
+orbital_guidance:
+  preferred_query_type: "live_query"
+  allow_os:
+    - "windows"
+    - "linux"
+    - "darwin"
+  target_selector_guidance:
+    - "For broad inventory, use all with an OS target/filter only after the user confirms scope."
+    - "If all plus OS targeting returns no metadata, retry with the documented os:<platform> node selector to distinguish empty target sets from selector-shape issues."
+  broad_targeting_risk:
+    level: "low"
+    notes:
+      - "os_version and system_info are inventory tables with low expected endpoint impact."
+
+sql_patterns:
+  - name: "Operating system inventory"
+    description: "List OS details for Orbital endpoints in the selected OS target scope."
+    sql: |
+      SELECT
+        si.hostname AS computer_name,
+        ov.name AS operating_system,
+        ov.version,
+        ov.platform,
+        ov.platform_like,
+        ov.arch
+      FROM os_version ov
+      CROSS JOIN system_info si
+      ORDER BY computer_name ASC;
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: true
+  live_query_tested: true
+  notes:
+    - "Windows live query returned endpoint rows on 2026-06-10."
+    - "Linux live query returned zero rows and no endpoint metadata on 2026-06-10."
+
+lessons:
+  - date: "2026-06-10"
+    note: "Store catalog table context after execution, including categories and MITRE mappings shown by the Orbital Catalog."
+  - date: "2026-06-10"
+    note: "Use os_version for OS details and system_info.hostname for computer-name ordering."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<platform>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

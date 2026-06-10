@@ -1,0 +1,383 @@
+title: "Query Windows port 443 network connections"
+status: "tested"
+created: "2026-06-10"
+updated: "2026-06-10"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Show active network connections on port 443 from all Windows hosts."
+    - "List Windows processes with open HTTPS connections."
+    - "Find current Windows sockets where the local or remote port is 443."
+  keywords:
+    - "port 443"
+    - "https"
+    - "network connections"
+    - "open sockets"
+    - "process_open_sockets"
+    - "remote port"
+    - "local port"
+  threat_context:
+    category: "network"
+    platforms:
+      - "windows"
+
+query_goal:
+  question: "List current Windows open sockets involving TCP/HTTPS port 443 with process context."
+  expected_information:
+    - "endpoint hostname"
+    - "process id"
+    - "process name"
+    - "process path"
+    - "local address and port"
+    - "remote address and port"
+    - "socket state"
+  answers:
+    - "Which responding Windows endpoints currently have sockets involving port 443?"
+    - "Which processes own those port 443 sockets?"
+    - "Whether the port 443 match is on the remote side or local side."
+    - "Which socket states are present, such as ESTABLISHED, CLOSE_WAIT, SYN_SENT, or TIME_WAIT."
+  use_when:
+    - "An analyst asks for current active network connections on HTTPS/443 from Windows hosts."
+    - "A current-state triage needs process-to-connection mapping for port 443."
+    - "A broad Windows live query is acceptable and the analyst expects volatile results."
+  do_not_use_when:
+    - "The analyst needs historical connections, DNS names, TLS SNI, URLs, or byte counts."
+    - "The target platform is not Windows unless the OS selector and wording are adjusted."
+    - "The goal is only listening services; use listening_ports when local listeners are the focus."
+  does_not_answer:
+    - "Which domain name was contacted."
+    - "When the connection was created."
+    - "Whether the connection content is benign or malicious."
+    - "Connections from endpoints that did not respond to the live query window."
+  not_for:
+    - "Historical network forensics without evented telemetry."
+    - "Proxy, TLS, or URL-level attribution."
+  preferred_next_queries:
+    - "Use DNS cache or dns_lookup_events query methods to correlate remote IPs to recent name-resolution activity when available."
+    - "Use process inventory with hashes to enrich suspicious process names or paths."
+    - "Use listening_ports for local services bound to port 443."
+
+catalog_context:
+  searched_terms:
+    - "process_open_sockets"
+    - "network connections"
+    - "remote_port"
+    - "local_port"
+  matches:
+    - name: "Process Socket Search"
+      id: "established_network_connections_search"
+      source: "stock_catalog"
+      relevance: "Cisco-managed catalog query directly searches process_open_sockets with process context and address/port filters."
+      os:
+        - "windows"
+        - "linux"
+        - "darwin"
+      category: "Threat Hunting; Posture Assessment"
+      mitre: []
+      updated: "2023-11-14T17:51:59.150055646Z"
+    - name: "Processes With Network Connections"
+      id: "processes_with_network_connections"
+      source: "stock_catalog"
+      relevance: "Catalog query maps current process IDs and command lines to local and remote network connection fields."
+      os:
+        - "windows"
+        - "linux"
+        - "darwin"
+      category: "Live Acquisition Of Volatile Data"
+      mitre:
+        - "TA0011 Command and Control"
+        - "T1102 Web Service"
+        - "T1219 Remote Access Software"
+        - "T1071 Application Layer Protocol"
+        - "T1571 Non-Standard Port"
+      updated: "2023-11-14T17:51:59.150055646Z"
+  notes:
+    - "Use the exact catalog patterns for general network connection hunting, then constrain local_port or remote_port for a specific port."
+
+catalog_table_context:
+  - table: "process_open_sockets"
+    matches:
+      - name: "Process Socket Search"
+        id: "established_network_connections_search"
+        source: "stock_catalog"
+        relevance: "Exact table catalog context for process-owned open sockets."
+        os:
+          - "windows"
+          - "linux"
+          - "darwin"
+        categories:
+          - id: "threat-hunting"
+            title: "Threat Hunting"
+          - id: "posture-assessment"
+            title: "Posture Assessment"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+      - name: "Processes With Network Connections"
+        id: "processes_with_network_connections"
+        source: "stock_catalog"
+        relevance: "Related table use with MITRE context for process network connection collection."
+        os:
+          - "windows"
+          - "linux"
+          - "darwin"
+        categories:
+          - id: "live-acquisition-of-volatile-data"
+            title: "Live Acquisition Of Volatile Data"
+        mitre:
+          tactics:
+            - id: "TA0011"
+              title: "Command and Control"
+          techniques:
+            - id: "T1102"
+              title: "Web Service"
+            - id: "T1219"
+              title: "Remote Access Software"
+            - id: "T1071"
+              title: "Application Layer Protocol"
+            - id: "T1571"
+              title: "Non-Standard Port"
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+    notes:
+      - "process_open_sockets exposes pid, protocol, local_address, local_port, remote_address, remote_port, and state."
+  - table: "processes"
+    matches:
+      - name: "Processes With Network Connections"
+        id: "processes_with_network_connections"
+        source: "stock_catalog"
+        relevance: "Used to enrich sockets with process name, path, and command line context."
+        os:
+          - "windows"
+          - "linux"
+          - "darwin"
+        categories:
+          - id: "live-acquisition-of-volatile-data"
+            title: "Live Acquisition Of Volatile Data"
+        mitre:
+          tactics:
+            - id: "TA0011"
+              title: "Command and Control"
+          techniques:
+            - id: "T1102"
+              title: "Web Service"
+            - id: "T1219"
+              title: "Remote Access Software"
+            - id: "T1071"
+              title: "Application Layer Protocol"
+            - id: "T1571"
+              title: "Non-Standard Port"
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+    notes:
+      - "Use LEFT JOIN so socket rows remain visible even when process metadata is unavailable."
+  - table: "system_info"
+    matches:
+      - name: "Inventory System Information"
+        id: "system_info"
+        source: "stock_catalog"
+        relevance: "Used to include endpoint hostname in each cross-endpoint row."
+        os:
+          - "windows"
+          - "darwin"
+          - "linux"
+        categories:
+          - id: "posture-assessment"
+            title: "Posture Assessment"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+    notes:
+      - "No MITRE mapping was present for the matching system_info stock catalog entry."
+
+related_table_ttp_context:
+  - table: "process_open_sockets"
+    source: "Orbital stock catalog entries that use this table"
+    caution: "Related TTP context helps future query selection; it does not mean a port 443 connection is malicious."
+    categories:
+      - id: "threat-hunting"
+        title: "Threat Hunting"
+      - id: "posture-assessment"
+        title: "Posture Assessment"
+      - id: "live-acquisition-of-volatile-data"
+        title: "Live Acquisition Of Volatile Data"
+    mitre:
+      tactics:
+        - id: "TA0011"
+          title: "Command and Control"
+      techniques:
+        - id: "T1102"
+          title: "Web Service"
+        - id: "T1219"
+          title: "Remote Access Software"
+        - id: "T1071"
+          title: "Application Layer Protocol"
+        - id: "T1571"
+          title: "Non-Standard Port"
+      subtechniques: []
+    example_catalog_entries:
+      - name: "Process Socket Search"
+        id: "established_network_connections_search"
+        relevance: "Exact table context for open sockets and address/port filtering."
+      - name: "Processes With Network Connections"
+        id: "processes_with_network_connections"
+        relevance: "Related current network connection context with MITRE mappings."
+
+osquery_context:
+  tables:
+    - name: "process_open_sockets"
+      columns:
+        - "pid"
+        - "protocol"
+        - "local_address"
+        - "local_port"
+        - "remote_address"
+        - "remote_port"
+        - "state"
+      platform_notes:
+        - "Available in upstream osquery 5.23.0 schema for open process-owned sockets."
+        - "Socket state is useful for separating ESTABLISHED connections from TIME_WAIT, CLOSE_WAIT, SYN_SENT, or listeners."
+    - name: "processes"
+      columns:
+        - "pid"
+        - "name"
+        - "path"
+        - "cmdline"
+      platform_notes:
+        - "Join on pid to identify the process owning each socket."
+    - name: "system_info"
+      columns:
+        - "hostname"
+      platform_notes:
+        - "Used to identify the endpoint in cross-endpoint output."
+  joins:
+    - "LEFT JOIN processes p ON p.pid = pos.pid"
+    - "CROSS JOIN system_info si"
+  constraints:
+    - "Use pos.local_port = 443 OR pos.remote_port = 443 when the request says port 443 without specifying direction."
+    - "Use pos.remote_port = 443 for outbound HTTPS-style client connections."
+    - "Use pos.local_port = 443 when investigating local services listening or accepting on HTTPS."
+
+orbital_guidance:
+  preferred_query_type: "live_query"
+  allow_os:
+    - "windows"
+  target_selector_guidance:
+    - "Use target selector os:windows when the analyst explicitly asks for all Windows hosts."
+    - "Use exact host, hostname, orb, or machine selectors for narrower triage."
+    - "Avoid the special all selector for Windows-only analysis unless scope and OS filter behavior are explicitly approved."
+  broad_targeting_risk:
+    level: "medium"
+    notes:
+      - "Current socket data is volatile and can return many rows on busy endpoints."
+      - "Only endpoints online and responsive during the live-query window return results."
+
+sql_patterns:
+  - name: "Windows port 443 sockets with process context"
+    description: "Return current open sockets where either local or remote port is 443."
+    sql: |
+      SELECT
+        si.hostname AS host,
+        pos.pid,
+        p.name AS process_name,
+        p.path AS process_path,
+        pos.protocol,
+        pos.local_address,
+        pos.local_port,
+        pos.remote_address,
+        pos.remote_port,
+        pos.state,
+        CASE
+          WHEN pos.remote_port = 443 THEN 'remote_port_443'
+          WHEN pos.local_port = 443 THEN 'local_port_443'
+          ELSE 'port_443'
+        END AS port_match
+      FROM process_open_sockets pos
+      LEFT JOIN processes p ON p.pid = pos.pid
+      CROSS JOIN system_info si
+      WHERE pos.local_port = 443 OR pos.remote_port = 443
+      ORDER BY si.hostname, pos.state, p.name, pos.remote_address, pos.remote_port;
+  - name: "Windows remote port 443 established connections"
+    description: "Return only established outbound-style connections to remote port 443."
+    sql: |
+      SELECT
+        si.hostname AS host,
+        pos.pid,
+        p.name AS process_name,
+        p.path AS process_path,
+        pos.local_address,
+        pos.local_port,
+        pos.remote_address,
+        pos.remote_port,
+        pos.state
+      FROM process_open_sockets pos
+      LEFT JOIN processes p ON p.pid = pos.pid
+      CROSS JOIN system_info si
+      WHERE pos.remote_port = 443
+        AND pos.state = 'ESTABLISHED'
+      ORDER BY si.hostname, p.name, pos.remote_address;
+  - name: "Windows port 443 socket summary by host state and process"
+    description: "Compact grouped view for broad target runs."
+    sql: |
+      SELECT
+        si.hostname AS host,
+        pos.state,
+        CASE
+          WHEN pos.remote_port = 443 THEN 'remote_port_443'
+          WHEN pos.local_port = 443 THEN 'local_port_443'
+          ELSE 'port_443'
+        END AS port_match,
+        p.name AS process_name,
+        count(*) AS connections
+      FROM process_open_sockets pos
+      LEFT JOIN processes p ON p.pid = pos.pid
+      CROSS JOIN system_info si
+      WHERE pos.local_port = 443 OR pos.remote_port = 443
+      GROUP BY si.hostname, pos.state, port_match, p.name
+      ORDER BY si.hostname, pos.state, connections DESC, p.name;
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: true
+  live_query_tested: true
+  notes:
+    - "Validated against upstream osquery 5.23.0 schema for process_open_sockets, processes, and system_info columns."
+    - "Matched stock catalog queries Process Socket Search and Processes With Network Connections."
+    - "Live query against Windows OS selector completed on 2026-06-10."
+    - "Method record intentionally does not store returned connection rows, endpoint names, node IDs, IP addresses, row counts, or raw API responses."
+
+lessons:
+  - date: "2026-06-10"
+    note: "For broad Windows port 443 connection checks, include system_info.hostname in the SQL so each row is directly attributable to an endpoint."
+  - date: "2026-06-10"
+    note: "When the analyst says 'on port 443' without direction, return a port_match field to distinguish remote_port_443 from local_port_443."
+  - date: "2026-06-10"
+    note: "Use a grouped summary query for broad Windows target sets to avoid overwhelming the analyst with hundreds of volatile socket rows."
+  - date: "2026-06-10"
+    note: "Live socket results are volatile; endpoint counts and socket rows can change between consecutive live-query windows."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<process_name>"
+    - "<process_path>"
+    - "<local_ip>"
+    - "<remote_ip>"
+    - "<port>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

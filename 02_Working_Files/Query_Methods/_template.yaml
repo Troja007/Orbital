@@ -1,0 +1,154 @@
+title: "<short reusable method title>"
+status: "draft" # draft | tested | validated | deprecated
+created: "YYYY-MM-DD"
+updated: "YYYY-MM-DD"
+
+investigation_inputs:
+  source_type: "analyst_question" # analyst_question | alert | threat_name | ioc | behavior | other
+  examples:
+    - "<sanitized example input>"
+  raw_input_handling:
+    store_raw_chat: false
+    sanitization_required: true
+    notes:
+      - "Store natural-language input as sanitized reusable phrasing, not as raw chat history."
+  keywords:
+    - "<keyword>"
+  threat_context:
+    category: "<suspicious_process | persistence | network | file | registry | software | identity | other>"
+    platforms:
+      - "<windows | macos | linux | cross_platform | unknown>"
+
+query_goal:
+  question: "<what endpoint information this method helps answer>"
+  expected_information:
+    - "<process command line, file hash, service state, network socket, etc.>"
+  answers:
+    - "<specific investigation question this method can answer>"
+  use_when:
+    - "<when this query should be selected>"
+  do_not_use_when:
+    - "<when this query should not be selected>"
+  does_not_answer:
+    - "<adjacent question this method does not answer>"
+  not_for:
+    - "<where this method is weak or misleading>"
+  preferred_next_queries:
+    - "<follow-up method title or query family>"
+
+catalog_context:
+  searched_terms:
+    - "<term>"
+  matches:
+    - name: "<Orbital Catalog Name>"
+      id: "<Catalog ID>"
+      source: "<stock_catalog | organization_catalog | catalog_query_file | ui_analysis>"
+      relevance: "<why this catalog entry helps>"
+      os: []
+      category: ""
+      mitre: []
+      updated: ""
+  notes:
+    - "<catalog caveat or mapping note>"
+
+catalog_table_context:
+  - table: "<table>"
+    matches:
+      - name: "<Orbital Catalog Name>"
+        id: "<Catalog ID>"
+        source: "<stock_catalog | organization_catalog | catalog_query_file | ui_analysis>"
+        relevance: "<why this entry helps explain use of the table>"
+        os: []
+        categories:
+          - id: "<category-id>"
+            title: "<category title shown by Orbital>"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: ""
+    notes:
+      - "<whether MITRE mappings were present or absent in catalog context>"
+
+related_table_ttp_context:
+  - table: "<table>"
+    source: "Orbital stock catalog entries that use this table"
+    caution: "Related TTP context helps future query design; it does not mean this method detects every listed TTP."
+    categories:
+      - id: "<category-id>"
+        title: "<category title shown by Orbital>"
+    mitre:
+      tactics:
+        - id: "<TAxxxx>"
+          title: "<tactic title>"
+      techniques:
+        - id: "<Txxxx>"
+          title: "<technique title>"
+      subtechniques: []
+    example_catalog_entries:
+      - name: "<Orbital Catalog Name>"
+        id: "<Catalog ID>"
+        relevance: "<why this entry is related to the table>"
+
+osquery_context:
+  tables:
+    - name: "<table>"
+      columns:
+        - "<column>"
+      platform_notes:
+        - "<platform or Orbital availability note>"
+  joins:
+    - "<join condition, if any>"
+  constraints:
+    - "<required WHERE constraint or performance bound>"
+
+orbital_guidance:
+  preferred_query_type: "live_query" # live_query | scheduled_query | catalog_query | depends
+  allow_os:
+    - "<windows | darwin | linux>"
+  target_selector_guidance:
+    - "<use exact host/orb selector for triage; avoid all unless approved>"
+  broad_targeting_risk:
+    level: "low" # low | medium | high
+    notes:
+      - "<performance or scope concern>"
+
+sql_patterns:
+  - name: "<pattern name>"
+    description: "<when to use this SQL>"
+    sql: |
+      SELECT
+        <columns>
+      FROM <table>
+      WHERE <condition>
+      LIMIT 100;
+
+validation:
+  osquery_schema_checked: false
+  orbital_catalog_checked: false
+  live_query_tested: false
+  notes:
+    - "<what was verified and what still needs checking>"
+
+lessons:
+  - date: "YYYY-MM-DD"
+    note: "<what future investigations should remember>"
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<ipv4>"
+    - "<sha256>"
+    - "<path>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

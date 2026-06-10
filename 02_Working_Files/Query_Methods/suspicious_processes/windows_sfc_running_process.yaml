@@ -1,0 +1,230 @@
+title: "Find running sfc.exe processes on Windows"
+status: "draft"
+created: "2026-06-10"
+updated: "2026-06-10"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Query running processes from Windows endpoints only for process name sfc.exe. Show PID, process name, path, and command line, ordered by computer name."
+  keywords:
+    - "sfc.exe"
+    - "running process"
+    - "processes"
+    - "windows"
+    - "cmdline"
+  threat_context:
+    category: "suspicious_process"
+    platforms:
+      - "windows"
+
+query_goal:
+  question: "Identify currently running sfc.exe processes on Windows endpoints and show process execution context."
+  expected_information:
+    - "computer name"
+    - "process id"
+    - "process name"
+    - "executable path"
+    - "command line"
+  not_for:
+    - "Historical process execution after sfc.exe has exited."
+    - "Validating file hash or signature; use a hash/authenticode method for that."
+
+catalog_context:
+  searched_terms:
+    - "sfc.exe"
+    - "processes"
+  matches:
+    - name: "Organization catalog/custom process queries using processes"
+      id: ""
+      source: "organization_catalog"
+      relevance: "Existing organization query patterns use the osquery processes table and filter Cisco process names including sfc.exe."
+      os:
+        - "windows"
+      category: "process inventory"
+      mitre: []
+      updated: ""
+  notes:
+    - "No single Cisco-managed stock query was required; the method uses the standard osquery processes table."
+
+catalog_table_context:
+  - table: "processes"
+    matches:
+      - name: "SHA256 Hash Of Running Processes"
+        id: "process_hashes"
+        source: "stock_catalog"
+        relevance: "Closest stock catalog context for using the processes table to enumerate running process name, path, command line, and process state."
+        os:
+          - "windows"
+          - "darwin"
+          - "linux"
+        categories:
+          - id: "live-acquisition-of-volatile-data"
+            title: "Live Acquisition Of Volatile Data"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+    notes:
+      - "No MITRE mapping was present for the matching stock catalog entry."
+  - table: "system_info"
+    matches:
+      - name: "Inventory System Information"
+        id: "system_info"
+        source: "stock_catalog"
+        relevance: "Catalog query uses system_info for host identity fields; this method uses hostname for cross-endpoint ordering."
+        os:
+          - "windows"
+          - "darwin"
+          - "linux"
+        categories:
+          - id: "posture-assessment"
+            title: "Posture Assessment"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+    notes:
+      - "No MITRE mapping was present for the matching stock catalog entry."
+
+related_table_ttp_context:
+  - table: "processes"
+    source: "Orbital stock catalog entries that use this table"
+    caution: "Related TTP context helps future process-query design; it does not mean this sfc.exe lookup detects every listed TTP."
+    categories:
+      - id: "threat-hunting"
+        title: "Threat Hunting"
+      - id: "posture-assessment"
+        title: "Posture Assessment"
+      - id: "live-acquisition-of-volatile-data"
+        title: "Live Acquisition Of Volatile Data"
+    mitre:
+      tactics:
+        - id: "TA0002"
+          title: "Execution"
+        - id: "TA0004"
+          title: "Privilege Escalation"
+        - id: "TA0005"
+          title: "Defense Evasion"
+        - id: "TA0011"
+          title: "Command and Control"
+      techniques:
+        - id: "T1036"
+          title: "Masquerading"
+        - id: "T1055"
+          title: "Process Injection"
+        - id: "T1071"
+          title: "Application Layer Protocol"
+        - id: "T1102"
+          title: "Web Service"
+        - id: "T1219"
+          title: "Remote Access Software"
+        - id: "T1571"
+          title: "Non-Standard Port"
+      subtechniques:
+        - id: "T1055.012"
+          title: "Process Hollowing"
+    example_catalog_entries:
+      - name: "Microsoft Equation Editor Child Processes Monitoring"
+        id: "eqnedt32_child_processes_monitoring"
+        relevance: "Process table context for suspicious child process behavior."
+      - name: "Processes With Network Connections"
+        id: "processes_with_network_connections"
+        relevance: "Process table context for processes communicating over the network."
+      - name: "Unusual Svchost.exe Children Monitoring"
+        id: "windows_processes_unusual_svchost_children"
+        relevance: "Windows process ancestry context."
+  - table: "system_info"
+    source: "Orbital stock catalog entries that use this table"
+    caution: "The exact system_info catalog entry has no MITRE mapping; related entries can still use system_info for defensive or inventory context."
+    categories:
+      - id: "posture-assessment"
+        title: "Posture Assessment"
+    mitre:
+      tactics: []
+      techniques: []
+      subtechniques: []
+    example_catalog_entries:
+      - name: "Inventory System Information"
+        id: "system_info"
+        relevance: "Host identity and inventory context."
+
+osquery_context:
+  tables:
+    - name: "processes"
+      columns:
+        - "pid"
+        - "name"
+        - "path"
+        - "cmdline"
+      platform_notes:
+        - "The processes table is current-state only."
+        - "Querying the processes table has low performance impact on the endpoint."
+    - name: "system_info"
+      columns:
+        - "hostname"
+      platform_notes:
+        - "Used to add computer name for ordering and readable output."
+  joins: []
+  constraints:
+    - "Filter by lower(name) = 'sfc.exe' to avoid returning every running process."
+
+orbital_guidance:
+  preferred_query_type: "live_query"
+  allow_os:
+    - "windows"
+  target_selector_guidance:
+    - "Use Orbital allowOS/windows or equivalent Windows-only filter."
+    - "Prefer explicit endpoint selectors for triage; avoid broad all targeting unless approved."
+  broad_targeting_risk:
+    level: "low"
+    notes:
+      - "The query is narrowly filtered by process name and querying the processes table has low endpoint performance impact."
+      - "Broad targeting still touches every selected endpoint, so confirm scope before using all."
+
+sql_patterns:
+  - name: "sfc.exe running process lookup"
+    description: "Find current sfc.exe process rows and include the hostname so results can be ordered by computer name."
+    sql: |
+      SELECT
+        pid,
+        name AS processname,
+        path,
+        cmdline AS command_line,
+        (SELECT hostname FROM system_info LIMIT 1) AS computer_name
+      FROM processes
+      WHERE lower(name) = 'sfc.exe'
+      ORDER BY computer_name ASC;
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: true
+  live_query_tested: false
+  notes:
+    - "Column names were checked against the osquery 5.23.0 schema. Live execution has not been run from this method record."
+
+lessons:
+  - date: "2026-06-10"
+    note: "For cross-endpoint display, include computer_name even when the requested table focuses on process fields."
+  - date: "2026-06-10"
+    note: "User update: querying the osquery processes table generates low performance impact on the endpoint."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<process_name>"
+    - "<path>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

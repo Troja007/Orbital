@@ -1,0 +1,251 @@
+title: "Query Windows endpoint DNS cache"
+status: "tested"
+created: "2026-06-10"
+updated: "2026-06-10"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Query the DNS cache from all Windows machines."
+    - "Show cached DNS records from Windows endpoints."
+    - "Check Windows DNS cache entries for a specific domain pattern."
+  keywords:
+    - "dns cache"
+    - "dns_cache"
+    - "cached dns"
+    - "dns records"
+    - "dns poisoning"
+    - "name resolution"
+  threat_context:
+    category: "network"
+    platforms:
+      - "windows"
+
+query_goal:
+  question: "Retrieve current DNS cache entries from Windows endpoints that respond to Orbital."
+  expected_information:
+    - "endpoint hostname"
+    - "cached DNS record name"
+    - "DNS record type"
+  answers:
+    - "Which DNS names are currently present in the Windows DNS cache?"
+    - "Which responding Windows endpoint reported each cached DNS record?"
+    - "Which record types are present for cached DNS names?"
+  use_when:
+    - "An analyst asks for current DNS cache contents from Windows endpoints."
+    - "An investigation needs quick current-state DNS-cache visibility without process attribution."
+    - "A domain-pattern hunt can be bounded to Windows DNS cache contents."
+  do_not_use_when:
+    - "The analyst needs historical DNS lookups, timestamps, process IDs, response values, or usernames."
+    - "The endpoint platform is Linux or macOS."
+    - "The goal is to prove DNS cache poisoning without validation against resolver logs or expected DNS answers."
+  does_not_answer:
+    - "Which process made a DNS lookup."
+    - "When the lookup happened."
+    - "What IP address was returned by the resolver."
+    - "Whether an endpoint that did not answer had matching DNS cache entries."
+  not_for:
+    - "Historical DNS investigation unless paired with evented DNS telemetry."
+    - "Full DNS response reconstruction."
+  preferred_next_queries:
+    - "Use dns_lookup_events for Windows DNS lookup events when process, timestamp, status, or response data is needed and event telemetry is available."
+    - "Use process/network socket queries to correlate suspicious domains with currently running processes."
+    - "Use hosts-file query methods to check local name-resolution overrides."
+
+catalog_context:
+  searched_terms:
+    - "dns_cache"
+    - "DNS cache"
+    - "dns cache"
+  matches:
+    - name: "DNS Cache Monitoring"
+      id: "dns_cache_table_monitoring"
+      source: "stock_catalog"
+      relevance: "Cisco-managed catalog query directly retrieves Windows DNS cache domain names and record types."
+      os:
+        - "windows"
+      category: "Posture Assessment"
+      mitre: []
+      updated: "2023-11-14T17:51:59.150055646Z"
+  notes:
+    - "The stock catalog query supports domain and record-type filtering through variables; the host-attributed method below adds system_info.hostname for cross-endpoint reporting."
+    - "No MITRE tactic, technique, or subtechnique mapping was present on the exact stock catalog entry."
+
+catalog_table_context:
+  - table: "dns_cache"
+    matches:
+      - name: "DNS Cache Monitoring"
+        id: "dns_cache_table_monitoring"
+        source: "stock_catalog"
+        relevance: "Exact catalog match for reading Windows DNS cache names and record types."
+        os:
+          - "windows"
+        categories:
+          - id: "posture-assessment"
+            title: "Posture Assessment"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+    notes:
+      - "The dns_cache table has columns name, type, and flags in the upstream osquery 5.23.0 schema."
+      - "The table is Windows-specific in the Orbital stock catalog context."
+  - table: "system_info"
+    matches:
+      - name: "Inventory System Information"
+        id: "system_info"
+        source: "stock_catalog"
+        relevance: "Useful for adding endpoint hostname to cross-endpoint live-query output."
+        os:
+          - "windows"
+          - "darwin"
+          - "linux"
+        categories:
+          - id: "posture-assessment"
+            title: "Posture Assessment"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+    notes:
+      - "No MITRE mapping was present for the matching system_info stock catalog entry."
+
+related_table_ttp_context:
+  - table: "dns_cache"
+    source: "Orbital stock catalog entries that use this table"
+    caution: "Related catalog context helps future query selection; it does not mean this method detects every DNS-related threat."
+    categories:
+      - id: "posture-assessment"
+        title: "Posture Assessment"
+      - id: "forensics"
+        title: "Forensics"
+      - id: "live-acquisition-of-volatile-data"
+        title: "Live Acquisition Of Volatile Data"
+    mitre:
+      tactics: []
+      techniques: []
+      subtechniques: []
+    example_catalog_entries:
+      - name: "DNS Cache Monitoring"
+        id: "dns_cache_table_monitoring"
+        relevance: "Exact table catalog context for current DNS cache entries."
+      - name: "Forensic Snapshot Windows 0.0.9"
+        id: "forensic-snapshot-windows-0.0.9"
+        relevance: "Related use of dns_cache in broad Windows forensic collection."
+      - name: "System Snapshot Windows 0.0.9 (formerly Forensic Snapshot Windows 0.0.9)"
+        id: "system-snapshot-windows-0.0.9"
+        relevance: "Related use of dns_cache in broad Windows system snapshot collection."
+
+osquery_context:
+  tables:
+    - name: "dns_cache"
+      columns:
+        - "name"
+        - "type"
+        - "flags"
+      platform_notes:
+        - "Enumerates the Windows DNS cache through dnsapi.dll."
+        - "Use Windows OS targeting or allowOS filtering."
+    - name: "system_info"
+      columns:
+        - "hostname"
+      platform_notes:
+        - "Used to attribute each returned DNS cache row to an endpoint hostname."
+  joins:
+    - "CROSS JOIN system_info to include endpoint hostname on every DNS cache row."
+  constraints:
+    - "Prefer selecting explicit columns instead of SELECT *."
+    - "Use WHERE dc.name LIKE '<pattern>' or WHERE dc.type = '<record_type>' when narrowing an IOC hunt."
+
+orbital_guidance:
+  preferred_query_type: "live_query"
+  allow_os:
+    - "windows"
+  target_selector_guidance:
+    - "Use target selector os:windows when the analyst explicitly asks for all Windows machines."
+    - "Use exact host, hostname, orb, or machine selectors for narrower triage."
+    - "Do not use the special all selector for this Windows-only table unless the scope and OS filter behavior are explicitly approved."
+  broad_targeting_risk:
+    level: "low"
+    notes:
+      - "The query reads a small current-state cache table, but broad Windows targeting can still produce many rows."
+      - "Live queries only return endpoints that are online and responsive during the query window."
+
+sql_patterns:
+  - name: "Host-attributed Windows DNS cache"
+    description: "Return current DNS cache entries with endpoint hostname for all responding Windows endpoints."
+    sql: |
+      SELECT
+        si.hostname AS host,
+        dc.name AS "domain",
+        dc.type
+      FROM dns_cache dc
+      CROSS JOIN system_info si
+      ORDER BY si.hostname, dc.name, dc.type;
+  - name: "Filtered Windows DNS cache by domain pattern"
+    description: "Use when the analyst provides a domain, suffix, or IOC pattern."
+    sql: |
+      SELECT
+        si.hostname AS host,
+        dc.name AS "domain",
+        dc.type
+      FROM dns_cache dc
+      CROSS JOIN system_info si
+      WHERE dc.name LIKE '<domain_pattern>'
+      ORDER BY si.hostname, dc.name, dc.type;
+  - name: "Windows DNS cache count summary"
+    description: "Use when a compact per-host summary is preferable to returning every cached name."
+    sql: |
+      SELECT
+        si.hostname AS host,
+        dc.type,
+        count(*) AS records
+      FROM dns_cache dc
+      CROSS JOIN system_info si
+      GROUP BY si.hostname, dc.type
+      ORDER BY si.hostname, dc.type;
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: true
+  live_query_tested: true
+  notes:
+    - "Validated against upstream osquery 5.23.0 schema for dns_cache and system_info columns."
+    - "Matched stock catalog query DNS Cache Monitoring with Catalog ID dns_cache_table_monitoring."
+    - "Live query against Windows OS selector completed on 2026-06-10."
+    - "Method record intentionally does not store returned DNS cache rows, endpoint names, node IDs, domains, row counts, or raw API responses."
+
+lessons:
+  - date: "2026-06-10"
+    note: "Use DNS Cache Monitoring / dns_cache_table_monitoring as the stock catalog starting point for Windows DNS cache checks."
+  - date: "2026-06-10"
+    note: "Include system_info.hostname in live-query SQL when reporting cross-endpoint DNS cache rows; helper metadata alone may not attach hostname to every row."
+  - date: "2026-06-10"
+    note: "Do not rerun an in-flight live query only to monitor progress. Wait for the submitted query response or use the returned orbital_queryID with job endpoints if the API returns one."
+  - date: "2026-06-10"
+    note: "Endpoint response counts can vary across live-query windows because only online and responsive endpoints return results."
+  - date: "2026-06-10"
+    note: "Broad Windows DNS-cache result rendering can be delayed by slow endpoint responders, high total row volume, or endpoint result-generation timeouts even when early endpoints return quickly."
+  - date: "2026-06-10"
+    note: "For broad DNS-cache checks, prefer a domain-pattern filter or grouped summary first when the analyst does not need every cached name from every endpoint."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<domain_pattern>"
+    - "<record_type>"
+  forbidden_values:
+    - "hostnames"
+    - "domain_names"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

@@ -1,10 +1,8 @@
 # Orbital Catalog API Import
 
-Retrieved: 2026-06-02T07:42:39+00:00
+Retrieved: 2026-06-10T17:39:04+00:00
 
 Import type: Structured context generated from read-only Orbital API catalog calls. Raw API responses are stored under `01_Source_Files/API_References/Orbital_Catalog_API`.
-
-Latest stock catalog refresh: `GET /v0/stock` returned HTTP 200 on 2026-06-02T08:02:40+00:00. The full response is stored in `01_Source_Files/API_References/Orbital_Catalog_API/stock_query_catalog.json`.
 
 ## API Source
 
@@ -16,10 +14,10 @@ Latest stock catalog refresh: `GET /v0/stock` returned HTTP 200 on 2026-06-02T08
 
 | Name | Method | Path | Status | Count |
 | --- | --- | --- | --- | --- |
-| stock_query_catalog | GET | `/stock` | 200 | authors: 5, categories: 11, queries: 467, scripts: 48, tactics: 14, techniques: 211 |
+| stock_query_catalog | GET | `/stock` | 200 | authors: 5, categories: 11, queries: 467, scripts: 49, tactics: 14, techniques: 211 |
 | organization_catalog_queries | GET | `/catalogs` | not published | redacted |
 | organization_catalog_scripts | GET | `/catalogs/scripts` | not published | redacted |
-| stock_catalog_scripts | GET | `/catalogs/cisco/scripts` | 200 | 72 |
+| stock_catalog_scripts | GET | `/catalogs/cisco/scripts` | 200 | 73 |
 
 ## Raw Files
 
