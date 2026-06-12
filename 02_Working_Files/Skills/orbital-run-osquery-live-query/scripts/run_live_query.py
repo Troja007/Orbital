@@ -3,10 +3,12 @@ from __future__ import annotations
 
 import argparse
 import base64
+import hashlib
 import json
 import os
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -58,12 +60,33 @@ RESPONSE_ID_KEYS = {
     "id",
     "queryId",
     "queryID",
+    "query_id",
     "jobId",
     "jobID",
+    "job_id",
     "requestId",
     "requestID",
+    "request_id",
     "responseId",
     "responseID",
+    "response_id",
+    "runId",
+    "runID",
+    "run_id",
+}
+
+RESPONSE_ID_HEADERS = {
+    "id",
+    "x-id",
+    "queryid",
+    "x-query-id",
+    "jobid",
+    "x-job-id",
+    "requestid",
+    "x-request-id",
+    "responseid",
+    "x-response-id",
+    "location",
 }
 
 
@@ -85,6 +108,16 @@ def parse_args() -> argparse.Namespace:
         "--summary-only",
         action="store_true",
         help="With --job-id, print query/result summaries without full stored result payload.",
+    )
+    parser.add_argument(
+        "--raw-response",
+        action="store_true",
+        help="Include raw API response and response headers in output for response-shape debugging.",
+    )
+    parser.add_argument(
+        "--run-ledger",
+        default="local/orbital_query_runs/live_query_runs.jsonl",
+        help="JSONL ledger for live query job IDs and status metadata. Stores no endpoint rows.",
     )
     parser.add_argument(
         "--target",
@@ -161,6 +194,40 @@ def read_sql(args: argparse.Namespace) -> str:
     if not sql:
         raise RuntimeError("No SQL provided. Use --sql-file or pipe SQL on stdin.")
     return sql
+
+
+def utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def append_run_ledger(path: str, record: dict[str, object]) -> None:
+    if not path:
+        return
+    ledger_path = Path(path)
+    ledger_path.parent.mkdir(parents=True, exist_ok=True)
+    with ledger_path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record, sort_keys=True) + "\n")
+
+
+def compact_status_polls(polls: list[dict]) -> list[dict]:
+    compact: list[dict] = []
+    for poll in polls:
+        compact.append(
+            {
+                "elapsed_seconds": poll.get("elapsed_seconds"),
+                "status": poll.get("status"),
+                "done_count": poll.get("done_count"),
+                "target_count": poll.get("target_count"),
+                "submission": poll.get("submission"),
+                "update": poll.get("update"),
+                "expiry": poll.get("expiry"),
+            }
+        )
+    return compact
 
 
 def first_env(names: list[str]) -> str:
@@ -318,6 +385,14 @@ def parse_any_rows(payload: dict) -> tuple[list[dict], list[dict]]:
     return rows, meta
 
 
+def parse_immediate_rows(payload: dict) -> tuple[list[dict], list[dict]]:
+    """Parse both legacy live-query and stored job/result response shapes."""
+    rows, meta = parse_rows(payload)
+    if rows or meta:
+        return rows, meta
+    return parse_any_rows(payload)
+
+
 def summarize_job_results(payload: dict) -> dict:
     summaries: list[dict] = []
     for result in payload.get("results") or []:
@@ -382,8 +457,21 @@ def find_response_id(value: object) -> object:
     return None
 
 
-def top_level_orbital_query_id(payload: dict) -> object:
-    return payload.get("ID") or find_response_id(payload)
+def find_response_id_in_headers(headers: dict[str, str]) -> object:
+    for key, value in headers.items():
+        normalized = key.lower()
+        if normalized not in RESPONSE_ID_HEADERS:
+            continue
+        if not value:
+            continue
+        if normalized == "location":
+            return value.rstrip("/").split("/")[-1]
+        return value
+    return None
+
+
+def top_level_orbital_query_id(payload: dict, headers: dict[str, str] | None = None) -> object:
+    return payload.get("ID") or find_response_id(payload) or find_response_id_in_headers(headers or {})
 
 
 def first_count(value: object, keys: set[str]) -> int | None:
@@ -549,9 +637,10 @@ def main() -> int:
     with urlopen(request, timeout=args.timeout) as response:
         payload = json.loads(response.read().decode("utf-8") or "{}")
         status = response.status
+        response_headers = dict(response.headers.items())
 
-    rows, meta = parse_rows(payload)
-    orbital_query_id = top_level_orbital_query_id(payload)
+    rows, meta = parse_immediate_rows(payload)
+    orbital_query_id = top_level_orbital_query_id(payload, response_headers)
     output = {
         "status": status,
         "region": region,
@@ -567,6 +656,44 @@ def main() -> int:
         "meta": meta,
         "rows": rows,
     }
+    ledger_base = {
+        "record_type": "orbital_live_query_submission",
+        "recorded_at": utc_now(),
+        "region": region,
+        "status": status,
+        "orbital_queryID": orbital_query_id,
+        "query_label": args.label,
+        "query_name": args.name or args.label,
+        "targets": targets,
+        "sql_sha256": sha256_text(sql),
+        "response_had_immediate_rows": bool(rows),
+        "immediate_answered_endpoint_count": len(meta),
+        "immediate_row_count": len(rows),
+        "errors": payload.get("errors"),
+    }
+    append_run_ledger(args.run_ledger, ledger_base)
+    output["run_ledger"] = args.run_ledger
+    if args.raw_response:
+        output["response_headers"] = response_headers
+        output["raw_response"] = payload
+    if not orbital_query_id:
+        output["job_check_status"] = (
+            "Job status was not checked because the POST /query/run response did not expose a job ID. "
+            "The submission was still recorded in the run ledger."
+        )
+        append_run_ledger(
+            args.run_ledger,
+            {
+                "record_type": "orbital_live_query_job_id_missing",
+                "recorded_at": utc_now(),
+                "region": region,
+                "query_label": args.label,
+                "query_name": args.name or args.label,
+                "targets": targets,
+                "sql_sha256": sha256_text(sql),
+                "status": status,
+            },
+        )
     if orbital_query_id and not args.no_status_poll:
         polls, poll_message = poll_job_status(
             region,
@@ -578,6 +705,50 @@ def main() -> int:
         )
         output["job_status_polls"] = polls
         output["wait_status"] = poll_message
+        append_run_ledger(
+            args.run_ledger,
+            {
+                "record_type": "orbital_live_query_job_status_check",
+                "recorded_at": utc_now(),
+                "region": region,
+                "orbital_queryID": orbital_query_id,
+                "query_label": args.label,
+                "query_name": args.name or args.label,
+                "targets": targets,
+                "sql_sha256": sha256_text(sql),
+                "polls": compact_status_polls(polls),
+                "wait_status": poll_message,
+            },
+        )
+        if not rows:
+            job_results = fetch_job(region, token, str(orbital_query_id), args.timeout, results=True)
+            result_payload = job_results["payload"]
+            result_rows, result_meta = parse_any_rows(result_payload if isinstance(result_payload, dict) else {})
+            append_run_ledger(
+                args.run_ledger,
+                {
+                    "record_type": "orbital_live_query_job_results_check",
+                    "recorded_at": utc_now(),
+                    "region": region,
+                    "status": job_results["status"],
+                    "orbital_queryID": orbital_query_id,
+                    "query_label": args.label,
+                    "query_name": args.name or args.label,
+                    "targets": targets,
+                    "sql_sha256": sha256_text(sql),
+                    "answered_endpoint_count": len(result_meta),
+                    "row_count": len(result_rows),
+                },
+            )
+            if result_rows or result_meta:
+                output["job_results_status"] = job_results["status"]
+                output["answered_endpoint_count"] = len(result_meta)
+                output["row_count"] = len(result_rows)
+                output["table_columns"] = infer_table_columns(result_rows)
+                output["meta"] = result_meta
+                output["rows"] = result_rows
+                if args.raw_response:
+                    output["raw_job_results"] = result_payload
     print(json.dumps(output, indent=2))
     return 0
 

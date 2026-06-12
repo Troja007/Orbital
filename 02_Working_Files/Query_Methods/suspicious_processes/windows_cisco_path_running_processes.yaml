@@ -1,0 +1,240 @@
+title: "Find running Cisco-path processes on Windows"
+status: "tested"
+created: "2026-06-11"
+updated: "2026-06-11"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Query all Windows endpoints for running processes where the executable path contains Cisco."
+    - "Show running processes related to Cisco Secure Endpoint or Cisco Secure Client."
+  raw_input_handling:
+    store_raw_chat: false
+    sanitization_required: true
+    notes:
+      - "Store the reusable process-path method only; do not store endpoint result rows."
+  keywords:
+    - "Cisco Secure Endpoint"
+    - "Cisco Secure Client"
+    - "running processes"
+    - "process path"
+    - "cisco"
+  threat_context:
+    category: "software"
+    platforms:
+      - "windows"
+
+query_goal:
+  question: "Which currently running processes have executable paths that include Cisco?"
+  expected_information:
+    - "host"
+    - "process id"
+    - "process name"
+    - "executable path"
+    - "command line"
+    - "process state"
+    - "process start time"
+  answers:
+    - "Shows Cisco-related running processes on responding Windows endpoints."
+    - "Provides context for Cisco Secure Endpoint, Cisco Secure Client, Orbital, and other Cisco process families installed under Cisco paths."
+  use_when:
+    - "Building endpoint context around Cisco Secure Endpoint or Cisco Secure Client presence."
+    - "Checking whether expected Cisco user-mode or service processes are running."
+    - "Preparing a broader health, posture, or product-context investigation."
+  do_not_use_when:
+    - "The goal is installation inventory rather than running process state; use programs, services, registry, or file inventory methods."
+    - "The goal is cryptographic verification; add hash or authenticode joins after scoping."
+    - "The goal is historical execution after the process exited."
+  does_not_answer:
+    - "Whether a Cisco product is fully healthy."
+    - "Whether a binary is signed or untampered."
+    - "Whether endpoints that did not answer have Cisco processes."
+  preferred_next_queries:
+    - "Cisco services inventory."
+    - "Cisco installed products from registry or programs."
+    - "Hash/authenticode verification for Cisco executable paths."
+    - "Cisco process network connections."
+
+catalog_context:
+  searched_terms:
+    - "Cisco"
+    - "processes"
+    - "path like \"%cisco%\""
+  matches:
+    - name: "Organization catalog query showing Secure Endpoint / Secure Client running processes"
+      id: ""
+      source: "organization_catalog"
+      relevance: "Existing organization query uses the processes table and filters path like \"%cisco%\" to show Cisco-related running processes."
+      os:
+        - "windows"
+      category: "software"
+      mitre: []
+      updated: ""
+    - name: "SHA256 Hash Of Running Processes"
+      id: "process_hashes"
+      source: "stock_catalog"
+      relevance: "Cisco-managed catalog context for running process enumeration and optional hash enrichment."
+      os:
+        - "windows"
+        - "darwin"
+        - "linux"
+      category: "live-acquisition-of-volatile-data"
+      mitre: []
+      updated: "2023-11-14T17:51:59.150055646Z"
+  notes:
+    - "The organization catalog example uses path like \"%cisco%\" and memory columns. This method adds system_info host identity for cross-endpoint output."
+
+catalog_table_context:
+  - table: "processes"
+    matches:
+      - name: "SHA256 Hash Of Running Processes"
+        id: "process_hashes"
+        source: "stock_catalog"
+        relevance: "Process inventory source table for currently running process name, path, command line, and state."
+        os:
+          - "windows"
+          - "darwin"
+          - "linux"
+        categories:
+          - id: "live-acquisition-of-volatile-data"
+            title: "Live Acquisition Of Volatile Data"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+    notes:
+      - "No MITRE mapping was present for the matching stock process-hash catalog entry."
+  - table: "system_info"
+    matches:
+      - name: "Inventory System Information"
+        id: "system_info"
+        source: "stock_catalog"
+        relevance: "Adds hostname and UUID for cross-endpoint display."
+        os:
+          - "windows"
+          - "darwin"
+          - "linux"
+        categories:
+          - id: "posture-assessment"
+            title: "Posture Assessment"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+    notes:
+      - "No MITRE mapping was present for the matching system_info catalog entry."
+
+related_table_ttp_context:
+  - table: "processes"
+    source: "Orbital stock catalog entries that use this table"
+    caution: "Related TTP context helps future process-query design; it does not mean this Cisco-path query detects every listed TTP."
+    categories:
+      - id: "threat-hunting"
+        title: "Threat Hunting"
+      - id: "posture-assessment"
+        title: "Posture Assessment"
+      - id: "live-acquisition-of-volatile-data"
+        title: "Live Acquisition Of Volatile Data"
+    mitre:
+      tactics:
+        - id: "TA0002"
+          title: "Execution"
+        - id: "TA0005"
+          title: "Defense Evasion"
+      techniques:
+        - id: "T1036"
+          title: "Masquerading"
+        - id: "T1055"
+          title: "Process Injection"
+      subtechniques: []
+    example_catalog_entries:
+      - name: "Processes With Network Connections"
+        id: "processes_with_network_connections"
+        relevance: "Useful follow-up to see Cisco processes with network sockets."
+
+osquery_context:
+  tables:
+    - name: "processes"
+      columns:
+        - "pid"
+        - "name"
+        - "path"
+        - "cmdline"
+        - "state"
+        - "start_time"
+      platform_notes:
+        - "The processes table is current-state only."
+        - "Path filtering is low impact compared with broad file or hash collection."
+    - name: "system_info"
+      columns:
+        - "hostname"
+        - "uuid"
+      platform_notes:
+        - "Used to identify the endpoint for each process row."
+  joins:
+    - "CROSS JOIN system_info si"
+  constraints:
+    - "Use lower(p.path) LIKE '%cisco%' for case-insensitive matching."
+
+orbital_guidance:
+  preferred_query_type: "live_query"
+  allow_os:
+    - "windows"
+  target_selector_guidance:
+    - "Use nodes [\"os:windows\"] when continuing Windows endpoint context."
+    - "For cross-platform Cisco process context, validate path patterns for macOS and Linux separately."
+  broad_targeting_risk:
+    level: "low"
+    notes:
+      - "The query is current-state and scoped to processes whose executable path contains Cisco."
+      - "The result set can still be large because multiple Cisco components may run per endpoint."
+
+sql_patterns:
+  - name: "Cisco-path running process lookup"
+    description: "Return Cisco-related running process rows with endpoint identity."
+    sql: |
+      SELECT
+        si.hostname AS host,
+        si.uuid AS uuid,
+        p.pid,
+        p.name AS process_name,
+        p.path AS process_path,
+        p.cmdline AS command_line,
+        p.state,
+        datetime(p.start_time, 'unixepoch', 'UTC') AS started_utc
+      FROM processes p
+      CROSS JOIN system_info si
+      WHERE lower(p.path) LIKE '%cisco%'
+      ORDER BY si.hostname, p.name, p.pid;
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: true
+  live_query_tested: true
+  notes:
+    - "Column names were checked against osquery 5.23.0 schema."
+    - "Live-tested against Windows OS targeting on 2026-06-11. Endpoint result rows are intentionally not stored."
+
+lessons:
+  - date: "2026-06-11"
+    note: "For Cisco Secure Endpoint context, path-based process filtering surfaces Secure Endpoint, Secure Client, Orbital, and other Cisco components in one current-state query."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<uuid>"
+    - "<path>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

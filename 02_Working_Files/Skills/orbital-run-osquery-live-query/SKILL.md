@@ -28,6 +28,14 @@ Important ID distinction:
 - `orbital_queryID`: the `ID` returned by `POST /v0/query/run`. It identifies the cloud-stored query/job and is used with `GET /v0/jobs/{{orbital_queryID}}` and `GET /v0/jobs/{{orbital_queryID}}/results`.
 - `queryId:<id>`: a target selector in the `nodes` array that reuses an existing query definition. It is not the same as `orbital_queryID`.
 
+Operational run ledger:
+
+- Every future live-query submission must persist the returned `orbital_queryID` / job ID before attempting result interpretation.
+- The project helper writes live-query run metadata to `local/orbital_query_runs/live_query_runs.jsonl` by default. This path is ignored by git and is for operational follow-up only.
+- The ledger may include job ID, label, query name, target selectors, SQL hash, API status, and job/status check metadata.
+- Do not store endpoint result rows in the ledger or method memory.
+- If the API response does not expose a job ID, record that fact in the ledger and report that job status cannot be checked from Codex without the ID visible in Orbital UI/API.
+
 ## Project Context Checks
 
 When inside this Orbital workspace, read these files as needed:
@@ -87,6 +95,7 @@ If the output shows `CODEX_SANDBOX_NETWORK_DISABLED=1` or socket calls fail with
 12. Run `scripts/run_live_query.py`.
 13. After completion, always report:
    - `orbital_queryID` from the response `ID` field if the API returned one
+   - whether the helper stored the run in `local/orbital_query_runs/live_query_runs.jsonl`
    - how many endpoints answered
    - row count
    - target metadata/timestamp if useful
@@ -95,14 +104,15 @@ If the output shows `CODEX_SANDBOX_NETWORK_DISABLED=1` or socket calls fail with
 14. If `orbital_queryID` is available, explain that Orbital stores the query in the cloud and it can be checked later through:
    - `GET /v0/jobs/{{orbital_queryID}}`
    - `GET /v0/jobs/{{orbital_queryID}}/results`
-15. When waiting for a query to finish, do not execute the same live query again and do not use `queryId:` for monitoring. Use the returned `orbital_queryID` and monitor status/results with `/v0/jobs/{{orbital_queryID}}` or `/v0/jobs/{{orbital_queryID}}/results`.
+15. When waiting for a query to finish, do not execute the same live query again and do not use `queryId:` for monitoring. Use the stored `orbital_queryID` and monitor status/results with `/v0/jobs/{{orbital_queryID}}` or `/v0/jobs/{{orbital_queryID}}/results`.
 16. Default waiting behavior after a new query returns `orbital_queryID`:
    - wait 10 seconds, then call `GET /v0/jobs/{{orbital_queryID}}`
    - show how many endpoints responded, using `done_count` when present
    - check at most until 20 seconds after submission
    - if `done_count` does not increase between checks, stop waiting and show a message with the `orbital_queryID`
    - if the 20 second maximum is reached, stop waiting and show a message with the `orbital_queryID`
-17. If the SQL/table/caveat pattern is reusable, ask whether to save or update it through `orbital-query-method-memory`. Save only the method, not endpoint result rows or tenant-specific output.
+17. For expensive tables such as `process_memory_map`, `hash`, `authenticode`, broad `file`, or event/log tables, never rerun the same query to validate execution. First check the stored job ID. If no job ID was captured, ask the user for the visible Orbital Query ID/job ID from the UI/API before issuing another endpoint query.
+18. If the SQL/table/caveat pattern is reusable, ask whether to save or update it through `orbital-query-method-memory`. Save only the method, not endpoint result rows or tenant-specific output.
 
 ## Live Query Helper Script
 
@@ -200,6 +210,8 @@ The helper emits JSON:
 - `targets`: target selectors submitted to Orbital.
 - `orbital_queryID`: Orbital query ID from the API response `ID` field. Show this in user-facing output so the user can verify the same query in Postman or another API client.
 - `response_id`: compatibility alias for `orbital_queryID`.
+- `run_ledger`: local JSONL path where operational run metadata was recorded. This is ignored by git and must not contain endpoint rows.
+- `job_check_status`: reason why job status could not be checked, when no job ID was exposed.
 - `answered_endpoint_count`: number of endpoint result objects returned by Orbital.
 - `job_status_polls`: short `/v0/jobs/{{orbital_queryID}}` status checks after submission, including `done_count` when present.
 - `wait_status`: why Codex stopped waiting. If progress stalls or 20 seconds is reached, use the `orbital_queryID` for follow-up instead of rerunning.

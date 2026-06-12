@@ -1,5 +1,5 @@
-title: "Find running sfc.exe processes on Windows"
-status: "draft"
+title: "Find running or missing sfc.exe processes on Windows"
+status: "tested"
 created: "2026-06-10"
 updated: "2026-06-10"
 
@@ -7,6 +7,7 @@ investigation_inputs:
   source_type: "analyst_question"
   examples:
     - "Query running processes from Windows endpoints only for process name sfc.exe. Show PID, process name, path, and command line, ordered by computer name."
+    - "Query all Windows endpoints and show endpoints where no sfc.exe process is running."
   keywords:
     - "sfc.exe"
     - "running process"
@@ -19,9 +20,10 @@ investigation_inputs:
       - "windows"
 
 query_goal:
-  question: "Identify currently running sfc.exe processes on Windows endpoints and show process execution context."
+  question: "Identify Windows endpoints where sfc.exe is currently running, or invert the check to show endpoints where sfc.exe is not running."
   expected_information:
     - "computer name"
+    - "endpoint current-state status"
     - "process id"
     - "process name"
     - "executable path"
@@ -29,6 +31,7 @@ query_goal:
   not_for:
     - "Historical process execution after sfc.exe has exited."
     - "Validating file hash or signature; use a hash/authenticode method for that."
+    - "Determining why an endpoint did not answer the live query; use Orbital job/target metadata for response coverage."
 
 catalog_context:
   searched_terms:
@@ -170,6 +173,7 @@ osquery_context:
   joins: []
   constraints:
     - "Filter by lower(name) = 'sfc.exe' to avoid returning every running process."
+    - "Use NOT EXISTS with system_info when the analyst needs one row for each responding endpoint where sfc.exe is absent."
 
 orbital_guidance:
   preferred_query_type: "live_query"
@@ -197,19 +201,37 @@ sql_patterns:
       FROM processes
       WHERE lower(name) = 'sfc.exe'
       ORDER BY computer_name ASC;
+  - name: "sfc.exe not-running endpoint lookup"
+    description: "Return one row per responding Windows endpoint where no current sfc.exe process is visible."
+    sql: |
+      SELECT
+        si.hostname AS host,
+        si.uuid AS uuid,
+        'sfc.exe_not_running' AS status
+      FROM system_info si
+      WHERE NOT EXISTS (
+        SELECT 1
+        FROM processes p
+        WHERE lower(p.name) = 'sfc.exe'
+           OR lower(p.path) LIKE '%\sfc.exe'
+      )
+      ORDER BY si.hostname;
 
 validation:
   osquery_schema_checked: true
   orbital_catalog_checked: true
-  live_query_tested: false
+  live_query_tested: true
   notes:
-    - "Column names were checked against the osquery 5.23.0 schema. Live execution has not been run from this method record."
+    - "Column names were checked against the osquery 5.23.0 schema."
+    - "The not-running inverse pattern was live-tested against Windows OS targeting on 2026-06-11. Endpoint result rows are intentionally not stored."
 
 lessons:
   - date: "2026-06-10"
     note: "For cross-endpoint display, include computer_name even when the requested table focuses on process fields."
   - date: "2026-06-10"
     note: "User update: querying the osquery processes table generates low performance impact on the endpoint."
+  - date: "2026-06-11"
+    note: "For absence checks, anchor the query on system_info and use NOT EXISTS against processes so responding endpoints without the process return a row."
 
 privacy:
   stores_endpoint_results: false

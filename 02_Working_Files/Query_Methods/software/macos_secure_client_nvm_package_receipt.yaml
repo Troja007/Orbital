@@ -1,0 +1,167 @@
+title: "Check macOS Cisco Secure Client NVM package receipt"
+status: "tested"
+created: "2026-06-12"
+updated: "2026-06-12"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Check whether the Cisco Secure Client NVM module is installed on macOS endpoints."
+    - "Query macOS package receipts for Cisco Network Visibility Module."
+    - "Find macOS Secure Client Network Visibility Module package version."
+  raw_input_handling:
+    store_raw_chat: false
+    sanitization_required: true
+    notes:
+      - "Store reusable module-installation wording only; do not store endpoint-specific output."
+  keywords:
+    - "Cisco Secure Client"
+    - "Network Visibility Module"
+    - "NVM"
+    - "macOS"
+    - "package_receipts"
+    - "package receipt"
+    - "installed module"
+  threat_context:
+    category: "software"
+    platforms:
+      - "macos"
+
+query_goal:
+  question: "Determine whether Cisco Secure Client Network Visibility Module appears installed on macOS by package receipt."
+  expected_information:
+    - "module label"
+    - "installation status"
+    - "package identifier"
+    - "installed package version"
+  answers:
+    - "Whether a macOS endpoint has a Cisco package receipt that matches NVM or Network Visibility."
+    - "Which matching package identifier and version should be used as installation evidence."
+  use_when:
+    - "An analyst needs a lightweight macOS installation check for the Secure Client NVM module."
+    - "A macOS endpoint inventory question can be answered from package receipts."
+    - "No macOS endpoint is currently available for live validation, but the method should be available for future use."
+  do_not_use_when:
+    - "The analyst needs to prove the NVM service is currently running or healthy."
+    - "The package was installed without a standard macOS receipt or the receipt database is incomplete."
+    - "The target platform is Windows or Linux."
+  does_not_answer:
+    - "Whether NVM is actively collecting telemetry."
+    - "Whether Secure Client is connected or policy-compliant."
+    - "Whether the NVM process or service is running."
+  not_for:
+    - "Runtime health checks without process, launch daemon, service, or log follow-up."
+  preferred_next_queries:
+    - "Use macOS process or launch daemon checks to confirm runtime state."
+    - "Use file or app bundle inventory if package receipts are missing or ambiguous."
+    - "Use Cisco Secure Client process/path inventory methods for current process context."
+
+catalog_context:
+  searched_terms:
+    - "package_receipts"
+    - "package receipt"
+    - "Cisco Secure Client"
+    - "Network Visibility Module"
+    - "NVM"
+  matches: []
+  notes:
+    - "No exact Orbital Catalog query match for package_receipts or macOS NVM package receipts was found in the local stock or organization catalog files during this update."
+
+catalog_table_context:
+  - table: "package_receipts"
+    matches: []
+    notes:
+      - "No exact Orbital Catalog category or MITRE mapping was found locally for package_receipts."
+      - "Use osquery schema context for table and column validation until Orbital Catalog context is added."
+
+related_table_ttp_context:
+  - table: "package_receipts"
+    source: "Local Orbital Catalog search"
+    caution: "No related MITRE TTP context was found for this table in the local catalog sources. Do not infer detection coverage from this software inventory query."
+    categories: []
+    mitre:
+      tactics: []
+      techniques: []
+      subtechniques: []
+    example_catalog_entries: []
+
+osquery_context:
+  tables:
+    - name: "package_receipts"
+      columns:
+        - "package_id"
+        - "version"
+        - "install_time"
+      platform_notes:
+        - "Upstream osquery 5.23.0 describes package_receipts as macOS package receipt details."
+        - "The requested SQL only reads package receipt metadata and should be treated as a macOS-only software inventory check."
+  joins: []
+  constraints:
+    - "Filter package_id to Cisco packages and NVM or Network Visibility wording."
+    - "Order by install_time descending and limit to one newest matching receipt."
+
+orbital_guidance:
+  preferred_query_type: "live_query"
+  allow_os:
+    - "darwin"
+  target_selector_guidance:
+    - "Use explicit macOS endpoint selectors for validation when a macOS endpoint is available."
+    - "For broad macOS checks, use an OS selector or allowOS/darwin filter and confirm scope first."
+    - "Do not run this against Windows or Linux targets."
+  broad_targeting_risk:
+    level: "low"
+    notes:
+      - "The query reads macOS package receipt metadata with restrictive package_id filters and LIMIT 1."
+      - "No live execution was performed during this update because no macOS endpoint was available."
+
+sql_patterns:
+  - name: "macOS Cisco Secure Client NVM package receipt"
+    description: "Return the newest Cisco package receipt that indicates NVM or Network Visibility Module installation."
+    sql: |
+      SELECT
+        'Cisco Network Visibility Module' AS module,
+        'Installed' AS status,
+        package_id,
+        version
+      FROM package_receipts
+      WHERE LOWER(package_id) LIKE '%cisco%'
+        AND (
+          LOWER(package_id) LIKE '%nvm%'
+          OR LOWER(package_id) LIKE '%network%visibility%'
+        )
+      ORDER BY install_time DESC
+      LIMIT 1;
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: true
+  live_query_tested: false
+  notes:
+    - "User stated the query works for checking whether the Secure Client NVM module is installed on macOS."
+    - "Validated package_receipts, package_id, version, and install_time against the local upstream osquery 5.23.0 schema."
+    - "No live query was executed because no macOS system was running."
+    - "No exact local Orbital Catalog match, category, or MITRE mapping was found for package_receipts."
+
+lessons:
+  - date: "2026-06-12"
+    note: "Use package_receipts for a lightweight macOS package-installation check when verifying Secure Client NVM presence."
+  - date: "2026-06-12"
+    note: "A package receipt proves installation evidence, not runtime health; follow up with process, launch daemon, file, or service checks if operational state matters."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<package_id>"
+    - "<version>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"
