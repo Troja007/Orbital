@@ -1,6 +1,6 @@
 ---
 name: github-sync-workflow
-description: Pull, push, import, export, publish, or reconcile project content with GitHub. Use when Codex needs to sync a local workspace with a GitHub repository, commit and push changes, pull remote changes, recover from authentication failures such as SSH publickey or HTTPS token prompts, use the GitHub connector as a fallback publishing path, verify where moved content appears on GitHub, or align local Git metadata after connector-based updates.
+description: Pull, push, import, export, publish, or reconcile project content with GitHub. Use when Codex needs to sync a local workspace with a GitHub repository, commit and push changes, pull remote changes, recover from authentication failures such as SSH publickey or HTTPS token prompts, use the GitHub connector as a fallback publishing path, verify where moved content appears on GitHub, align local Git metadata after connector-based updates, or list all files that will be uploaded, downloaded, or modified before a sync starts.
 ---
 
 # GitHub Sync Workflow
@@ -15,13 +15,51 @@ Use this skill to move content between a local Codex workspace and GitHub withou
 - Use `rg`, `git status --short --branch`, `git log --oneline --decorate -5`, `git remote -v`, and `git check-ignore` to understand the sync surface.
 - Prefer normal Git operations when local credentials work. Use the GitHub connector when terminal push fails or when the user wants to avoid local credentials.
 - After connector-based publishing, reconcile local metadata because local Git may still think it is ahead, behind, or diverged.
+- Before starting any sync that changes local files or GitHub, list the exact files expected to be uploaded, downloaded, deleted, or modified.
+
+## Mandatory File Preview
+
+Before running a pull, push, connector publish, temporary-clone publish, rebase, merge, reset, or any other sync step that changes local files or GitHub, show a concise file preview.
+
+For uploads to GitHub, list files by status from local Git:
+
+```bash
+git status --short
+git diff --name-status
+git diff --cached --name-status
+git ls-files --others --exclude-standard
+```
+
+Group the preview as:
+
+- `Upload/new`: untracked or newly staged files that will be added to GitHub.
+- `Upload/modified`: tracked files that will be changed on GitHub.
+- `Upload/deleted`: tracked files that will be removed from GitHub.
+- `Local-only ignored`: relevant ignored files that will not be uploaded, especially credentials, local runtime state, raw tenant snapshots, or Git metadata.
+
+For downloads from GitHub, fetch first when network access is available, then list incoming remote changes before merging, rebasing, resetting, or pulling:
+
+```bash
+git fetch origin <branch>
+git diff --name-status HEAD..origin/<branch>
+```
+
+Group the preview as:
+
+- `Download/new`: files that will appear locally.
+- `Download/modified`: local files that will be changed by the remote.
+- `Download/deleted`: local files that will be removed by the remote.
+
+For operations that both download and upload, show both previews before making changes. If a preview includes generated files, large reference files, public context, or reusable skills, still list them explicitly. If any file looks private or ambiguous, pause and inspect or ask before syncing.
 
 ## Standard Pull
 
 1. Confirm the working tree state with `git status --short --branch`.
-2. If clean, fetch and pull the tracked branch.
-3. If dirty, identify changed files and protect user edits before pulling.
-4. After pulling, report the new branch state and any visible content moves.
+2. Fetch the tracked branch.
+3. Show the mandatory download preview with `git diff --name-status HEAD..origin/<branch>`.
+4. If clean, pull, merge, or fast-forward the tracked branch.
+5. If dirty, identify changed files and protect user edits before pulling.
+6. After pulling, report the new branch state and any visible content moves.
 
 Use exact dates or commit hashes when explaining what changed.
 
@@ -29,10 +67,12 @@ Use exact dates or commit hashes when explaining what changed.
 
 1. Review pending changes with `git status --short`, `git diff --stat`, and targeted diffs.
 2. Check ignored/secret-sensitive paths before staging.
-3. Stage only intended files.
-4. Commit with a clear message.
-5. Push the current branch.
-6. Verify GitHub contains the expected files using the GitHub connector or a fetch.
+3. Show the mandatory upload preview before staging or committing. Include untracked files that will be added.
+4. Stage only intended files.
+5. Show the staged upload preview with `git diff --cached --name-status`.
+6. Commit with a clear message.
+7. Push the current branch.
+8. Verify GitHub contains the expected files using the GitHub connector or a fetch.
 
 If the push fails with `Permission denied (publickey)`, `could not read Username`, token prompts, or similar credential errors, do not keep retrying blindly. Switch to the connector fallback if available.
 
@@ -141,16 +181,18 @@ Important handling notes:
 Use this when the main workspace has restricted Git metadata, for example a redirected `.git` file pointing to a local metadata backup that the sandbox cannot write.
 
 1. Create a temporary clone under `/tmp`.
-2. Copy only the intended, sanitized files into the temporary clone.
-3. Commit there with the repo's existing author identity if needed.
-4. Push from the temporary clone after `gh` HTTPS authentication is working.
-5. Verify the remote branch moved with:
+2. Before copying, list every file that will be copied into the temporary clone and every ignored/local file that will be excluded.
+3. Copy only the intended, sanitized files into the temporary clone.
+4. In the temporary clone, show `git status --short` and `git diff --name-status` before committing.
+5. Commit there with the repo's existing author identity if needed.
+6. Push from the temporary clone after `gh` HTTPS authentication is working.
+7. Verify the remote branch moved with:
 
 ```bash
 git ls-remote https://github.com/<owner>/<repo>.git refs/heads/<branch>
 ```
 
-6. Check the commit through GitHub or fetch it locally.
+8. Check the commit through GitHub or fetch it locally.
 
 After a temporary-clone push, the main project folder can still show the same files as uncommitted because its local metadata did not create the pushed commit. Reconcile the main workspace carefully after confirming GitHub has the expected commit.
 
@@ -159,12 +201,14 @@ After a temporary-clone push, the main project folder can still show the same fi
 Use the GitHub connector when local push cannot authenticate but the connector has access.
 
 1. Confirm the remote repository and current remote branch head.
-2. Build the intended GitHub tree from the local tracked content only.
-3. Exclude ignored local content such as `.env`, `.codex/`, `skills/`, `local/`, `.DS_Store`, SQLite files, and generated tenant-specific snapshots unless the user explicitly wants them.
-4. Create blobs or tree entries through the connector.
-5. Create a commit whose parent is the current remote branch head.
-6. Update the branch ref without force unless the user explicitly approved force-push behavior.
-7. Verify representative files on GitHub after the update.
+2. Show the mandatory upload preview for the files that will be represented in the connector tree.
+3. Build the intended GitHub tree from the local tracked content only.
+4. Exclude ignored local content such as `.env`, `.codex/`, `skills/`, `local/`, `.DS_Store`, SQLite files, and generated tenant-specific snapshots unless the user explicitly wants them.
+5. Before creating the commit, list connector-tree file paths that will be added, modified, deleted, or moved relative to the remote branch head.
+6. Create blobs or tree entries through the connector.
+7. Create a commit whose parent is the current remote branch head.
+8. Update the branch ref without force unless the user explicitly approved force-push behavior.
+9. Verify representative files on GitHub after the update.
 
 For large file sets, create trees in chunks and carry the returned tree SHA into the next chunk. Report the final commit link.
 
