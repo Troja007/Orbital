@@ -14,17 +14,26 @@ Source of truth:
 
 | Method | Status | Category | Platforms | Tables | Primary Catalog Context | Orbital Catalog Categories | MITRE TTP Summary |
 |---|---:|---|---|---|---|---|---|
+| Inventory Orbital computer names | tested | orbital_health | cross-platform | `system_info` | `Inventory System Information` / `system_info` | `Posture Assessment`; related `Forensics`, `Live Acquisition Of Volatile Data` | related `TA0005` |
+| Inventory endpoint operating systems | tested | orbital_health | cross-platform | `os_version`, `system_info` | `Operating System Attributes` / `os_info`; `Inventory System Information` / `system_info` | `Posture Assessment`; `Forensics`; `Live Acquisition Of Volatile Data` | related `TA0002`, `TA0004`, `TA0005`, `TA0006`, `TA0007`, `TA0008`, `T1068`, `T1082`, `T1135`, `T1203`, `T1210`, `T1212` |
+| Multiple SQL statements in Orbital catalog and API requests | validated | orbital_catalog | cross-platform | `processes`, `arp_cache` in sanitized example | redacted organization catalog example; Cisco DevNet request schema context | not applicable | not applicable |
 | Check endpoints for non-default hosts file entries | tested | network | cross-platform | `etc_hosts`, `system_info` | `Hosts File Monitoring` / `etc_hosts_monitoring` | `Posture Assessment`; related `Forensics`, `Live Acquisition Of Volatile Data` | `TA0011`, `T1008`, `T1102` |
 | Query Windows endpoint DNS cache | tested | network | Windows | `dns_cache`, `system_info` | `DNS Cache Monitoring` / `dns_cache_table_monitoring` | catalog context stored in method record | catalog context stored in method record |
 | Query Windows port 443 network connections | tested | network | Windows | `process_open_sockets`, `processes`, `system_info` | `Process Socket Search` / `established_network_connections_search`; `Processes With Network Connections` / `processes_with_network_connections` | `Threat Hunting`; `Posture Assessment`; `Live Acquisition Of Volatile Data` | `TA0011`, `T1102`, `T1219`, `T1071`, `T1571` |
+| Query Cisco Secure Endpoint Host Based Firewall events and communication on Windows | tested | network | Windows | `windows_eventlog`, `process_open_sockets`, `processes`, `windows_firewall_rules` | local custom firewall event queries; organization CiscoSecureEndpoint/Events query context; Windows port 443 method | `Network`; related `Threat Hunting`, `Live Acquisition Of Volatile Data` | related `TA0011`, `T1071`, `T1571` |
 | Check macOS Cisco Secure Client NVM package receipt | tested | software | macOS | `package_receipts` | No exact local Orbital Catalog match found | No exact local catalog category found | No exact local MITRE mapping found |
-| Inventory Orbital computer names | tested | orbital_health | cross-platform | `system_info` | `Inventory System Information` / `system_info` | `Posture Assessment`; related `Forensics`, `Live Acquisition Of Volatile Data` | related `TA0005` |
-| Inventory endpoint operating systems | tested | orbital_health | cross-platform | `os_version`, `system_info` | `Operating System Attributes` / `os_info`; `Inventory System Information` / `system_info` | `Posture Assessment`; `Forensics`; `Live Acquisition Of Volatile Data` | related `TA0002`, `TA0004`, `TA0005`, `TA0006`, `TA0007`, `TA0008`, `T1068`, `T1082`, `T1135`, `T1203`, `T1210`, `T1212` |
+| Verify Cisco Secure Endpoint presence before querying Secure Endpoint event logs | draft | software | Windows | `processes`, `programs`, `services`, `file`, `registry`, `windows_eventlog` | `Installed Programs Search` / `installed_programs_param_search`; local `sfc.exe` and Cisco-path process methods | `Posture Assessment`; `Live Acquisition Of Volatile Data` | no exact MITRE mapping; related table context only |
 | Running process SHA256 from catalog | draft | suspicious_processes | cross-platform | `processes`, `hash` | `SHA256 Hash Of Running Processes` / `process_hashes` | `Live Acquisition Of Volatile Data`; related `Threat Hunting`, `Posture Assessment`, `Forensics` | related process/hash TTP context stored in method record |
-| Windows `sfc.exe` running process lookup | draft | suspicious_processes | Windows | `processes`, `system_info` | organization process patterns; related `process_hashes`; `system_info` | `Threat Hunting`; `Posture Assessment`; `Live Acquisition Of Volatile Data` | related `TA0002`, `TA0004`, `TA0005`, `TA0011`, `T1036`, `T1055`, `T1055.012`, `T1071`, `T1102`, `T1219`, `T1571` |
+| Windows `sfc.exe` running process lookup | tested | suspicious_processes | Windows | `processes`, `system_info` | organization process patterns; related `process_hashes`; `system_info` | `Threat Hunting`; `Posture Assessment`; `Live Acquisition Of Volatile Data` | related `TA0002`, `TA0004`, `TA0005`, `TA0011`, `T1036`, `T1055`, `T1055.012`, `T1071`, `T1102`, `T1219`, `T1571` |
 | Windows Cisco path running processes | tested | suspicious_processes | Windows | `processes`, `system_info` | organization Secure Endpoint / Secure Client process context | see method record | see method record |
 | Windows Secure Endpoint Exploit Prevention protector DLL | tested | suspicious_processes | Windows | see method record | see method record | see method record | see method record |
-| Multiple-SQL custom catalog entry handling | draft | orbital_catalog | unknown | see method record | custom catalog handling context | see method record | see method record |
+
+Report sync notes:
+
+- The index now reflects all YAML method records currently stored under `02_Working_Files/Query_Methods/`.
+- Added the missing Secure Endpoint Host Based Firewall event/communication method.
+- Added the missing Secure Endpoint presence pre-check method.
+- Updated stale statuses for the `sfc.exe` method and the multiple-SQL catalog/API method.
 
 ## New Knowledge Added On 2026-06-12
 

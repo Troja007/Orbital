@@ -92,7 +92,7 @@ RESPONSE_ID_HEADERS = {
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run a Cisco Orbital live osquery query against explicit target selectors."
+        description="Run a Cisco Orbital osquery query against explicit target selectors."
     )
     parser.add_argument(
         "--job-id",
@@ -117,7 +117,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--run-ledger",
         default="local/orbital_query_runs/live_query_runs.jsonl",
-        help="JSONL ledger for live query job IDs and status metadata. Stores no endpoint rows.",
+        help="JSONL ledger for query job IDs and status metadata. Stores no endpoint rows.",
+    )
+    parser.add_argument(
+        "--scheduled",
+        action="store_true",
+        help="Create a scheduled query with POST /query. Host/hostname targets use this mode by default.",
+    )
+    parser.add_argument(
+        "--live",
+        action="store_true",
+        help="Force a live query with POST /query/run instead of the default scheduled mode for host targets.",
     )
     parser.add_argument(
         "--target",
@@ -132,11 +142,16 @@ def parse_args() -> argparse.Namespace:
         help="Deprecated convenience input. Hostname without prefix; converted to host:<value>. Can be repeated.",
     )
     parser.add_argument("--label", default="", help="Orbital osQuery label.")
-    parser.add_argument("--name", default="", help="Live query display name.")
+    parser.add_argument("--name", default="", help="Query display name.")
     parser.add_argument("--sql-file", default="", help="File containing SQL. Defaults to stdin.")
     parser.add_argument("--env-file", default="02_Working_Files/orbital_credentials.env")
     parser.add_argument("--region", default="", help="Override ORBITAL_REGION.")
     parser.add_argument("--expiry-minutes", default="2")
+    parser.add_argument(
+        "--interval-seconds",
+        default="0",
+        help="Scheduled query interval in seconds. Default 0 creates a one-shot scheduled query.",
+    )
     parser.add_argument("--timeout", type=int, default=180)
     parser.add_argument(
         "--no-status-poll",
@@ -309,6 +324,10 @@ def normalize_targets(args: argparse.Namespace) -> list[str]:
     if not deduped:
         raise RuntimeError("No target selectors provided. Use --target or --host.")
     return deduped
+
+
+def uses_host_target(targets: list[str]) -> bool:
+    return any(target.startswith("host:") or target.startswith("hostname:") for target in targets)
 
 
 def parse_rows(payload: dict) -> tuple[list[dict], list[dict]]:
@@ -604,6 +623,20 @@ def main() -> int:
         else:
             output["rows"] = rows
             output["raw_response"] = payload
+        append_run_ledger(
+            args.run_ledger,
+            {
+                "record_type": "orbital_existing_job_lookup",
+                "recorded_at": utc_now(),
+                "region": region,
+                "mode": "job_results" if args.job_results else "job_status",
+                "status": job_response["status"],
+                "orbital_queryID": args.job_id,
+                "answered_endpoint_count": len(meta),
+                "row_count": len(rows),
+                "summary_only": args.summary_only,
+            },
+        )
         print(json.dumps(output, indent=2))
         return 0
 
@@ -612,20 +645,30 @@ def main() -> int:
 
     sql = read_sql(args)
     targets = normalize_targets(args)
+    scheduled_mode = bool(args.scheduled or (uses_host_target(targets) and not args.live))
+    if args.live and args.scheduled:
+        raise RuntimeError("Use only one of --live or --scheduled.")
+    expiry_minutes = int(args.expiry_minutes)
+    interval_seconds = int(args.interval_seconds)
 
     body: dict[str, object] = {
         "name": args.name or args.label,
-        "expiryInMinutes": str(args.expiry_minutes),
         "nodes": targets,
         "osQuery": [{"label": args.label, "name": args.name or args.label, "sql": sql}],
     }
+    if scheduled_mode:
+        body["expiry"] = int(time.time()) + (expiry_minutes * 60)
+        body["interval"] = interval_seconds
+    else:
+        body["expiryInMinutes"] = str(args.expiry_minutes)
     if args.os:
         body["os"] = args.os
     if args.allow_os:
         body["allowOS"] = args.allow_os
 
+    api_path = "/query" if scheduled_mode else "/query/run"
     request = Request(
-        f"{SERVERS[region]}/query/run",
+        f"{SERVERS[region]}{api_path}",
         data=json.dumps(body).encode("utf-8"),
         headers={
             "authorization": f"Bearer {token}",
@@ -644,6 +687,8 @@ def main() -> int:
     output = {
         "status": status,
         "region": region,
+        "query_mode": "scheduled" if scheduled_mode else "live",
+        "api_path": api_path,
         "targets": targets,
         "submitted_sql": sql,
         "query_label": args.label,
@@ -657,9 +702,11 @@ def main() -> int:
         "rows": rows,
     }
     ledger_base = {
-        "record_type": "orbital_live_query_submission",
+        "record_type": "orbital_query_submission",
         "recorded_at": utc_now(),
         "region": region,
+        "query_mode": "scheduled" if scheduled_mode else "live",
+        "api_path": api_path,
         "status": status,
         "orbital_queryID": orbital_query_id,
         "query_label": args.label,
@@ -678,15 +725,17 @@ def main() -> int:
         output["raw_response"] = payload
     if not orbital_query_id:
         output["job_check_status"] = (
-            "Job status was not checked because the POST /query/run response did not expose a job ID. "
+            f"Job status was not checked because the POST {api_path} response did not expose a job ID. "
             "The submission was still recorded in the run ledger."
         )
         append_run_ledger(
             args.run_ledger,
             {
-                "record_type": "orbital_live_query_job_id_missing",
+                "record_type": "orbital_query_job_id_missing",
                 "recorded_at": utc_now(),
                 "region": region,
+                "query_mode": "scheduled" if scheduled_mode else "live",
+                "api_path": api_path,
                 "query_label": args.label,
                 "query_name": args.name or args.label,
                 "targets": targets,
@@ -711,6 +760,8 @@ def main() -> int:
                 "record_type": "orbital_live_query_job_status_check",
                 "recorded_at": utc_now(),
                 "region": region,
+                "query_mode": "scheduled" if scheduled_mode else "live",
+                "api_path": api_path,
                 "orbital_queryID": orbital_query_id,
                 "query_label": args.label,
                 "query_name": args.name or args.label,
@@ -730,6 +781,8 @@ def main() -> int:
                     "record_type": "orbital_live_query_job_results_check",
                     "recorded_at": utc_now(),
                     "region": region,
+                    "query_mode": "scheduled" if scheduled_mode else "live",
+                    "api_path": api_path,
                     "status": job_results["status"],
                     "orbital_queryID": orbital_query_id,
                     "query_label": args.label,

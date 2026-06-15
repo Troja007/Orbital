@@ -1,0 +1,436 @@
+title: "Check Cisco Secure Endpoint cloud connectivity and firewall allowlist context"
+status: "draft"
+created: "2026-06-15"
+updated: "2026-06-15"
+
+investigation_inputs:
+  source_type: "analyst_lesson"
+  examples:
+    - "Cisco Secure Endpoint needs properly configured firewall access to connect to the cloud."
+    - "Check whether Secure Endpoint can communicate with required Cisco cloud services."
+    - "Troubleshoot Secure Endpoint update, policy, event intake, or disposition connectivity."
+    - "Validate local endpoint evidence before escalating to network firewall/proxy teams."
+  raw_input_handling:
+    store_raw_chat: false
+    sanitization_required: true
+    notes:
+      - "Store reusable troubleshooting intent and source reference only, not raw chat history."
+  keywords:
+    - "Cisco Secure Endpoint"
+    - "AMP"
+    - "cloud connectivity"
+    - "firewall allowlist"
+    - "required server addresses"
+    - "TLS decryption"
+    - "proxy"
+    - "DNS"
+    - "port 443"
+    - "updates"
+    - "policy"
+    - "event intake"
+  threat_context:
+    category: "network"
+    platforms:
+      - "windows"
+
+cisco_product_knowledge:
+  source:
+    title: "Required Server Addresses for Proper Secure Endpoint and Malware Analytics"
+    vendor: "Cisco"
+    url: "https://www.cisco.com/c/en/us/support/docs/security/sourcefire-amp-appliances/118121-technote-sourcefire-00.html"
+    document_id: "118121"
+    source_updated: "2026-03-10"
+    checked_on: "2026-06-15"
+  facts:
+    - "Cisco Secure Endpoint connector product communication requires firewall access from connector/appliance to Cisco servers for updates, lookups, and reports."
+    - "Cisco recommends hostname-based firewall rules because IP addresses can change due to round-robin, load balancing, fault tolerance, and uptime architecture."
+    - "If hostname-based firewalling is not possible, all IP addresses listed in the Cisco TechNote must be permitted destinations."
+    - "Traffic toward Cisco servers must not be subjected to TLS decryption."
+    - "Secure Endpoint public-cloud locations include North America, Europe, and APJC/Japan."
+    - "Most required Secure Endpoint services use TCP 443; some definition/update services also use TCP 80; support sessions can use TCP 22."
+    - "Orbital cloud endpoints are documented separately in the same TechNote and use regional orbital, ncp.orbital, and update.orbital hostnames on TCP 443."
+  hostname_patterns:
+    north_america:
+      - "*.amp.cisco.com"
+    europe:
+      - "*.eu.amp.cisco.com"
+    apjc:
+      - "*.apjc.amp.cisco.com"
+  important_service_examples:
+    - purpose: "Disposition"
+      examples:
+        - "cloud-ec-asn.amp.cisco.com"
+        - "cloud-ec-est.amp.cisco.com"
+        - "enrolment.amp.cisco.com"
+      ports:
+        - "TCP 443"
+    - purpose: "Management, events, policy"
+      examples:
+        - "mgmt.amp.cisco.com"
+        - "intake.amp.cisco.com"
+        - "policy.amp.cisco.com"
+      ports:
+        - "TCP 443"
+    - purpose: "Connector downloads and updates"
+      examples:
+        - "upgrades.amp.cisco.com"
+      ports:
+        - "TCP 80"
+        - "TCP 443"
+    - purpose: "Definition updates"
+      examples:
+        - "tetra-defs.amp.cisco.com"
+        - "clam-defs.amp.cisco.com"
+        - "commercial.ocsp.identrust.com"
+        - "validation.identrust.com"
+      ports:
+        - "TCP 80"
+        - "TCP 443"
+    - purpose: "Orbital"
+      examples:
+        - "orbital.amp.cisco.com"
+        - "ncp.orbital.amp.cisco.com"
+        - "update.orbital.amp.cisco.com"
+        - "orbital.eu.amp.cisco.com"
+        - "ncp.orbital.eu.amp.cisco.com"
+        - "update.orbital.eu.amp.cisco.com"
+      ports:
+        - "TCP 443"
+
+non_cisco_operational_context:
+  facts:
+    - "Endpoint osquery data can show local symptoms and current state, but cannot fully prove upstream firewall, proxy, or TLS inspection policy."
+    - "Current socket tables are transient; no current Cisco socket does not prove failure."
+    - "DNS cache and hosts-file checks can reveal name resolution behavior or overrides, but not complete network reachability."
+    - "Native Windows Firewall rules are separate from enterprise perimeter firewall rules and separate from Cisco Secure Endpoint Host Based Firewall events."
+    - "TLS inspection failures often need proxy/firewall logs or packet/TLS diagnostics outside osquery."
+
+query_goal:
+  question: "What local endpoint evidence helps troubleshoot whether Cisco Secure Endpoint can reach required Cisco cloud services through firewall, DNS, proxy, and local network controls?"
+  expected_information:
+    - "Secure Endpoint process presence"
+    - "current outbound sockets to Cisco AMP/Secure Endpoint domains or required ports"
+    - "DNS cache entries for Cisco AMP/Secure Endpoint domains"
+    - "hosts-file overrides for Cisco domains"
+    - "local Windows Firewall profile and enabled rule context"
+    - "proxy-related registry context"
+  answers:
+    - "Shows local evidence relevant to Secure Endpoint cloud connectivity troubleshooting."
+    - "Highlights whether Cisco-related communication is visible on TCP 443 or TCP 80 at query time."
+    - "Finds local DNS cache or hosts-file context for Cisco cloud hostnames."
+    - "Separates endpoint-observable facts from upstream firewall/proxy requirements."
+  use_when:
+    - "Secure Endpoint appears installed but updates, policy, disposition, or event submission may not work."
+    - "A network team needs endpoint-side evidence before reviewing firewall/proxy allowlists."
+    - "An analyst asks whether Secure Endpoint cloud communication is blocked or misconfigured."
+    - "Troubleshooting Orbital connectivity that may rely on related Cisco cloud endpoint allowlists."
+  do_not_use_when:
+    - "The goal is to enumerate Cisco's complete authoritative allowlist; use the Cisco TechNote directly."
+    - "The goal is to prove enterprise firewall policy; use firewall/proxy management-plane evidence."
+    - "The endpoint is not Windows; adapt tables first for macOS/Linux."
+  does_not_answer:
+    - "Whether the upstream firewall or proxy is correctly configured."
+    - "Whether TLS decryption is happening in the network path."
+    - "Whether every required Cisco hostname or IP is allowed."
+    - "Whether Cisco cloud service status is healthy."
+  not_for:
+    - "Compliance attestation of network allowlists."
+    - "Replacing the official Cisco required-server-address document."
+  preferred_next_queries:
+    - "Verify Cisco Secure Endpoint presence before network troubleshooting."
+    - "Check Secure Endpoint Host Based Firewall event history if local product firewall policy may be involved."
+    - "Use process_open_sockets joined to processes for current network connections."
+    - "Escalate to firewall/proxy logs for definitive allow/deny and TLS inspection evidence."
+
+catalog_context:
+  searched_terms:
+    - "process_open_sockets"
+    - "dns_cache"
+    - "etc_hosts"
+    - "windows_firewall_rules"
+    - "windows_firewall_profiles"
+    - "proxy"
+    - "Secure Endpoint"
+  matches:
+    - name: "Windows port 443 connections"
+      id: "local_method:network/windows_port_443_connections"
+      source: "query_method_memory"
+      relevance: "Current-state socket method for observing outbound TCP 443 communication by process."
+      os:
+        - "windows"
+      category: "network"
+      mitre: []
+      updated: ""
+    - name: "Cisco Secure Endpoint Host Based Firewall events and communication"
+      id: "local_method:network/windows_secure_endpoint_firewall_events_and_communication"
+      source: "query_method_memory"
+      relevance: "Related method for CiscoSecureEndpoint/Events event IDs 1800/1801 when local Secure Endpoint firewall policy is relevant."
+      os:
+        - "windows"
+      category: "network"
+      mitre: []
+      updated: "2026-06-12"
+  notes:
+    - "Cisco hostname/port requirements are product context from the Cisco TechNote, not Orbital Catalog content."
+    - "This method stores troubleshooting technique only and no endpoint result rows."
+
+catalog_table_context:
+  - table: "process_open_sockets"
+    matches:
+      - name: "Windows port 443 connections"
+        id: "local_method:network/windows_port_443_connections"
+        source: "query_method_memory"
+        relevance: "Shows current sockets and required ports such as 443 and 80."
+        os:
+          - "windows"
+        categories:
+          - id: "network"
+            title: "Network"
+        mitre:
+          tactics:
+            - id: "TA0011"
+              title: "Command and Control"
+          techniques:
+            - id: "T1071"
+              title: "Application Layer Protocol"
+          subtechniques: []
+        updated: ""
+  - table: "dns_cache"
+    matches: []
+    notes:
+      - "Useful for recent name-resolution context for amp.cisco.com domains; cache evidence is transient."
+  - table: "etc_hosts"
+    matches: []
+    notes:
+      - "Useful for detecting local hosts-file overrides that could redirect or break Cisco hostname resolution."
+  - table: "windows_firewall_rules"
+    matches: []
+    notes:
+      - "Native Windows Firewall rules do not represent perimeter firewall/proxy policy."
+  - table: "registry"
+    matches: []
+    notes:
+      - "Can be used for Windows proxy configuration context under Internet Settings keys."
+
+related_table_ttp_context:
+  - table: "process_open_sockets"
+    source: "Orbital stock/catalog table context"
+    caution: "Network table MITRE mappings are contextual only; this method is operational troubleshooting, not threat detection."
+    categories:
+      - id: "network"
+        title: "Network"
+    mitre:
+      tactics:
+        - id: "TA0011"
+          title: "Command and Control"
+      techniques:
+        - id: "T1071"
+          title: "Application Layer Protocol"
+      subtechniques: []
+
+osquery_context:
+  tables:
+    - name: "process_open_sockets"
+      columns:
+        - "pid"
+        - "protocol"
+        - "local_address"
+        - "local_port"
+        - "remote_address"
+        - "remote_port"
+        - "state"
+      platform_notes:
+        - "Current-state only; sockets may be absent between connector communication cycles."
+    - name: "processes"
+      columns:
+        - "pid"
+        - "name"
+        - "path"
+        - "cmdline"
+      platform_notes:
+        - "Join to socket rows for process identity."
+    - name: "dns_cache"
+      columns:
+        - "name"
+        - "type"
+        - "flags"
+      platform_notes:
+        - "Windows availability depends on osquery build and permissions."
+    - name: "etc_hosts"
+      columns:
+        - "address"
+        - "hostnames"
+      platform_notes:
+        - "Cross-platform concept; use to detect local hostname overrides."
+    - name: "windows_firewall_rules"
+      columns:
+        - "name"
+        - "app_name"
+        - "action"
+        - "enabled"
+        - "direction"
+        - "protocol"
+        - "local_ports"
+        - "remote_ports"
+        - "remote_addresses"
+      platform_notes:
+        - "Native Windows Firewall rule inventory only."
+    - name: "registry"
+      columns:
+        - "key"
+        - "path"
+        - "name"
+        - "data"
+      platform_notes:
+        - "Use for proxy settings such as Internet Settings keys."
+  joins:
+    - "LEFT JOIN processes p ON p.pid = pos.pid for socket process enrichment."
+    - "CROSS JOIN system_info si when endpoint identity is needed."
+  constraints:
+    - "Use Windows-only targeting unless adapting platform-specific tables."
+    - "Use exact host targeting for triage."
+    - "Limit broad socket and firewall-rule queries."
+    - "Do not treat absence of current sockets as definitive network failure."
+
+orbital_guidance:
+  preferred_query_type: "scheduled_query"
+  schedule:
+    expiry_minutes: 2
+    interval_seconds: 0
+  allow_os:
+    - "windows"
+  target_selector_guidance:
+    - "Use host:<hostname> for troubleshooting a specific endpoint."
+    - "Use os:windows only after the target scope is explicitly approved."
+  broad_targeting_risk:
+    level: "medium"
+    notes:
+      - "Socket and firewall-rule data can be noisy across many endpoints."
+      - "DNS cache and registry queries are usually lower impact but can still produce environment-specific data."
+
+sql_patterns:
+  - name: "Current Cisco AMP/Secure Endpoint sockets"
+    description: "Shows current outbound sockets by Cisco-related processes or to common required ports. Reverse DNS is not guaranteed; use with DNS cache and firewall/proxy logs."
+    sql: |
+      SELECT
+        si.hostname AS host,
+        pos.pid,
+        p.name AS process_name,
+        p.path AS process_path,
+        pos.protocol,
+        pos.local_address,
+        pos.local_port,
+        pos.remote_address,
+        pos.remote_port,
+        pos.state
+      FROM process_open_sockets pos
+      LEFT JOIN processes p ON p.pid = pos.pid
+      CROSS JOIN system_info si
+      WHERE pos.remote_port IN (80, 443, 22)
+        AND (
+          lower(p.path) LIKE '%\cisco\amp\%'
+          OR lower(p.path) LIKE '%\cisco secure endpoint\%'
+          OR lower(p.path) LIKE '%\cisco\orbital\%'
+          OR lower(p.name) IN ('sfc.exe', 'cscm.exe', 'orbital.exe', 'osqueryd.exe')
+        )
+      ORDER BY si.hostname, pos.remote_port, p.name, pos.remote_address;
+  - name: "DNS cache entries for Cisco cloud service domains"
+    description: "Looks for recent endpoint DNS cache context for Cisco AMP/Secure Endpoint and Orbital domains."
+    sql: |
+      SELECT
+        name,
+        type,
+        flags
+      FROM dns_cache
+      WHERE lower(name) LIKE '%.amp.cisco.com'
+        OR lower(name) LIKE '%.eu.amp.cisco.com'
+        OR lower(name) LIKE '%.apjc.amp.cisco.com'
+        OR lower(name) IN (
+          'commercial.ocsp.identrust.com',
+          'validation.identrust.com',
+          'nimbus.bitdefender.net'
+        )
+      ORDER BY name;
+  - name: "Hosts-file overrides for Cisco cloud service domains"
+    description: "Finds local hosts-file entries that could override Cisco cloud hostname resolution."
+    sql: |
+      SELECT
+        address,
+        hostnames
+      FROM etc_hosts
+      WHERE lower(hostnames) LIKE '%amp.cisco.com%'
+        OR lower(hostnames) LIKE '%identrust.com%'
+        OR lower(hostnames) LIKE '%bitdefender.net%'
+      ORDER BY hostnames;
+  - name: "Local Windows Firewall rules touching Cisco paths or required ports"
+    description: "Checks native Windows Firewall rules that may affect Cisco Secure Endpoint, Orbital, or common required ports. This does not prove upstream firewall policy."
+    sql: |
+      SELECT
+        name,
+        app_name,
+        action,
+        enabled,
+        direction,
+        protocol,
+        local_ports,
+        remote_ports,
+        remote_addresses
+      FROM windows_firewall_rules
+      WHERE enabled = 1
+        AND (
+          lower(app_name) LIKE '%\cisco\%'
+          OR remote_ports IN ('80', '443', '22')
+          OR local_ports IN ('80', '443', '22')
+        )
+      ORDER BY direction, action, name
+      LIMIT 200;
+  - name: "Windows proxy configuration context"
+    description: "Collects common Windows proxy registry settings that may influence outbound cloud connectivity."
+    sql: |
+      SELECT
+        key,
+        name,
+        data
+      FROM registry
+      WHERE key LIKE 'HKEY_USERS\%\Software\Microsoft\Windows\CurrentVersion\Internet Settings\%'
+        AND name IN ('ProxyEnable', 'ProxyServer', 'ProxyOverride', 'AutoConfigURL')
+      ORDER BY key, name
+      LIMIT 200;
+
+validation:
+  osquery_schema_checked: false
+  orbital_catalog_checked: false
+  live_query_tested: false
+  notes:
+    - "Cisco product facts were sourced from Cisco Support TechNote Document ID 118121 on 2026-06-15."
+    - "SQL patterns are draft troubleshooting patterns and should be schema-tested before operational use."
+    - "Do not copy complete Cisco IP allowlists into query-method memory; use the authoritative Cisco TechNote for current values."
+
+lessons:
+  - date: "2026-06-15"
+    note: "Separate Cisco product requirements from endpoint-observable osquery troubleshooting evidence."
+  - date: "2026-06-15"
+    note: "Prefer hostname-based firewall allow rules for Cisco Secure Endpoint because Cisco documents that service IPs can change."
+  - date: "2026-06-15"
+    note: "Do not interpret missing current sockets as proof that Secure Endpoint cannot reach the cloud."
+  - date: "2026-06-15"
+    note: "TLS decryption toward Cisco servers is a network/proxy control-plane issue and generally cannot be proven with osquery alone."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<remote_ip>"
+    - "<proxy_server>"
+    - "<firewall_rule_name>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

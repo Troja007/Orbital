@@ -1,0 +1,404 @@
+title: "Query Cisco Secure Endpoint Host Based Firewall events and communication on Windows"
+status: "tested"
+created: "2026-06-12"
+updated: "2026-06-12"
+
+investigation_inputs:
+  source_type: "analyst_lesson"
+  examples:
+    - "Query the Windows firewall events written by Cisco Secure Endpoint Host Based Firewall."
+    - "Show Secure Endpoint Host Based Firewall allow and block events."
+    - "Check communication from Secure Endpoint firewall events and correlate PID/application to current sockets."
+    - "Investigate event IDs 1800 and 1801 from CiscoSecureEndpoint/Events."
+  keywords:
+    - "Cisco Secure Endpoint"
+    - "Host Based Firewall"
+    - "CiscoSecureEndpoint/Events"
+    - "windows_eventlog"
+    - "eventid 1800"
+    - "eventid 1801"
+    - "allow"
+    - "block"
+    - "communication"
+    - "process_open_sockets"
+  threat_context:
+    category: "network"
+    platforms:
+      - "windows"
+
+query_goal:
+  question: "Which network flows were allowed or blocked by Cisco Secure Endpoint Host Based Firewall, and which process/application was associated with the communication?"
+  expected_information:
+    - "event timestamp"
+    - "firewall timestamp"
+    - "event ID"
+    - "allow/block action"
+    - "direction"
+    - "protocol"
+    - "local IP and port"
+    - "remote IP and port"
+    - "PID"
+    - "application path"
+    - "rule name and GUID"
+  answers:
+    - "Shows Secure Endpoint Host Based Firewall Windows Event Log rows from channel CiscoSecureEndpoint/Events."
+    - "Maps event ID 1800 to Allow and event ID 1801 to Block."
+    - "Extracts communication metadata from EventData fields in the event payload."
+    - "Provides PID and application path for follow-up process/socket investigation."
+  does_not_answer:
+    - "Whether Secure Endpoint is installed; run the Secure Endpoint presence method first."
+    - "Whether a connection is still active; use process_open_sockets for current-state sockets."
+    - "Whether the rule was effective for endpoints that did not answer the query."
+    - "Whether policy should allow or block the traffic; review Secure Endpoint policy/rule configuration."
+  use_when:
+    - "Secure Endpoint presence has been confirmed and the analyst needs Host Based Firewall event evidence."
+    - "Investigating allowed or blocked communication on a Windows endpoint protected by Secure Endpoint."
+    - "A firewall event, remote IP, remote port, PID, process path, rule name, or direction needs validation from endpoint logs."
+  do_not_use_when:
+    - "Secure Endpoint/EDR is not installed; CiscoSecureEndpoint/Events may not exist or may contain no relevant rows."
+    - "The goal is standard Windows Firewall configuration only; use windows_firewall_rules or firewall profile registry methods."
+    - "The goal is active current sockets only; use process_open_sockets joined to processes."
+  preferred_next_queries:
+    - "Verify Cisco Secure Endpoint presence before querying CiscoSecureEndpoint/Events."
+    - "Current process communication check with process_open_sockets joined to processes."
+    - "Current running process check for the PID or application path from the event."
+    - "Windows firewall rule inventory with windows_firewall_rules when native firewall policy matters."
+
+catalog_context:
+  searched_terms:
+    - "CiscoSecureEndpoint/Events"
+    - "eventid 1800"
+    - "eventid 1801"
+    - "process_open_sockets"
+    - "listening_ports"
+  matches:
+    - name: "Firewall_Log_Windows_Statistics.sql"
+      id: "local_custom_query:Firewall_Log_Windows_Statistics"
+      source: "01_Source_Files/Orbital_Repo_Source/custom_queries/Firewall/Firewall_Log_Windows_Statistics.sql"
+      relevance: "Project query that extracts Secure Endpoint Host Based Firewall allow/block events from windows_eventlog and reports event IDs 1800/1801."
+      os:
+        - "windows"
+      category: "network"
+      mitre: []
+      updated: ""
+    - name: "Organization CiscoSecureEndpoint/Events firewall queries"
+      id: ""
+      source: "organization_catalog"
+      relevance: "Organization catalog contains similar Windows Event Log queries for Secure Endpoint firewall communication fields."
+      os:
+        - "windows"
+      category: "network"
+      mitre: []
+      updated: ""
+    - name: "Windows port 443 connections"
+      id: "local_method:network/windows_port_443_connections"
+      source: "query_method_memory"
+      relevance: "Existing method for current-state process_open_sockets communication checks."
+      os:
+        - "windows"
+      category: "network"
+      mitre: []
+      updated: ""
+  notes:
+    - "This method stores query technique only. Do not store endpoint result rows, hostnames, IP addresses, or rule GUIDs from investigations."
+    - "Before querying CiscoSecureEndpoint/Events, use the Secure Endpoint presence method to confirm product installation/running state."
+
+catalog_table_context:
+  - table: "windows_eventlog"
+    matches:
+      - name: "Firewall_Log_Windows_Statistics.sql"
+        id: "local_custom_query:Firewall_Log_Windows_Statistics"
+        source: "custom_query"
+        relevance: "Primary table for historical Secure Endpoint Host Based Firewall events."
+        os:
+          - "windows"
+        categories:
+          - id: "network"
+            title: "Network"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: ""
+  - table: "process_open_sockets"
+    matches:
+      - name: "Windows port 443 connections"
+        id: "local_method:network/windows_port_443_connections"
+        source: "query_method_memory"
+        relevance: "Current-state socket table for checking whether event-related communication is still active."
+        os:
+          - "windows"
+        categories:
+          - id: "network"
+            title: "Network"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: ""
+  - table: "processes"
+    matches:
+      - name: "SHA256 Hash Of Running Processes"
+        id: "process_hashes"
+        source: "stock_catalog"
+        relevance: "Process context for PID, process name, path, and command line from current-state endpoint data."
+        os:
+          - "windows"
+          - "darwin"
+          - "linux"
+        categories:
+          - id: "live-acquisition-of-volatile-data"
+            title: "Live Acquisition Of Volatile Data"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+  - table: "windows_firewall_rules"
+    matches: []
+    notes:
+      - "Use for native Windows Firewall rule inventory, not Secure Endpoint Host Based Firewall event history."
+
+related_table_ttp_context:
+  - table: "process_open_sockets"
+    source: "Orbital stock/catalog table context"
+    caution: "Related network communication table context does not imply malicious communication."
+    categories:
+      - id: "network"
+        title: "Network"
+      - id: "threat-hunting"
+        title: "Threat Hunting"
+    mitre:
+      tactics:
+        - id: "TA0011"
+          title: "Command and Control"
+      techniques:
+        - id: "T1071"
+          title: "Application Layer Protocol"
+        - id: "T1571"
+          title: "Non-Standard Port"
+      subtechniques: []
+  - table: "windows_eventlog"
+    source: "Windows event log table context"
+    caution: "Event-log presence depends on product installation, logging configuration, and retention."
+    categories:
+      - id: "network"
+        title: "Network"
+    mitre:
+      tactics: []
+      techniques: []
+      subtechniques: []
+
+osquery_context:
+  tables:
+    - name: "windows_eventlog"
+      columns:
+        - "datetime"
+        - "channel"
+        - "eventid"
+        - "data"
+        - "pid"
+        - "timestamp"
+        - "time_range"
+      platform_notes:
+        - "Windows-only table."
+        - "Use channel = 'CiscoSecureEndpoint/Events' and eventid IN (1800, 1801)."
+        - "Extract EventData fields from data with JSON_EXTRACT(json(data), '$.EventData.<field>')."
+    - name: "process_open_sockets"
+      columns:
+        - "pid"
+        - "protocol"
+        - "local_address"
+        - "local_port"
+        - "remote_address"
+        - "remote_port"
+        - "state"
+      platform_notes:
+        - "Current-state only; sockets may be gone after the event."
+    - name: "processes"
+      columns:
+        - "pid"
+        - "name"
+        - "path"
+        - "cmdline"
+      platform_notes:
+        - "Use to enrich current sockets or check whether event PID/application still exists."
+    - name: "windows_firewall_rules"
+      columns:
+        - "name"
+        - "app_name"
+        - "action"
+        - "enabled"
+        - "direction"
+        - "protocol"
+        - "local_ports"
+        - "remote_ports"
+        - "remote_addresses"
+      platform_notes:
+        - "Native Windows Firewall rules are separate from Secure Endpoint Host Based Firewall events."
+  joins:
+    - "JOIN processes p ON p.pid = pos.pid for current socket/process enrichment."
+    - "CROSS JOIN system_info si when endpoint identity is needed."
+  constraints:
+    - "Use Windows-only targeting or OS filter."
+    - "Use scheduled host runs with 2-minute expiry to capture a Job ID."
+    - "Constrain event queries with channel, event IDs, and LIMIT."
+    - "For product-specific event channels, verify Secure Endpoint presence first."
+
+orbital_guidance:
+  preferred_query_type: "scheduled_query"
+  schedule:
+    expiry_minutes: 2
+    interval_seconds: 0
+  allow_os:
+    - "windows"
+  target_selector_guidance:
+    - "Use host:<hostname> for investigation triage."
+    - "Use os:windows only after broad Windows endpoint scope is explicitly approved."
+  broad_targeting_risk:
+    level: "medium"
+    notes:
+      - "windows_eventlog can return many rows; keep channel/eventid filters and LIMIT."
+      - "process_open_sockets is current-state and lower impact but still broad across many endpoints."
+      - "Scheduled host mode should be preferred for Job ID tracking."
+
+sql_patterns:
+  - name: "Secure Endpoint Host Based Firewall event log summary"
+    description: "Extract recent allow/block firewall events from CiscoSecureEndpoint/Events. Event ID 1800 means Allow; 1801 means Block."
+    sql: |
+      SELECT
+        REPLACE(REPLACE(REPLACE(SUBSTR(datetime, 1, 19), 'T', ' '), '.', ''), 'Z', '') AS timestamp_evt,
+        datetime(CAST(JSON_EXTRACT(data, '$.EventData.Timestamp') AS INTEGER) / 1000, 'unixepoch', 'localtime') AS timestamp_fw,
+        JSON_EXTRACT(json(data), '$.EventData.Protocol') AS protocol,
+        JSON_EXTRACT(json(data), '$.EventData.LocalIP') AS sourceIp,
+        JSON_EXTRACT(json(data), '$.EventData.LocalPort') AS sourcePort,
+        JSON_EXTRACT(json(data), '$.EventData.RemoteIP') AS remoteIp,
+        JSON_EXTRACT(json(data), '$.EventData.RemotePort') AS remotePort,
+        CASE
+          WHEN eventid = 1800 THEN 'Allow'
+          WHEN eventid = 1801 THEN 'Block'
+          ELSE 'Other'
+        END AS action,
+        JSON_EXTRACT(json(data), '$.EventData.Direction') AS direction,
+        JSON_EXTRACT(json(data), '$.EventData.PID') AS pid,
+        JSON_EXTRACT(json(data), '$.EventData.Application Path') AS ApplicationPath,
+        JSON_EXTRACT(json(data), '$.EventData.RuleGUID') AS ruleGUID,
+        JSON_EXTRACT(json(data), '$.EventData.RuleName') AS ruleName,
+        JSON_EXTRACT(json(data), '$.EventData.RuleSetGUID') AS ConfigurationGuid,
+        eventid
+      FROM windows_eventlog
+      WHERE channel = 'CiscoSecureEndpoint/Events'
+        AND eventid IN (1800, 1801)
+      ORDER BY datetime DESC
+      LIMIT 50;
+  - name: "Secure Endpoint firewall event query filtered by remote IP and port"
+    description: "Use when investigating a known remote IP/port from an alert or IOC."
+    sql: |
+      SELECT
+        datetime,
+        eventid,
+        CASE
+          WHEN eventid = 1800 THEN 'Allow'
+          WHEN eventid = 1801 THEN 'Block'
+          ELSE 'Other'
+        END AS action,
+        JSON_EXTRACT(json(data), '$.EventData.Direction') AS direction,
+        JSON_EXTRACT(json(data), '$.EventData.Protocol') AS protocol,
+        JSON_EXTRACT(json(data), '$.EventData.LocalIP') AS sourceIp,
+        JSON_EXTRACT(json(data), '$.EventData.LocalPort') AS sourcePort,
+        JSON_EXTRACT(json(data), '$.EventData.RemoteIP') AS remoteIp,
+        JSON_EXTRACT(json(data), '$.EventData.RemotePort') AS remotePort,
+        JSON_EXTRACT(json(data), '$.EventData.PID') AS pid,
+        JSON_EXTRACT(json(data), '$.EventData.Application Path') AS ApplicationPath,
+        JSON_EXTRACT(json(data), '$.EventData.RuleName') AS ruleName
+      FROM windows_eventlog
+      WHERE channel = 'CiscoSecureEndpoint/Events'
+        AND eventid IN (1800, 1801)
+        AND JSON_EXTRACT(json(data), '$.EventData.RemoteIP') = '<remote_ip>'
+        AND JSON_EXTRACT(json(data), '$.EventData.RemotePort') = '<remote_port>'
+      ORDER BY datetime DESC
+      LIMIT 100;
+  - name: "Current communication check for a process or remote endpoint"
+    description: "Correlate active sockets with current process context. Use after firewall event rows identify PID, application path, remote IP, or remote port."
+    sql: |
+      SELECT
+        si.hostname AS host,
+        pos.pid,
+        p.name AS process_name,
+        p.path AS process_path,
+        pos.protocol,
+        pos.local_address,
+        pos.local_port,
+        pos.remote_address,
+        pos.remote_port,
+        pos.state
+      FROM process_open_sockets pos
+      LEFT JOIN processes p ON p.pid = pos.pid
+      CROSS JOIN system_info si
+      WHERE pos.remote_address != ''
+        AND pos.remote_port > 0
+        AND (
+          pos.pid = <pid>
+          OR pos.remote_address = '<remote_ip>'
+          OR pos.remote_port = <remote_port>
+          OR lower(p.path) = lower('<application_path>')
+        )
+      ORDER BY si.hostname, pos.pid, pos.remote_address, pos.remote_port;
+  - name: "Native Windows Firewall rules check"
+    description: "Use separately when the question is about Windows Firewall rule configuration rather than Secure Endpoint event history."
+    sql: |
+      SELECT
+        name,
+        app_name,
+        action,
+        enabled,
+        direction,
+        protocol,
+        local_addresses,
+        local_ports,
+        remote_addresses,
+        remote_ports,
+        service_name
+      FROM windows_firewall_rules
+      WHERE enabled = 1
+      ORDER BY direction, action, name;
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: true
+  live_query_tested: true
+  notes:
+    - "The Secure Endpoint firewall event query pattern was executed as a scheduled host run on 2026-06-12 and returned rows for a test endpoint. Result rows are intentionally not stored."
+    - "Column names were checked against osquery 5.23.0 schema for windows_eventlog, process_open_sockets, processes, and windows_firewall_rules."
+    - "EventData field names are derived from observed Secure Endpoint Host Based Firewall event payloads in project queries."
+
+lessons:
+  - date: "2026-06-12"
+    note: "Use scheduled host queries with 2-minute expiry for Job ID tracking when querying a host."
+  - date: "2026-06-12"
+    note: "Cisco Secure Endpoint Host Based Firewall stores allow/block rows in Windows Event Log channel CiscoSecureEndpoint/Events with event IDs 1800 and 1801."
+  - date: "2026-06-12"
+    note: "Use EventData fields for protocol, local/remote IP and port, direction, PID, application path, rule GUID, rule name, and configuration GUID."
+  - date: "2026-06-12"
+    note: "Follow event-log evidence with process_open_sockets joined to processes when checking whether communication is still active."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<remote_ip>"
+    - "<remote_port>"
+    - "<pid>"
+    - "<application_path>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "rule_guids_from_results"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

@@ -1,0 +1,622 @@
+title: "Verify Cisco Secure Endpoint presence before querying Secure Endpoint event logs"
+status: "draft"
+created: "2026-06-12"
+updated: "2026-06-12"
+
+investigation_inputs:
+  source_type: "analyst_lesson"
+  examples:
+    - "Before querying CiscoSecureEndpoint/Events, check whether Cisco Secure Endpoint is installed and running."
+    - "If Secure Endpoint firewall event logs return zero rows, verify product presence first."
+    - "Check for sfc.exe, expected Secure Endpoint files, installed applications, services, and registry paths."
+    - "Use the Installed Programs Search catalog query to find Cisco Secure Client, Cisco Secure Endpoint, Cisco AMP Orbital, and related Cisco modules."
+    - "When querying a named host, use a scheduled host query with a 2-minute expiry so the API returns a Job ID for follow-up."
+    - "Query installed Windows services where the service name or display name contains Cisco to identify Secure Client, Secure Endpoint, Orbital, driver, and module service state."
+    - "Investigate a specific Windows host for Cisco Secure Client and Cisco Secure Endpoint by combining installed programs, installer registry entries, services, and running processes."
+    - "Query a specific Windows host for installed Cisco Secure Client modules."
+    - "Check whether TDNR-important Secure Client modules are installed and active on a Windows host."
+  keywords:
+    - "Cisco Secure Endpoint"
+    - "Cisco Secure Client"
+    - "Secure Endpoint installed"
+    - "Secure Client installed"
+    - "Secure Client modules"
+    - "TDNR"
+    - "sfc.exe"
+    - "CiscoSecureEndpoint/Events"
+    - "Host Based Firewall"
+    - "programs"
+    - "services"
+    - "service name"
+    - "display name"
+    - "start type"
+    - "registry"
+    - "Microsoft Installer"
+    - "Windows Installer"
+    - "uninstall key"
+    - "file"
+  threat_context:
+    category: "software"
+    platforms:
+      - "windows"
+
+query_goal:
+  question: "Is Cisco Secure Endpoint present and plausibly active on a Windows endpoint before relying on CiscoSecureEndpoint/Events event log queries?"
+  expected_information:
+    - "running Secure Endpoint connector process evidence"
+    - "expected Secure Endpoint files on disk"
+    - "installed application inventory"
+    - "service inventory"
+    - "registry install/uninstall evidence"
+    - "Secure Client module inventory"
+    - "Orbital module inventory"
+  answers:
+    - "Whether the endpoint currently has a running sfc.exe process."
+    - "Whether common Cisco Secure Endpoint installation paths exist."
+    - "Whether Windows installed applications list Cisco Secure Endpoint, Cisco Secure Client, Cisco AMP, AMP for Endpoints, Orbital, or Secure Client modules."
+    - "Whether services and registry keys suggest Secure Endpoint is installed."
+    - "Whether Cisco Secure Client modules such as VPN, NVM, EVM, DART, or Cloud Management appear in installed programs."
+    - "Whether Cisco-related Windows services and drivers are installed, running, stopped, boot-started, system-started, demand-started, or auto-started."
+    - "Which Cisco Secure Client / Secure Endpoint-related processes are currently running."
+    - "Whether the TDNR-relevant module set is installed and active: Secure Endpoint/EDR, Orbital, EVM, NVM, and XDR Forensics."
+  does_not_answer:
+    - "Whether the endpoint generated historical firewall events."
+    - "Whether Host Based Firewall is enabled by policy."
+    - "Whether Secure Endpoint is healthy in the cloud console."
+    - "Whether an endpoint that did not answer the live query has Secure Endpoint installed."
+  use_when:
+    - "A Secure Endpoint event log query against channel CiscoSecureEndpoint/Events returns zero rows."
+    - "Investigating Host Based Firewall allow/block events where EDR/Secure Endpoint might not be installed."
+    - "Building endpoint context before running product-specific event log queries."
+    - "Checking deployment coverage across Windows endpoints."
+    - "Checking whether Cisco Secure Client or Secure Endpoint components are installed before investigating product-specific behavior."
+    - "Checking current service state for Cisco Secure Client, Cisco Secure Endpoint, Cisco AMP, Orbital, and Cisco driver services."
+  do_not_use_when:
+    - "The question is only whether standard Windows Firewall is enabled; use firewall profile registry or windows_firewall_rules methods."
+    - "The question requires exact cloud policy state; use Secure Endpoint/XDR console or API sources."
+    - "The endpoint is non-Windows."
+  preferred_next_queries:
+    - "CiscoSecureEndpoint/Events Windows event log query for event IDs 1800 and 1801 only after product presence is established."
+    - "Cisco Secure Endpoint service status inventory."
+    - "Cisco Secure Client / Secure Endpoint service inventory filtered by Cisco service name or display name."
+    - "Cisco Secure Client / Secure Endpoint installed programs search using the catalog Installed Programs Search row shape."
+    - "Secure Client installed module inventory using programs.name, programs.version, install location, install source, install date, and uninstall string."
+    - "TDNR module status using programs, services, and processes evidence."
+    - "Cisco Secure Client / Secure Endpoint combined inventory using programs, registry, services, and processes."
+    - "Cisco process hash/authenticode verification if binary tampering is suspected."
+
+catalog_context:
+  searched_terms:
+    - "Secure Endpoint"
+    - "sfc.exe"
+    - "CiscoSecureEndpoint/Events"
+    - "programs"
+    - "registry"
+    - "services"
+    - "Cisco services"
+    - "Installed Programs Search"
+  matches:
+    - name: "Installed Programs Search"
+      id: "installed_programs_param_search"
+      source: "stock_catalog"
+      relevance: "Cisco-managed catalog query shape for Windows installed program inventory; adapt the name filter to '%Cisco%' for Secure Client / Secure Endpoint product and module discovery."
+      os:
+        - "windows"
+      category: "posture-assessment"
+      mitre: []
+      updated: ""
+    - name: "Organization firewall event log queries using CiscoSecureEndpoint/Events"
+      id: ""
+      source: "organization_catalog"
+      relevance: "The firewall event log queries depend on Cisco Secure Endpoint event channel data; absence of rows can mean the product or event source is absent."
+      os:
+        - "windows"
+      category: "firewall events"
+      mitre: []
+      updated: ""
+    - name: "Find running or missing sfc.exe processes on Windows"
+      id: "local_method:suspicious_processes/windows_sfc_running_process"
+      source: "query_method_memory"
+      relevance: "Reusable method for checking whether the Secure Endpoint connector process is currently running."
+      os:
+        - "windows"
+      category: "software"
+      mitre: []
+      updated: "2026-06-10"
+    - name: "Find running Cisco-path processes on Windows"
+      id: "local_method:suspicious_processes/windows_cisco_path_running_processes"
+      source: "query_method_memory"
+      relevance: "Reusable method for broader Cisco process context."
+      os:
+        - "windows"
+      category: "software"
+      mitre: []
+      updated: "2026-06-11"
+  notes:
+    - "This method captures investigation ordering. It is not a product health verdict by itself."
+    - "Exact Secure Endpoint file paths should be verified against the deployment/user guide for the customer version."
+    - "Installed program evidence can show Secure Client and Secure Endpoint module inventory even when a specific process is not currently running."
+
+catalog_table_context:
+  - table: "processes"
+    matches:
+      - name: "SHA256 Hash Of Running Processes"
+        id: "process_hashes"
+        source: "stock_catalog"
+        relevance: "Cisco-managed catalog context for current running process inventory."
+        os:
+          - "windows"
+          - "darwin"
+          - "linux"
+        categories:
+          - id: "live-acquisition-of-volatile-data"
+            title: "Live Acquisition Of Volatile Data"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: "2023-11-14T17:51:59.150055646Z"
+  - table: "programs"
+    matches:
+      - name: "Installed Programs Search"
+        id: "installed_programs_param_search"
+        source: "stock_catalog"
+        relevance: "Primary catalog source for installed Cisco product and module inventory."
+        os:
+          - "windows"
+        categories:
+          - id: "posture-assessment"
+            title: "Posture Assessment"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: ""
+    notes:
+      - "Used for Windows installed application inventory."
+      - "Preserve the catalog row shape when an analyst asks for the same rows as the catalog query."
+  - table: "services"
+    matches: []
+    notes:
+      - "Used for Windows service presence and running/stopped state."
+      - "Filter both service name and display name for Cisco to catch services whose internal name does not start with Cisco but whose display name does."
+  - table: "file"
+    matches: []
+    notes:
+      - "Use with explicit paths only. Avoid broad recursive file scans across Windows endpoints."
+  - table: "registry"
+    matches: []
+    notes:
+      - "Use for uninstall/install keys and Cisco Secure Endpoint-specific registry evidence."
+  - table: "windows_eventlog"
+    matches:
+      - name: "Organization Secure Endpoint firewall log queries"
+        id: ""
+        source: "organization_catalog"
+        relevance: "Downstream query source for CiscoSecureEndpoint/Events after product presence is confirmed."
+        os:
+          - "windows"
+        categories: []
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: ""
+
+related_table_ttp_context:
+  - table: "processes"
+    source: "Orbital stock catalog entries using processes"
+    caution: "Related TTP context is table-derived only and is not a detection claim for Secure Endpoint presence."
+    categories:
+      - id: "live-acquisition-of-volatile-data"
+        title: "Live Acquisition Of Volatile Data"
+      - id: "posture-assessment"
+        title: "Posture Assessment"
+    mitre:
+      tactics: []
+      techniques: []
+      subtechniques: []
+  - table: "registry"
+    source: "osquery Windows registry table"
+    caution: "Registry evidence can indicate install traces even when the service is stopped or uninstalled incompletely."
+    categories:
+      - id: "posture-assessment"
+        title: "Posture Assessment"
+    mitre:
+      tactics: []
+      techniques: []
+      subtechniques: []
+
+osquery_context:
+  tables:
+    - name: "processes"
+      columns:
+        - "pid"
+        - "name"
+        - "path"
+        - "cmdline"
+        - "state"
+      platform_notes:
+        - "Current-state only; absence of sfc.exe means it is not visible as a running process at query time."
+    - name: "file"
+      columns:
+        - "path"
+        - "directory"
+        - "filename"
+        - "type"
+        - "size"
+        - "mtime"
+        - "file_version"
+        - "product_version"
+        - "original_filename"
+      platform_notes:
+        - "Use exact expected file paths from the Cisco Secure Endpoint user guide/deployment guide."
+        - "Avoid broad wildcard scans on Program Files across many endpoints."
+    - name: "programs"
+      columns:
+        - "name"
+        - "version"
+        - "install_location"
+        - "publisher"
+        - "install_date"
+      platform_notes:
+        - "Windows installed application inventory can miss non-MSI or damaged installs."
+        - "Use this table for Secure Client modules, Secure Endpoint, Cisco AMP Orbital, and related Cisco product inventory."
+    - name: "services"
+      columns:
+        - "name"
+        - "display_name"
+        - "status"
+        - "pid"
+        - "start_type"
+        - "path"
+      platform_notes:
+        - "Service state helps distinguish installed-but-stopped from running."
+        - "Driver services commonly report pid 0; this is normal for kernel drivers and should not be interpreted as no service."
+        - "Use name/display_name filters first; use path filters only as a follow-up if a broader Cisco path inventory is needed."
+    - name: "registry"
+      columns:
+        - "key"
+        - "path"
+        - "name"
+        - "type"
+        - "data"
+        - "mtime"
+      platform_notes:
+        - "Useful for uninstall keys and product-specific configuration/install paths."
+        - "Use HKEY_CLASSES_ROOT\\Installer\\Products and Microsoft uninstall keys for Microsoft Installer/product evidence."
+  joins:
+    - "CROSS JOIN system_info si when endpoint identity is needed in each row."
+  constraints:
+    - "Windows-only: use nodes [\"os:windows\"] or specific Windows hosts with Windows OS filtering."
+    - "Run presence checks before interpreting empty CiscoSecureEndpoint/Events results."
+    - "Prefer multiple evidence sources: process + file + programs + services + registry."
+    - "For API request bodies, place target selectors in the nodes array; do not confuse target selector IDs, catalog ID, Orbital ID, Secure Endpoint GUID, Secure Client GUID, AnyConnect UDID, queryId selector, and orbital_queryID."
+
+orbital_guidance:
+  preferred_query_type: "scheduled_query"
+  schedule:
+    expiry_minutes: 2
+    interval_seconds: 0
+    reason: "Host-targeted investigations should return a Job ID for follow-up."
+  allow_os:
+    - "windows"
+  target_selector_guidance:
+    - "Use a specific host during triage, for example host:<hostname>."
+    - "Use os:windows only after broad Windows endpoint scope is explicitly approved."
+    - "In the Query API request body, target selectors belong in the nodes array."
+    - "Label ad hoc investigation queries with a recognizable term such as codex when requested by the analyst."
+  broad_targeting_risk:
+    level: "medium"
+    notes:
+      - "Process, programs, services, and exact registry lookups are generally reasonable across Windows endpoints."
+      - "File table queries must be exact-path or tightly bounded; avoid broad Program Files searches."
+      - "Event log queries can be heavier and should follow product presence checks."
+
+sql_patterns:
+  - name: "Secure Endpoint running process check"
+    description: "Current-state check for the Secure Endpoint connector process."
+    sql: |
+      SELECT
+        si.hostname AS host,
+        p.pid,
+        p.name AS process_name,
+        p.path,
+        p.cmdline,
+        p.state
+      FROM processes p
+      CROSS JOIN system_info si
+      WHERE lower(p.name) = 'sfc.exe'
+         OR lower(p.path) LIKE '%\sfc.exe'
+      ORDER BY si.hostname, p.name, p.pid;
+  - name: "Secure Endpoint expected files check"
+    description: "Exact-path file check. Replace or extend paths with values from the relevant Cisco Secure Endpoint user/deployment guide."
+    sql: |
+      SELECT
+        si.hostname AS host,
+        f.path,
+        f.filename,
+        f.type,
+        f.size,
+        f.file_version,
+        f.product_version,
+        datetime(f.mtime, 'unixepoch', 'UTC') AS mtime_utc
+      FROM file f
+      CROSS JOIN system_info si
+      WHERE f.path IN (
+        'C:\Program Files\Cisco\AMP\sfc.exe',
+        'C:\Program Files\Cisco\AMP\iptray.exe',
+        'C:\Program Files\Cisco\AMP\orbital.exe'
+      )
+      ORDER BY si.hostname, f.path;
+  - name: "Secure Endpoint installed programs check"
+    description: "Installed application inventory for Cisco Secure Endpoint, Cisco Secure Client, AMP, Orbital, and Cisco modules."
+    sql: |
+      SELECT
+        si.hostname AS host,
+        pr.name,
+        pr.version,
+        pr.publisher,
+        pr.install_location,
+        pr.install_date
+      FROM programs pr
+      CROSS JOIN system_info si
+      WHERE lower(pr.name) LIKE '%secure endpoint%'
+         OR lower(pr.name) LIKE '%secure client%'
+         OR lower(pr.name) LIKE '%amp for endpoints%'
+         OR lower(pr.name) LIKE '%cisco amp%'
+         OR lower(pr.name) LIKE '%orbital%'
+         OR lower(pr.publisher) LIKE '%cisco%'
+      ORDER BY si.hostname, pr.name;
+  - name: "Secure Client installed modules"
+    description: "Installed-program inventory focused on Cisco Secure Client modules such as VPN, Cloud Management, DART, EVM, XDR NVM, and Secure Client UI."
+    sql_file: "02_Working_Files/Generated_Queries/windows_secure_client_installed_modules.sql"
+    sql: |
+      SELECT
+        si.hostname AS host,
+        CASE
+          WHEN lower(pr.name) LIKE '%anyconnect vpn%' THEN 'AnyConnect VPN'
+          WHEN lower(pr.name) LIKE '%cloud management%' THEN 'Cloud Management'
+          WHEN lower(pr.name) LIKE '%diagnostics and reporting tool%' THEN 'Diagnostics and Reporting Tool'
+          WHEN lower(pr.name) LIKE '%endpoint visibility module%' THEN 'Endpoint Visibility Module'
+          WHEN lower(pr.name) LIKE '%xdr network visibility module%' THEN 'XDR Network Visibility Module'
+          WHEN lower(pr.name) LIKE '%network visibility module%' THEN 'Network Visibility Module'
+          WHEN lower(pr.name) LIKE '%secureclientui%' THEN 'Secure Client UI'
+          ELSE pr.name
+        END AS module,
+        pr.name AS installed_product,
+        pr.version,
+        pr.publisher,
+        pr.install_location,
+        pr.install_source,
+        pr.install_date,
+        pr.uninstall_string
+      FROM programs pr
+      CROSS JOIN system_info si
+      WHERE lower(pr.name) LIKE 'cisco secure client%'
+         OR lower(pr.name) LIKE '%secureclientui%'
+      ORDER BY module, installed_product;
+  - name: "TDNR Secure Client module status"
+    description: "Check installed and active status for the TDNR-relevant endpoint modules shown in the Secure Client stack: EDR/Secure Endpoint, Orbital, EVM, NVM, and XDR Forensics."
+    sql_file: "02_Working_Files/Generated_Queries/windows_tdnr_secure_client_module_status.sql"
+    evidence_tables:
+      - "programs"
+      - "services"
+      - "processes"
+      - "system_info"
+    notes:
+      - "Installed status is based on installed product/service evidence."
+      - "Active status is based on running service or running process evidence."
+      - "This query intentionally avoids process_memory_map."
+  - name: "Cisco installed programs using Installed Programs Search row shape"
+    description: "Adapt the stock catalog Installed Programs Search query for Cisco product discovery while preserving the catalog output columns."
+    sql: |
+      SELECT
+        name,
+        version,
+        install_location,
+        install_source,
+        language,
+        publisher,
+        uninstall_string,
+        identifying_number,
+        (substr(install_date, 1, 4) || '-' || substr(install_date, 5, 2) || '-' || substr(install_date, 7, 2)) AS installation_date
+      FROM programs
+      WHERE lower(name) LIKE '%cisco%'
+         OR lower(publisher) LIKE '%cisco%'
+      ORDER BY name;
+  - name: "Secure Endpoint services check"
+    description: "Service inventory for Cisco/Secure Endpoint components using name, display name, and path hints."
+    sql: |
+      SELECT
+        si.hostname AS host,
+        s.name,
+        s.display_name,
+        s.status,
+        s.pid,
+        s.start_type,
+        s.path
+      FROM services s
+      CROSS JOIN system_info si
+      WHERE lower(s.name) LIKE '%cisco%'
+         OR lower(s.display_name) LIKE '%cisco%'
+         OR lower(s.display_name) LIKE '%secure endpoint%'
+         OR lower(s.path) LIKE '%\cisco\amp\%'
+      ORDER BY si.hostname, s.display_name, s.name;
+  - name: "Cisco service inventory by service name or display name"
+    description: "Installed Windows services where the service name or display name contains Cisco. Use this for Secure Client / Secure Endpoint module and driver state."
+    sql: |
+      SELECT
+        name AS service_name,
+        display_name,
+        status,
+        pid,
+        start_type,
+        path
+      FROM services
+      WHERE lower(name) LIKE '%cisco%'
+         OR lower(display_name) LIKE '%cisco%'
+      ORDER BY service_name;
+  - name: "Secure Endpoint uninstall and install registry evidence"
+    description: "Registry evidence from uninstall keys and Cisco AMP/Secure Endpoint paths."
+    sql: |
+      SELECT
+        si.hostname AS host,
+        r.path,
+        r.name,
+        r.type,
+        r.data,
+        datetime(r.mtime, 'unixepoch', 'UTC') AS mtime_utc
+      FROM registry r
+      CROSS JOIN system_info si
+      WHERE (
+          r.path LIKE '\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\%\%'
+          OR r.path LIKE '\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\%\%'
+          OR r.path LIKE '\HKEY_LOCAL_MACHINE\SOFTWARE\Cisco\AMP\%'
+        )
+        AND (
+          lower(r.data) LIKE '%secure endpoint%'
+          OR lower(r.data) LIKE '%amp for endpoints%'
+          OR lower(r.data) LIKE '%cisco amp%'
+          OR lower(r.path) LIKE '%\cisco\amp\%'
+        )
+      ORDER BY si.hostname, r.path, r.name;
+  - name: "Secure Client / Secure Endpoint combined inventory"
+    description: "Low-impact first-pass inventory combining Microsoft Installer product data, installer/uninstall registry entries, services, and current running processes."
+    sql_file: "02_Working_Files/Generated_Queries/windows_secure_client_endpoint_inventory.sql"
+    sql: |
+      SELECT
+        si.hostname AS host,
+        'installed_program' AS evidence_type,
+        pr.name AS item_name,
+        pr.version AS version_or_status,
+        pr.install_location AS path_or_location,
+        COALESCE(pr.publisher, '') || ' | install_date=' || COALESCE(pr.install_date, '') || ' | install_source=' || COALESCE(pr.install_source, '') || ' | uninstall=' || COALESCE(pr.uninstall_string, '') AS detail,
+        'programs' AS source
+      FROM programs pr
+      CROSS JOIN system_info si
+      WHERE lower(pr.name) LIKE '%cisco%'
+         OR lower(pr.publisher) LIKE '%cisco%'
+         OR lower(pr.name) LIKE '%secure client%'
+         OR lower(pr.name) LIKE '%secure endpoint%'
+         OR lower(pr.name) LIKE '%amp%'
+         OR lower(pr.name) LIKE '%anyconnect%'
+      UNION ALL
+      SELECT
+        si.hostname AS host,
+        'installer_registry' AS evidence_type,
+        r.key || '\' || r.name AS item_name,
+        r.type AS version_or_status,
+        r.path AS path_or_location,
+        r.data AS detail,
+        'registry' AS source
+      FROM registry r
+      CROSS JOIN system_info si
+      WHERE (
+          r.key LIKE 'HKEY_CLASSES_ROOT\Installer\Products\%%'
+          OR r.key LIKE 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\%%'
+          OR r.key LIKE 'HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\%%'
+        )
+        AND (
+          lower(r.data) LIKE '%cisco%'
+          OR lower(r.data) LIKE '%secure client%'
+          OR lower(r.data) LIKE '%secure endpoint%'
+          OR lower(r.data) LIKE '%amp%'
+          OR lower(r.data) LIKE '%anyconnect%'
+        )
+      UNION ALL
+      SELECT
+        si.hostname AS host,
+        'service' AS evidence_type,
+        s.name AS item_name,
+        COALESCE(s.status, '') || ' / ' || COALESCE(s.start_type, '') AS version_or_status,
+        COALESCE(s.path, s.module_path, '') AS path_or_location,
+        COALESCE(s.display_name, '') || ' | ' || COALESCE(s.description, '') || ' | account=' || COALESCE(s.user_account, '') || ' | pid=' || CAST(COALESCE(s.pid, -1) AS TEXT) AS detail,
+        'services' AS source
+      FROM services s
+      CROSS JOIN system_info si
+      WHERE lower(s.name) LIKE '%cisco%'
+         OR lower(s.display_name) LIKE '%cisco%'
+         OR lower(s.description) LIKE '%cisco%'
+         OR lower(s.path) LIKE '%cisco%'
+         OR lower(s.module_path) LIKE '%cisco%'
+         OR lower(s.name) IN ('csc_nvmagent', 'csc_umbrellaagent')
+      UNION ALL
+      SELECT
+        si.hostname AS host,
+        'running_process' AS evidence_type,
+        p.name AS item_name,
+        'pid=' || CAST(p.pid AS TEXT) || ' state=' || COALESCE(p.state, '') AS version_or_status,
+        p.path AS path_or_location,
+        p.cmdline AS detail,
+        'processes' AS source
+      FROM processes p
+      CROSS JOIN system_info si
+      WHERE lower(p.path) LIKE '%cisco%'
+         OR lower(p.path) LIKE '%secure client%'
+         OR lower(p.path) LIKE '%amp%'
+         OR lower(p.name) IN ('sfc.exe', 'cscm.exe', 'csc_ui.exe', 'vpnagent.exe', 'acnvmagent.exe', 'csc_cmid.exe', 'csc_cms.exe', 'csc_pm.exe')
+      ORDER BY evidence_type, item_name;
+  - name: "Secure Endpoint firewall event query should follow presence checks"
+    description: "Only rely on CiscoSecureEndpoint/Events rows after product presence is established."
+    sql: |
+      SELECT
+        datetime,
+        channel,
+        eventid,
+        data
+      FROM windows_eventlog
+      WHERE channel = 'CiscoSecureEndpoint/Events'
+        AND eventid IN (1800, 1801)
+      ORDER BY datetime DESC
+      LIMIT 50;
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: true
+  live_query_tested: false
+  notes:
+    - "The method was created from an investigation lesson after a CiscoSecureEndpoint/Events query returned zero rows on a host where EDR was not installed."
+    - "Column names were checked against osquery 5.23.0 schema."
+    - "Expected file paths should be verified against the applicable Cisco Secure Endpoint user/deployment guide before using as a definitive install check."
+    - "The Installed Programs Search catalog row shape was reused successfully for Cisco installed program discovery; endpoint rows are intentionally not stored."
+    - "The Cisco service inventory query using services.name/display_name was executed successfully as a scheduled host run on 2026-06-12. Returned endpoint rows, hostnames, node IDs, and Job IDs are intentionally not stored."
+    - "The combined inventory query using programs, registry, services, and processes was executed successfully as a scheduled host run on 2026-06-12. Returned endpoint rows, hostnames, node IDs, and Job IDs are intentionally not stored."
+    - "The Secure Client installed modules query using programs was executed successfully as a scheduled exact-host run on 2026-06-14. Returned endpoint rows, hostnames, node IDs, and Job IDs are intentionally not stored."
+    - "The TDNR Secure Client module status query was executed successfully as a scheduled exact-host run on 2026-06-14. Returned endpoint rows, hostnames, node IDs, and Job IDs are intentionally not stored."
+
+lessons:
+  - date: "2026-06-12"
+    note: "In real investigations, check whether Secure Endpoint is installed/running before querying CiscoSecureEndpoint/Events. Empty Secure Endpoint event logs are expected if the product is absent."
+  - date: "2026-06-12"
+    note: "Use multiple evidence sources for product presence: running sfc.exe, expected files on disk, installed applications, services, and registry paths."
+  - date: "2026-06-12"
+    note: "For host-targeted API runs, use scheduled query mode with a 2-minute expiry and interval 0 so the API returns an orbital_queryID/Job ID for follow-up."
+  - date: "2026-06-12"
+    note: "Use the stock catalog Installed Programs Search query shape for Secure Client / Secure Endpoint product discovery by filtering installed program name or publisher for Cisco."
+  - date: "2026-06-12"
+    note: "For Secure Client / Secure Endpoint service discovery, query the services table with lower(name) LIKE '%cisco%' OR lower(display_name) LIKE '%cisco%' and return service_name, display_name, status, pid, start_type, and path."
+  - date: "2026-06-12"
+    note: "When an analyst asks to extract Secure Client / Secure Endpoint context from a Windows host, start with the combined inventory method over programs, registry installer/uninstall keys, services, and processes. Avoid process_memory_map unless the explicit question is Exploit Prevention DLL injection."
+  - date: "2026-06-14"
+    note: "For installed Secure Client modules on Windows, prefer the low-impact programs table filtered to Cisco Secure Client product names and SecureClientUI. Return module, installed_product, version, publisher, install_location, install_source, install_date, and uninstall_string."
+  - date: "2026-06-14"
+    note: "For TDNR module readiness on Windows, check the five diagram-derived modules with low-impact evidence: EDR/Secure Endpoint, Orbital Query & Script, EVM, NVM, and Digital Forensics/XDR Forensics. Use programs for installation evidence and services/processes for active status."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<path>"
+    - "<product_name>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

@@ -10,12 +10,14 @@ This file collects product context, expected endpoint artifacts, Orbital query p
 
 - Verified Orbital UI SQL pattern for `sfc.exe` running/not-running status.
 - Live-tested Orbital query method for running processes where executable path contains `Cisco`.
+- Live-tested scheduled Orbital host query that combines Windows Installer `programs`, installer/uninstall `registry`, `services`, and `processes` for Secure Client / Secure Endpoint inventory.
 - Redacted organization catalog query pattern for Secure Endpoint memory consumption.
 - Redacted organization catalog query pattern for Secure Endpoint disk usage.
 - Redacted organization catalog query pattern for Windows firewall/event telemetry.
 - Organization catalog process-memory examples for Cisco DLLs loaded into running processes.
 - Stock catalog script: `List the Definition's Version of Secure Endpoint Engines`, ID `se_engine_definitions`.
 - Organization catalog scripts for `sfc.exe` start, stop, force update, and Secure Client NVM/Umbrella service start/stop.
+- Cisco Support TechNote `Required Server Addresses for Proper Secure Endpoint and Malware Analytics`, Document ID `118121`, updated `2026-03-10`: required cloud server addresses, ports, hostname-vs-IP firewall guidance, and TLS decryption caveat.
 - osquery 5.23.0 schema in `01_Source_Files/API_References/osquery_schema_5_23_0.json`.
 
 ## Product Families
@@ -50,7 +52,44 @@ Start-Process -NoNewWindow -FilePath "C:\Program Files\Cisco\AMP\<version>\sfc.e
 
 Do not hard-code the version directory in future repair scripts. Discover `sfc.exe` first through `processes`, `file`, `programs`, registry, or directory search, then execute the discovered path.
 
+#### Cloud Connectivity and Firewall Requirements
+
+Cisco product knowledge:
+
+- Cisco Secure Endpoint connector communication requires outbound firewall connectivity from the connector/appliance to the required Cisco cloud servers for updates, lookups, reports, events, policy, and management.
+- Cisco documents the authoritative server list in Support TechNote `Required Server Addresses for Proper Secure Endpoint and Malware Analytics`, Document ID `118121`.
+- The TechNote was checked on `2026-06-15`; Cisco lists the document as updated on `2026-03-10`.
+- Cisco explicitly recommends configuring firewall allow rules by hostname rather than fixed IP address because server IP addresses can change due to round-robin, load balancing, fault tolerance, and uptime architecture.
+- If hostname-based firewall rules are not possible, Cisco says all listed IP addresses in the TechNote must be permitted destinations.
+- Cisco also states that traffic toward Cisco servers must not be subjected to TLS decryption.
+- Core Secure Endpoint public-cloud regions in the TechNote are North America, Europe, and APJC/Japan. Region-specific hostnames use patterns such as `.amp.cisco.com`, `.eu.amp.cisco.com`, and `.apjc.amp.cisco.com`.
+- Common Secure Endpoint public-cloud purposes include disposition, console, management, event intake, policy, connector downloads/updates, error reporting, endpoint IOCs, TETRA updates, Clam definitions, advanced custom detections, remote file fetch, Behavior Protection, and Device Control.
+- Common ports are TCP `443`, with TCP `80` also required for some update/definition services. Support sessions can require TCP `22`.
+- Orbital has separate required endpoints in the same TechNote, including `orbital.*.amp.cisco.com`, `ncp.orbital.*.amp.cisco.com`, and `update.orbital.*.amp.cisco.com` on port `443`, with separate Remote Data Store NAT IP considerations.
+
+Operational/query interpretation:
+
+- Treat firewall configuration as a customer/network control-plane requirement, not as a property that can be fully proven from endpoint process state.
+- Endpoint evidence can support troubleshooting by showing current sockets, DNS cache evidence, hosts-file overrides, local firewall state/rules, proxy settings, and Secure Endpoint event/log symptoms.
+- Absence of a current socket to a Cisco cloud hostname does not prove misconfiguration; connector activity can be periodic and socket state is transient.
+- DNS cache evidence is time-bound and may be absent after cache expiry or service restart.
+- Native Windows Firewall rules are not the same thing as upstream enterprise firewall, proxy, SSL inspection, or Secure Endpoint Host Based Firewall policy.
+- When troubleshooting cloud connectivity, prefer a layered check: connector presence/running state, local DNS/proxy/hosts context, current sockets to Cisco domains/ports, Secure Endpoint event/log evidence, then network firewall/proxy policy outside Orbital.
+
 ### Cisco Secure Client
+
+Secure Client is modular. A Windows endpoint can have only the base VPN client, or additional modules such as Cloud Management, DART, Endpoint Visibility Module, XDR Network Visibility Module, NVM, or Umbrella. Installed-product inventory can show modules even when their runtime process is not currently active.
+
+Observed installed-product names from Windows Installer / installed-program inventory:
+
+| Installed product name | Module / meaning | Notes |
+| --- | --- | --- |
+| `Cisco Secure Client - AnyConnect VPN` | VPN client | Often has both MSI uninstall evidence and Secure Client uninstaller evidence. |
+| `Cisco Secure Client - Cloud Management` | Secure Client cloud-managed deployment/profile component | Runtime service commonly appears as `CiscoCloudManagement`. |
+| `Cisco Secure Client - Diagnostics and Reporting Tool` | DART | Diagnostic/reporting module; may not have a long-running process. |
+| `Cisco Secure Client - Endpoint Visibility Module` | EVM | Runtime service commonly appears as `CiscoEVMService`; driver services can also be present. |
+| `Cisco Secure Client - XDR Network Visibility Module` | XDR/NVM visibility module | Runtime process can appear as `acnvmagent.exe` with service `csc_nvmagent`. |
+| `SecureClientUI` | Secure Client UI package | Can be installed from a Secure Endpoint / AMP version directory in some deployments. |
 
 Primary observed Windows process families:
 
@@ -64,14 +103,29 @@ Primary observed Windows process families:
 | `csc_pm.exe` | Cloud Management profile/config component | `C:\Program Files\Cisco\Cisco Secure Client\CM\<version>\CMPM\<version>\csc_pm.exe` | Uses Cloud Management bootstrap/config files. |
 | `csc_evm.exe` | Endpoint Visibility Module component | `C:\Program Files\Cisco\Cisco Secure Client\EVM\bin\csc_evm.exe` | Optional module. |
 
-Known service names from redacted organization script patterns:
+Observed and known service names:
 
-| Service | Product/module | Existing action scripts |
-| --- | --- | --- |
-| `csc_nvmagent` | Secure Client NVM | start/stop service action pattern |
-| `csc_umbrellaagent` | Secure Client Umbrella | start/stop service action pattern |
+| Service | Product/module | Typical path pattern | Notes |
+| --- | --- | --- | --- |
+| `csc_vpnagent` | Secure Client AnyConnect VPN Agent | `C:\Program Files (x86)\Cisco\Cisco Secure Client\vpnagent.exe` | Commonly auto-start and runs as LocalSystem. |
+| `csc_nvmagent` | Secure Client Network Visibility Agent | `C:\Program Files (x86)\Cisco\Cisco Secure Client\NVM\acnvmagent.exe` | Existing action scripts include start/stop service pattern. |
+| `CiscoCloudManagement` | Secure Client Cloud Management | `C:\Program Files\Cisco\Cisco Secure Client\CM\<version>\Service\<version>\csc_cms.exe` | Cloud-driven profile and software update component. |
+| `CiscoEVMService` | Secure Client Endpoint Visibility Module | `C:\Program Files\Cisco\Cisco Secure Client\EVM\bin\csc_evm.exe` | User-mode EVM service. |
+| `CiscoEVMDriver` | Secure Client Endpoint Visibility Module driver | `C:\Program Files\Cisco\Cisco Secure Client\EVM\bin\evm_driver.sys` | Kernel-mode EVM support; driver services often report PID `0`. |
+| `CiscoEVMElam` | Secure Client Endpoint Visibility Module ELAM driver | `\SystemRoot\System32\drivers\evm_elam.sys` | May be stopped while configured as boot-start. |
+| `acsock` | Secure Client socket layer interceptor | `\SystemRoot\system32\DRIVERS\acsock64.sys` | Driver service used by Secure Client networking components. |
+| `cscnvmpt` | Secure Client NVM packet/tap driver | `C:\Program Files (x86)\Cisco\Cisco Secure Client\NVM\cscnvmpt64.sys` | Driver service; can be running even if start type is disabled. |
+| `vpnva` | AnyConnect virtual miniport adapter | `\SystemRoot\System32\drivers\vpnva64-6.sys` | Adapter driver; can be stopped when VPN is not active. |
+| `csc_umbrellaagent` | Secure Client Umbrella | varies by Umbrella module install | Existing action scripts include start/stop service pattern; validate presence before repair. |
 
 Service discovery must be validated with the `services` table before creating repair scripts; the process list alone does not prove the service name or start mode.
+
+Interpretation notes:
+
+- Driver services commonly report PID `0`; this is expected and should not be interpreted as a missing process.
+- `STOPPED / BOOT_START` for ELAM or adapter drivers can be normal depending on driver type and runtime state.
+- Secure Client module versions can differ from the base VPN version.
+- Installation evidence should combine `programs`, Microsoft Installer/uninstall registry keys, `services`, and current `processes`.
 
 ### Cisco Orbital
 
@@ -285,6 +339,21 @@ WHERE lower(pr.name) LIKE '%cisco%'
 ORDER BY si.hostname, pr.name;
 ```
 
+### Secure Client / Secure Endpoint Combined Inventory
+
+Purpose: extract a low-impact installation and runtime overview for a Windows host or Windows endpoint set. This is the preferred first-pass query before heavier file, hash, authenticode, event log, or `process_memory_map` checks.
+
+The query intentionally combines four evidence sources:
+
+- `programs` for Microsoft Installer and installed-product inventory.
+- `registry` for installer product and uninstall-key evidence.
+- `services` for installed service and driver state.
+- `processes` for currently running Cisco Secure Client / Secure Endpoint processes.
+
+Reusable SQL is stored at `02_Working_Files/Generated_Queries/windows_secure_client_endpoint_inventory.sql`.
+
+Operational note: for named-host API investigations, submit this as a scheduled query with `POST /v0/query`, a 2-minute expiry, and `interval = 0`, then store and follow the returned `orbital_queryID` through `/v0/jobs/{id}` and `/v0/jobs/{id}/results`.
+
 ### Cisco Files And Disk Footprint
 
 Purpose: list Cisco files/directories and metadata. Based on a redacted organization catalog query pattern for Secure Endpoint disk usage.
@@ -487,6 +556,8 @@ Validation note:
 - The same catalog query was later verified directly in the Orbital UI against one exact Windows host and returned positive protected-process rows.
 - The UI target selector used lowercase `host:<hostname>`. If API live query returns `answered_endpoint_count = 0` for an exact host while the UI returns rows, retry with the exact UI selector spelling/case before interpreting the result as no protected processes.
 - Repeated execution of this `process_memory_map` query can destabilize or crash the Orbital query on the endpoint. Store the job ID for every run and use `/jobs/{id}` and `/jobs/{id}/results` for follow-up instead of rerunning the endpoint query.
+- User testing on 2026-06-12 showed that the generated simplified combined Protector32/Protector64 query in `02_Working_Files/Generated_Queries/windows_secure_endpoint_exploit_prevention_protected_processes.sql` can put the Orbital endpoint service into a faulty state. Restarting the Orbital service restores operation. Do not use that query shape.
+- The project query file `01_Source_Files/Orbital_Repo_Source/custom_queries/Orbital_Running Processes including the loaded DLLs and signing Certificate.sql` works consistently and should be preferred for this investigation.
 - No live endpoint result rows are stored in this context file.
 
 ### Cisco Registry Inventory

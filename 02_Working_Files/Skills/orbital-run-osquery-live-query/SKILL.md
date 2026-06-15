@@ -1,11 +1,13 @@
 ---
 name: orbital-run-osquery-live-query
-description: Run generic Cisco Orbital live API queries with arbitrary osquery SQL against explicit target selectors. Use when Codex needs to validate osquery tables or columns from project context, check required inputs such as targets and SQL, execute POST /query/run, use Orbital target/node selectors such as host, hostname, ip, ipv4, netmask, orb, amp, cm, machine, os, random, or queryId, parse live query results, or present endpoint rows from any supported osquery table.
+description: Run generic Cisco Orbital API queries with arbitrary osquery SQL against explicit target selectors. Use when Codex needs to validate osquery tables or columns from project context, check required inputs such as targets and SQL, execute host-targeted scheduled queries with POST /query for Job ID tracking, run live queries with POST /query/run when explicitly appropriate, use Orbital target/node selectors such as host, hostname, ip, ipv4, netmask, orb, amp, cm, machine, os, random, or queryId, parse query results, or present endpoint rows from any supported osquery table.
 ---
 
-# Orbital Run osquery Live Query
+# Orbital Run osquery Query
 
-Use this skill to run a Cisco Orbital live query through the API against explicit target endpoints. The skill is generic: it can use any osquery table or SQL statement after validating the requested table/column assumptions against project context.
+Use this skill to run a Cisco Orbital query through the API against explicit target endpoints. The skill is generic: it can use any osquery table or SQL statement after validating the requested table/column assumptions against project context.
+
+For host-targeted investigations, use a scheduled query with a 2-minute expiry by default. In this project, host queries are scheduled runs so Orbital returns a Job ID for follow-up through `/v0/jobs/{id}` and `/v0/jobs/{id}/results`. Use live mode only when the user explicitly asks for a live/immediate probe and accepts that the API may not expose a Job ID.
 
 Use `orbital-api-access` for API connectivity tests, authentication troubleshooting, and catalog download/import work. Use `orbital-query-method-memory` to speed up query design by reusing prior query methods and catalog/osquery mappings. Keep these skills separated unless the user explicitly confirms a larger skill scope change.
 
@@ -15,7 +17,7 @@ Before executing anything, confirm these inputs are defined:
 
 - Well-defined target selector: at least one explicit Orbital target selector, for example `host:MONIKA`, `ipv4:10.0.0.1`, `netmask:192.168.1.168/24`, `orb:<id>`, or `queryId:<id>`.
 - SQL: either user-provided SQL or enough user intent to build SQL.
-- Query purpose: a short label/name for the live query.
+- Query purpose: a short label/name for the query.
 - Region/credentials: project credentials through env vars or `02_Working_Files/orbital_credentials.env`.
 - Network-enabled Codex runtime: before API calls, verify the current Codex shell is not running with `CODEX_SANDBOX_NETWORK_DISABLED=1`.
 
@@ -30,11 +32,12 @@ Important ID distinction:
 
 Operational run ledger:
 
-- Every future live-query submission must persist the returned `orbital_queryID` / job ID before attempting result interpretation.
-- The project helper writes live-query run metadata to `local/orbital_query_runs/live_query_runs.jsonl` by default. This path is ignored by git and is for operational follow-up only.
+- Every future query submission must persist the returned `orbital_queryID` / Job ID before attempting result interpretation.
+- Host-targeted queries must be scheduled runs with 2-minute expiry unless the user explicitly requests live mode.
+- The project helper writes query run metadata to `local/orbital_query_runs/live_query_runs.jsonl` by default. This path is ignored by git and is for operational follow-up only.
 - The ledger may include job ID, label, query name, target selectors, SQL hash, API status, and job/status check metadata.
 - Do not store endpoint result rows in the ledger or method memory.
-- If the API response does not expose a job ID, record that fact in the ledger and report that job status cannot be checked from Codex without the ID visible in Orbital UI/API.
+- If the API response does not expose a Job ID for a host-targeted scheduled query, record that fact in the ledger and report it as unexpected.
 
 ## Project Context Checks
 
@@ -92,29 +95,29 @@ If the output shows `CODEX_SANDBOX_NETWORK_DISABLED=1` or socket calls fail with
    - relevant OS or `allowOS` filters
 10. Only proceed when the target selector list is explicit and approved enough for execution.
 11. Request network permission before calling the Orbital API when the tool is available. If the current session lacks that permission path, report the sandbox limitation clearly.
-12. Run `scripts/run_live_query.py`.
+12. Run `scripts/run_live_query.py`. For `host:` or `hostname:` targets, the helper defaults to scheduled mode: `POST /query`, `expiry = now + 120 seconds`, and `interval = 0`.
 13. After completion, always report:
-   - `orbital_queryID` from the response `ID` field if the API returned one
+   - `orbital_queryID` / Job ID from the response `ID` field
    - whether the helper stored the run in `local/orbital_query_runs/live_query_runs.jsonl`
    - how many endpoints answered
    - row count
    - target metadata/timestamp if useful
    - the result rows as a Markdown table whose columns match the SQL query result shape
    - only the result columns relevant to the user request
-14. If `orbital_queryID` is available, explain that Orbital stores the query in the cloud and it can be checked later through:
+14. Explain that scheduled host runs store the query in the cloud and can be checked later through:
    - `GET /v0/jobs/{{orbital_queryID}}`
    - `GET /v0/jobs/{{orbital_queryID}}/results`
-15. When waiting for a query to finish, do not execute the same live query again and do not use `queryId:` for monitoring. Use the stored `orbital_queryID` and monitor status/results with `/v0/jobs/{{orbital_queryID}}` or `/v0/jobs/{{orbital_queryID}}/results`.
+15. When waiting for a query to finish, do not execute the same query again and do not use `queryId:` for monitoring. Use the stored `orbital_queryID` and monitor status/results with `/v0/jobs/{{orbital_queryID}}` or `/v0/jobs/{{orbital_queryID}}/results`.
 16. Default waiting behavior after a new query returns `orbital_queryID`:
    - wait 10 seconds, then call `GET /v0/jobs/{{orbital_queryID}}`
    - show how many endpoints responded, using `done_count` when present
    - check at most until 20 seconds after submission
    - if `done_count` does not increase between checks, stop waiting and show a message with the `orbital_queryID`
    - if the 20 second maximum is reached, stop waiting and show a message with the `orbital_queryID`
-17. For expensive tables such as `process_memory_map`, `hash`, `authenticode`, broad `file`, or event/log tables, never rerun the same query to validate execution. First check the stored job ID. If no job ID was captured, ask the user for the visible Orbital Query ID/job ID from the UI/API before issuing another endpoint query.
+17. For expensive tables such as `process_memory_map`, `hash`, `authenticode`, broad `file`, or event/log tables, never rerun the same query to validate execution. First check the stored Job ID. If no Job ID was captured, treat that as a workflow defect for host-targeted queries and use scheduled mode on the next run.
 18. If the SQL/table/caveat pattern is reusable, ask whether to save or update it through `orbital-query-method-memory`. Save only the method, not endpoint result rows or tenant-specific output.
 
-## Live Query Helper Script
+## Query Helper Script
 
 Run the helper from the Orbital project root. It reads credentials from environment variables and, by default, from `02_Working_Files/orbital_credentials.env` if that file exists. Never print or store tokens.
 
@@ -122,9 +125,16 @@ Run the helper from the Orbital project root. It reads credentials from environm
 python3 /Users/tschranz/.codex/skills/orbital-run-osquery-live-query/scripts/run_live_query.py \
   --target host:MONIKA \
   --label codex_processes \
-  --name "codex live processes lookup" \
+  --name "codex scheduled processes lookup" \
   --sql-file /tmp/query.sql
 ```
+
+With a `host:` or `hostname:` target, the helper uses scheduled mode automatically:
+
+- API path: `POST /query`
+- expiry: `now + 2 minutes`
+- interval: `0`
+- expected response: Job object with `ID`, exposed as `orbital_queryID`
 
 The SQL can also be piped through stdin:
 
@@ -133,10 +143,20 @@ printf '%s\n' "SELECT pid, name, path, cmdline FROM processes ORDER BY pid LIMIT
   | python3 /Users/tschranz/.codex/skills/orbital-run-osquery-live-query/scripts/run_live_query.py \
       --target host:MONIKA \
       --label codex_processes \
-      --name "codex live process inventory"
+      --name "codex scheduled process inventory"
 ```
 
-To check an existing cloud-stored query/job without rerunning the live query:
+To force immediate live mode, use `--live`. Only do this when the user explicitly wants a live/probe response and accepts that Job ID tracking may not be available:
+
+```bash
+python3 /Users/tschranz/.codex/skills/orbital-run-osquery-live-query/scripts/run_live_query.py \
+  --live \
+  --target host:MONIKA \
+  --label codex_processes \
+  --sql-file /tmp/query.sql
+```
+
+To check an existing cloud-stored query/job without rerunning the endpoint query:
 
 ```bash
 python3 /Users/tschranz/.codex/skills/orbital-run-osquery-live-query/scripts/run_live_query.py \
@@ -199,7 +219,7 @@ Use documented selectors from `Orbital_Target_Node_Selectors.md`. Examples:
 
 Prefer exact host or exact endpoint identifiers for first tests. Treat `%` wildcard selectors as dynamic targeting. Use `netmask` for IPv4 CIDR ranges. Do not assume IPv6 wildcard or subnet support.
 
-Do not confuse `queryId:<query_id>` with `orbital_queryID`. `queryId:<query_id>` is a target selector for reusing an existing query definition. `orbital_queryID` is returned by a live query response and is used for `/v0/jobs/...` status and results lookup.
+Do not confuse `queryId:<query_id>` with `orbital_queryID`. `queryId:<query_id>` is a target selector for reusing an existing query definition. `orbital_queryID` is returned by query creation and is used for `/v0/jobs/...` status and results lookup.
 
 ## Result Handling
 
@@ -207,8 +227,10 @@ The helper emits JSON:
 
 - `submitted_sql`: SQL submitted to Orbital.
 - `query_label`: label submitted to Orbital.
+- `query_mode`: `scheduled` or `live`.
+- `api_path`: `/query` for scheduled mode or `/query/run` for live mode.
 - `targets`: target selectors submitted to Orbital.
-- `orbital_queryID`: Orbital query ID from the API response `ID` field. Show this in user-facing output so the user can verify the same query in Postman or another API client.
+- `orbital_queryID`: Orbital Job ID from the API response `ID` field. Show this in user-facing output so the user can verify the same query in Postman or another API client.
 - `response_id`: compatibility alias for `orbital_queryID`.
 - `run_ledger`: local JSONL path where operational run metadata was recorded. This is ignored by git and must not contain endpoint rows.
 - `job_check_status`: reason why job status could not be checked, when no job ID was exposed.
@@ -220,14 +242,14 @@ The helper emits JSON:
 - `rows`: parsed row dictionaries.
 - `errors`: API-level errors if present.
 
-Orbital stores live query jobs/results in the cloud. When the API returns `ID`, treat it as `orbital_queryID` and use it for follow-up checks:
+Orbital stores scheduled host query jobs/results in the cloud. When the API returns `ID`, treat it as `orbital_queryID` and use it for follow-up checks:
 
 - `GET /v0/jobs/{{orbital_queryID}}` shows the query/job metadata.
 - `GET /v0/jobs/{{orbital_queryID}}/results` retrieves the stored results.
 
-Important: never rerun the same live query just to monitor waiting status. Reuse `orbital_queryID` and call the job endpoints. Do not use the `queryId:` target selector for monitoring a submitted live query.
+Important: never rerun the same query just to monitor waiting status. Reuse `orbital_queryID` and call the job endpoints. Do not use the `queryId:` target selector for monitoring a submitted query.
 
-If `rows` is empty and the API returned target metadata, report that the live query succeeded but found no matching rows. If no result appears for a target, explain that live queries only return data from online/resolvable endpoints at execution time.
+If `rows` is empty and the API returned target metadata, report that the query succeeded but found no matching rows. If no result appears for a target, explain that scheduled host queries only return data from endpoints that answer within the query window.
 
 For non-empty results, present the user-facing result as a Markdown table:
 
