@@ -1,0 +1,264 @@
+title: "Query Cisco Secure Endpoint Cloud detection events on Windows"
+status: "tested"
+created: "2026-06-15"
+updated: "2026-06-15"
+
+investigation_inputs:
+  source_type: "analyst_lesson"
+  examples:
+    - "Find Cisco Secure Endpoint detection events in the Windows Event Log."
+    - "Query Secure Endpoint Cloud EVENT_DETECTION entries from Windows endpoints."
+    - "Extract detection name, file path, parent process, PID, and hashes from Secure Endpoint Cloud log events."
+    - "Check whether Secure Endpoint wrote any detection events during a specific time period."
+    - "Count Secure Endpoint detection events between two timestamps."
+  keywords:
+    - "Cisco Secure Endpoint"
+    - "CiscoSecureEndpoint/Cloud"
+    - "EVENT_DETECTION"
+    - "eventid 401"
+    - "windows_eventlog"
+    - "detection"
+    - "Talos"
+    - "file detection"
+    - "time window"
+    - "time period"
+  threat_context:
+    category: "suspicious_processes"
+    platforms:
+      - "windows"
+
+query_goal:
+  question: "Which Cisco Secure Endpoint detection events were written to the Windows Event Log, and what file/process evidence is embedded in the detection payload?"
+  expected_information:
+    - "event timestamp"
+    - "detection event ID"
+    - "detection type"
+    - "detection name"
+    - "detected file name"
+    - "detected file path"
+    - "parent process name"
+    - "PID"
+    - "hash fields when present"
+    - "disposition/context fields when useful"
+    - "compact endpoint-side detection telemetry from the local Windows Event Log"
+  answers:
+    - "Shows Secure Endpoint Cloud detection telemetry from Windows Event Log channel CiscoSecureEndpoint/Cloud."
+    - "Filters on event ID 401 and EVENT_DETECTION payloads."
+    - "Extracts fields from the nested EventData.JsonEvent JSON string."
+    - "Provides file/process indicators for follow-up with processes, file, hash, or process_open_sockets."
+    - "Proves that a Secure Endpoint detection event was written locally on the Windows endpoint."
+    - "Answers whether any Secure Endpoint detection events were written within a specific UTC time window."
+    - "Can summarize detection presence with count, first detection time, and last detection time for a bounded period."
+  does_not_answer:
+    - "Host Based Firewall allow/block communication history; use CiscoSecureEndpoint/Events event IDs 1800/1801."
+    - "Whether a detected process is still running."
+    - "Whether remediation completed successfully unless corresponding remediation/status fields are explicitly parsed and understood."
+    - "Cloud console disposition semantics for every numeric field; verify field meaning against Cisco documentation before customer-facing claims."
+    - "Cloud API-only enrichment such as normalized event_type text, severity, group context, API links, external IP, MITRE tactics/techniques, and normalized disposition labels."
+    - "Detailed Secure Endpoint Cloud Exploit Prevention attack details such as attacked module, base address, threat module/submodule, application type, full process command line, parent full command line, process integrity, and parent process hashes."
+  use_when:
+    - "A screenshot or Event Viewer view shows CiscoSecureEndpoint > Cloud events with source CiscoSecureEndpoint and Event ID 401."
+    - "An analyst generated Secure Endpoint detections and wants to retrieve them through Orbital/osquery."
+    - "The investigation needs local endpoint evidence for malware/file/behavioral detections recorded by Secure Endpoint."
+    - "The analyst needs a quick local confirmation that detections occurred between two timestamps."
+  do_not_use_when:
+    - "The goal is Host Based Firewall allow/block events; use the Host Based Firewall method instead."
+    - "The endpoint does not have Cisco Secure Endpoint installed or the CiscoSecureEndpoint/Cloud channel is absent."
+    - "The analyst needs full raw event payloads for every row; use a raw event query with a larger substr length or raw export workflow."
+    - "The analyst needs the full Secure Endpoint Cloud Events API enrichment or the separate cloud-side Exploit Prevention event record."
+  preferred_next_queries:
+    - "Check whether the detected PID is still running with processes."
+    - "Hash the detected file path with the hash table when the file still exists."
+    - "Use process_open_sockets for current communication by PID or process path."
+    - "Use the Host Based Firewall method when network allow/block context is needed."
+
+catalog_context:
+  searched_terms:
+    - "CiscoSecureEndpoint/Cloud"
+    - "EVENT_DETECTION"
+    - "eventid 401"
+    - "windows_eventlog"
+  matches: []
+  notes:
+    - "This method is derived from analyst-provided Event Viewer evidence and validated by a scheduled host Orbital query."
+    - "No exact stock catalog entry was identified in local catalog context for CiscoSecureEndpoint/Cloud EVENT_DETECTION parsing."
+
+catalog_table_context:
+  - table: "windows_eventlog"
+    matches: []
+    notes:
+      - "Use exact channel equality: channel = 'CiscoSecureEndpoint/Cloud'."
+      - "Use eventid = 401 and data LIKE '%EVENT_DETECTION%' for Secure Endpoint detection telemetry."
+      - "The detection payload is nested: EventData.JsonEvent contains a JSON string that can be parsed with JSON_EXTRACT(json(JSON_EXTRACT(json(data), '$.EventData.JsonEvent')), '$.<field>')."
+
+related_table_ttp_context:
+  - table: "windows_eventlog"
+    source: "Related Windows event-log investigation context"
+    caution: "Related table context helps query selection; it is not a MITRE detection claim for this method."
+    categories:
+      - id: "forensics"
+        title: "Forensics"
+      - id: "threat-hunting"
+        title: "Threat Hunting"
+    mitre:
+      tactics: []
+      techniques: []
+      subtechniques: []
+
+osquery_context:
+  tables:
+    - name: "windows_eventlog"
+      columns:
+        - "datetime"
+        - "channel"
+        - "eventid"
+        - "data"
+      platform_notes:
+        - "Windows-only table."
+        - "For Orbital, constrain product log queries with exact channel equality."
+        - "In Orbital, prefer the proven column subset datetime, channel, eventid, and data for raw Secure Endpoint Cloud event retrieval unless extra columns are validated first."
+  constraints:
+    - "Use scheduled host queries for Job ID tracking."
+    - "Use LIMIT during exploration."
+    - "Do not combine many Windows Event Log channels in one first query; start with the exact channel shown in Event Viewer."
+    - "Keep raw payload output bounded with substr(data, 1, <n>) unless a full raw export is explicitly needed."
+
+orbital_guidance:
+  preferred_query_type: "scheduled_query"
+  schedule:
+    expiry_minutes: 2
+    interval_seconds: 0
+  allow_os:
+    - "windows"
+  target_selector_guidance:
+    - "Use host:<hostname> for first validation."
+    - "Use os:windows only after broad Windows endpoint scope is explicitly approved."
+  broad_targeting_risk:
+    level: "medium"
+    notes:
+      - "windows_eventlog can be slow and verbose; keep exact channel/event filters."
+      - "Cloud detection payloads can contain sensitive endpoint, file path, and hash data; do not store returned rows in method memory."
+
+sql_patterns:
+  - name: "Raw Secure Endpoint Cloud detection events"
+    description: "Return bounded raw payloads for recent Secure Endpoint detection events."
+    sql: |
+      SELECT
+        datetime AS event_time,
+        channel,
+        eventid,
+        CASE
+          WHEN data LIKE '%EVENT_DETECTION%' THEN 'EVENT_DETECTION'
+          ELSE ''
+        END AS detection_type,
+        substr(data, 1, 1600) AS event_data
+      FROM windows_eventlog
+      WHERE channel = 'CiscoSecureEndpoint/Cloud'
+        AND eventid = 401
+        AND data LIKE '%EVENT_DETECTION%'
+      ORDER BY datetime DESC
+      LIMIT 50;
+  - name: "Parsed Secure Endpoint Cloud detection events"
+    description: "Extract common detection fields from nested EventData.JsonEvent payloads."
+    sql: |
+      WITH cloud_events AS (
+        SELECT
+          datetime AS event_time,
+          eventid,
+          JSON_EXTRACT(json(data), '$.EventData.JsonEvent') AS json_event
+        FROM windows_eventlog
+        WHERE channel = 'CiscoSecureEndpoint/Cloud'
+          AND eventid = 401
+          AND data LIKE '%EVENT_DETECTION%'
+      )
+      SELECT
+        event_time,
+        eventid,
+        'EVENT_DETECTION' AS detection_type,
+        JSON_EXTRACT(json(json_event), '$.dnm') AS detection_name,
+        JSON_EXTRACT(json(json_event), '$.fnd') AS file_name,
+        JSON_EXTRACT(json(json_event), '$.fpd') AS file_path,
+        JSON_EXTRACT(json(json_event), '$.fnp') AS parent_file_name,
+        JSON_EXTRACT(json(json_event), '$.pid') AS pid,
+        JSON_EXTRACT(json(json_event), '$.dete') AS detection_engine,
+        JSON_EXTRACT(json(json_event), '$.sha256d') AS sha256,
+        JSON_EXTRACT(json(json_event), '$.md5d') AS md5,
+        JSON_EXTRACT(json(json_event), '$.dfc') AS detection_file_context,
+        JSON_EXTRACT(json(json_event), '$.dfs') AS disposition
+      FROM cloud_events
+      ORDER BY event_time DESC
+      LIMIT 50;
+  - name: "Time-bounded Secure Endpoint Cloud detection events"
+    description: "Return raw detection rows written during a specific UTC time window."
+    sql: |
+      SELECT
+        datetime AS event_time,
+        channel,
+        eventid,
+        data
+      FROM windows_eventlog
+      WHERE channel = 'CiscoSecureEndpoint/Cloud'
+        AND eventid = 401
+        AND data LIKE '%EVENT_DETECTION%'
+        AND datetime >= '<start_time_utc>'
+        AND datetime <= '<end_time_utc>'
+      ORDER BY datetime DESC;
+  - name: "Time-bounded Secure Endpoint Cloud detection summary"
+    description: "Count detection events and show first/last detection timestamps for a specific UTC time window."
+    sql: |
+      SELECT
+        COUNT(*) AS detection_event_count,
+        MIN(datetime) AS first_detection_time,
+        MAX(datetime) AS last_detection_time
+      FROM windows_eventlog
+      WHERE channel = 'CiscoSecureEndpoint/Cloud'
+        AND eventid = 401
+        AND data LIKE '%EVENT_DETECTION%'
+        AND datetime >= '<start_time_utc>'
+        AND datetime <= '<end_time_utc>';
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: true
+  live_query_tested: true
+  notes:
+    - "Validated against upstream osquery 5.23.0 schema for windows_eventlog columns."
+    - "Validated with scheduled host Orbital queries on 2026-06-15."
+    - "The method record does not store endpoint names, file paths, detection names from returned rows, hashes, Job IDs, node IDs, or raw event payloads."
+
+lessons:
+  - date: "2026-06-15"
+    note: "Secure Endpoint detection telemetry shown in Event Viewer under CiscoSecureEndpoint > Cloud can be queried through windows_eventlog with channel = 'CiscoSecureEndpoint/Cloud', eventid = 401, and data LIKE '%EVENT_DETECTION%'."
+  - date: "2026-06-15"
+    note: "The useful detection fields are inside EventData.JsonEvent as a nested JSON string; parse with a two-step JSON_EXTRACT pattern."
+  - date: "2026-06-15"
+    note: "Host Based Firewall logs are separate: channel CiscoSecureEndpoint/Events with event IDs 1800/1801."
+  - date: "2026-06-15"
+    note: "Compared with the Secure Endpoint Cloud Events API, the local Windows Event Log contains compact detection telemetry but not all cloud enrichment. The matching cloud Threat Detected event can add readable event_type, severity, normalized disposition, computer/group context, API links, external IP, and MITRE tactics/techniques."
+  - date: "2026-06-15"
+    note: "The Secure Endpoint Cloud Events API can expose a separate Exploit Prevention event adjacent to the Threat Detected event. That cloud-side Exploit Prevention record can include attack details such as attacked module, base address, threat module/submodule, application type, process integrity/user, full command lines, parent-process hashes, and file metadata; these details should not be assumed to exist in the local EVENT_DETECTION Windows Event Log row."
+  - date: "2026-06-15"
+    note: "For the question 'were there any Secure Endpoint detections during this time period?', query windows_eventlog with channel = 'CiscoSecureEndpoint/Cloud', eventid = 401, data LIKE '%EVENT_DETECTION%', and explicit UTC datetime bounds. A count/first/last summary is usually enough for presence confirmation."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<file_path>"
+    - "<process_name>"
+    - "<pid>"
+    - "<hash>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "file_paths_from_results"
+    - "hashes_from_results"
+    - "detection_names_from_results"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

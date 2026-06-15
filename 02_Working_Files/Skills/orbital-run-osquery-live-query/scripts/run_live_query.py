@@ -120,6 +120,16 @@ def parse_args() -> argparse.Namespace:
         help="JSONL ledger for query job IDs and status metadata. Stores no endpoint rows.",
     )
     parser.add_argument(
+        "--task-id",
+        default=os.environ.get("ORBITAL_TASK_ID", ""),
+        help="Optional investigation/task identifier used to group multiple query jobs in the run ledger.",
+    )
+    parser.add_argument(
+        "--task-name",
+        default=os.environ.get("ORBITAL_TASK_NAME", ""),
+        help="Optional investigation/task name used to group multiple query jobs in the run ledger.",
+    )
+    parser.add_argument(
         "--scheduled",
         action="store_true",
         help="Create a scheduled query with POST /query. Host/hostname targets use this mode by default.",
@@ -226,6 +236,15 @@ def append_run_ledger(path: str, record: dict[str, object]) -> None:
     ledger_path.parent.mkdir(parents=True, exist_ok=True)
     with ledger_path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps(record, sort_keys=True) + "\n")
+
+
+def task_context(args: argparse.Namespace) -> dict[str, str]:
+    context = {}
+    if args.task_id:
+        context["task_id"] = args.task_id
+    if args.task_name:
+        context["task_name"] = args.task_name
+    return context
 
 
 def compact_status_polls(polls: list[dict]) -> list[dict]:
@@ -596,6 +615,7 @@ def poll_job_status(
 
 def main() -> int:
     args = parse_args()
+    task = task_context(args)
     load_env_file(args.env_file)
     region = (args.region or os.environ.get("ORBITAL_REGION") or "eu").strip().lower()
     if region not in SERVERS:
@@ -613,6 +633,8 @@ def main() -> int:
             "mode": "job_results" if args.job_results else "job_status",
             "orbital_queryID": args.job_id,
             "response_id": args.job_id,
+            "task_id": args.task_id,
+            "task_name": args.task_name,
             "answered_endpoint_count": len(meta),
             "row_count": len(rows),
             "table_columns": infer_table_columns(rows),
@@ -635,7 +657,8 @@ def main() -> int:
                 "answered_endpoint_count": len(meta),
                 "row_count": len(rows),
                 "summary_only": args.summary_only,
-            },
+            }
+            | task,
         )
         print(json.dumps(output, indent=2))
         return 0
@@ -692,8 +715,11 @@ def main() -> int:
         "targets": targets,
         "submitted_sql": sql,
         "query_label": args.label,
+        "query_name": args.name or args.label,
         "orbital_queryID": orbital_query_id,
         "response_id": orbital_query_id,
+        "task_id": args.task_id,
+        "task_name": args.task_name,
         "errors": payload.get("errors"),
         "answered_endpoint_count": len(meta),
         "row_count": len(rows),
@@ -717,7 +743,7 @@ def main() -> int:
         "immediate_answered_endpoint_count": len(meta),
         "immediate_row_count": len(rows),
         "errors": payload.get("errors"),
-    }
+    } | task
     append_run_ledger(args.run_ledger, ledger_base)
     output["run_ledger"] = args.run_ledger
     if args.raw_response:
@@ -741,7 +767,8 @@ def main() -> int:
                 "targets": targets,
                 "sql_sha256": sha256_text(sql),
                 "status": status,
-            },
+            }
+            | task,
         )
     if orbital_query_id and not args.no_status_poll:
         polls, poll_message = poll_job_status(
@@ -769,7 +796,8 @@ def main() -> int:
                 "sql_sha256": sha256_text(sql),
                 "polls": compact_status_polls(polls),
                 "wait_status": poll_message,
-            },
+            }
+            | task,
         )
         if not rows:
             job_results = fetch_job(region, token, str(orbital_query_id), args.timeout, results=True)
@@ -791,7 +819,8 @@ def main() -> int:
                     "sql_sha256": sha256_text(sql),
                     "answered_endpoint_count": len(result_meta),
                     "row_count": len(result_rows),
-                },
+                }
+                | task,
             )
             if result_rows or result_meta:
                 output["job_results_status"] = job_results["status"]

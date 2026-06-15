@@ -1,0 +1,207 @@
+title: "Query Windows endpoint evidence for communication to a domain"
+status: "tested"
+created: "2026-06-15"
+updated: "2026-06-15"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Query a specific Windows host for communication evidence related to a domain."
+    - "Search all related endpoint areas for a domain suffix on a Windows endpoint."
+    - "Check DNS cache, hosts file, sockets, and bounded event logs for a domain pattern."
+  keywords:
+    - "domain communication"
+    - "microsoft.com"
+    - "dns cache"
+    - "hosts file"
+    - "process sockets"
+    - "windows eventlog"
+  threat_context:
+    category: "network"
+    platforms:
+      - "windows"
+
+query_goal:
+  question: "Find current and bounded local evidence that a Windows endpoint has resolved or referenced a target domain pattern."
+  expected_information:
+    - "cached DNS names matching a domain pattern"
+    - "hosts-file overrides matching a domain pattern"
+    - "active sockets whose owning process command line contains the domain pattern"
+    - "bounded Windows event-log records from exact channels whose event data contains the domain pattern"
+  answers:
+    - "Which endpoint-local evidence areas contain a target domain string?"
+    - "Whether the Windows DNS cache currently contains matching domain names."
+    - "Whether local hosts-file mappings override matching domain names."
+    - "Whether exact constrained Windows event-log channels contain matching domain strings."
+  use_when:
+    - "The analyst has a domain or suffix IOC and wants a single host-targeted Orbital query."
+    - "A current-state DNS-cache check should be paired with hosts-file and bounded event-log evidence."
+    - "The target is an explicit Windows host or a carefully scoped Windows endpoint set."
+  do_not_use_when:
+    - "The analyst needs definitive active socket-to-domain attribution; process_open_sockets exposes IPs, not DNS names."
+    - "The endpoint does not support the needed Windows-specific tables."
+    - "The analyst needs full browser history; browser history tables were not present in the local osquery 5.23.0 schema used for this project."
+  does_not_answer:
+    - "The exact process that performed each DNS-cache lookup."
+    - "The resolver response IP for dns_cache entries."
+    - "A complete historical network timeline."
+    - "Whether active remote IPs belong to the target domain unless DNS response telemetry is available."
+  preferred_next_queries:
+    - "Use focused process_open_sockets queries for known IP addresses resolved externally from the domain."
+    - "Use Secure Endpoint firewall event queries when CiscoSecureEndpoint/Events contains the relevant connection data."
+    - "Use scripts or other telemetry sources if browser history or full DNS response history is required."
+
+catalog_context:
+  searched_terms:
+    - "dns_cache"
+    - "process_open_sockets"
+    - "windows_eventlog"
+    - "etc_hosts"
+  matches:
+    - name: "DNS Cache Monitoring"
+      id: "dns_cache_table_monitoring"
+      source: "stock_catalog"
+      relevance: "Best catalog starting point for the DNS-cache part of a domain evidence query."
+      os:
+        - "windows"
+      category: "Posture Assessment"
+      mitre: []
+  notes:
+    - "No single stock catalog entry was used as the full combined query template."
+    - "Use catalog entries as table-specific context and validate Orbital endpoint table availability before broad reuse."
+
+catalog_table_context:
+  - table: "dns_cache"
+    notes:
+      - "Current-state Windows DNS cache table with name, type, and flags columns."
+      - "Useful for domain-string evidence but does not expose response IPs or lookup timestamps."
+  - table: "etc_hosts"
+    notes:
+      - "Line-parsed hosts-file mappings with address and hostnames columns."
+      - "Useful for detecting local name-resolution overrides."
+  - table: "process_open_sockets"
+    notes:
+      - "Current active sockets table. Use with processes for process name/path/cmdline context."
+      - "Does not contain DNS names; only use domain-string filters on process metadata unless IP correlation is supplied separately."
+  - table: "processes"
+    notes:
+      - "Provides process name, path, cmdline, and start_time for socket ownership context."
+  - table: "windows_eventlog"
+    notes:
+      - "Requires a strict required-column constraint in Orbital. Use exact channel equality branches instead of broad provider_name OR conditions."
+      - "Known bounded channels for this method: Microsoft-Windows-DNS-Client/Operational and CiscoSecureEndpoint/Events."
+
+related_table_ttp_context:
+  - table: "process_open_sockets"
+    source: "Related Orbital network communication methods"
+    caution: "Socket tables show IP-layer state, not domain-layer attribution."
+    categories:
+      - id: "network"
+        title: "Network"
+    mitre:
+      tactics: []
+      techniques: []
+      subtechniques: []
+  - table: "windows_eventlog"
+    source: "Related Windows event-log catalog and project methods"
+    caution: "Event-log usefulness depends on enabled channels and exact constraints."
+    categories:
+      - id: "forensics"
+        title: "Forensics"
+    mitre:
+      tactics: []
+      techniques: []
+      subtechniques: []
+
+osquery_context:
+  tables:
+    - name: "dns_cache"
+      columns: ["name", "type", "flags"]
+    - name: "etc_hosts"
+      columns: ["address", "hostnames"]
+    - name: "process_open_sockets"
+      columns: ["pid", "protocol", "local_address", "local_port", "remote_address", "remote_port", "state"]
+    - name: "processes"
+      columns: ["pid", "name", "path", "cmdline", "start_time"]
+    - name: "windows_eventlog"
+      columns: ["channel", "datetime", "provider_name", "eventid", "data", "pid"]
+    - name: "system_info"
+      columns: ["hostname"]
+  tables_checked_but_not_used:
+    - name: "dns_lookup_events"
+      reason: "Present in upstream osquery 5.23.0 schema but unavailable on the tested Windows Orbital endpoint."
+    - name: "socket_events"
+      reason: "Present in upstream osquery 5.23.0 schema but unavailable on the tested Windows Orbital endpoint."
+  constraints:
+    - "Use exact host or carefully scoped Windows selectors first."
+    - "Use exact windows_eventlog channel equality, preferably one branch per channel."
+    - "Avoid claiming active socket-to-domain proof unless DNS response telemetry or external IP resolution is available."
+
+orbital_guidance:
+  preferred_query_type: "scheduled_host_query"
+  allow_os:
+    - "windows"
+  target_selector_guidance:
+    - "Use an exact host selector such as host:<hostname> for first validation."
+    - "For all Windows endpoints, use os:windows only after explicit approval because event-log branches can be slower."
+  broad_targeting_risk:
+    level: "medium"
+    notes:
+      - "dns_cache and etc_hosts are low cost; windows_eventlog can be slow and must be constrained."
+      - "Do not include unsupported evented tables just because they exist in the upstream osquery schema."
+
+sql_patterns:
+  - name: "Domain evidence across current Windows tables"
+    description: "Single SQL pattern for a domain suffix, using only tables that worked in the tested Windows Orbital endpoint."
+    sql: |
+      SELECT si.hostname AS host, 'dns_cache' AS evidence_area, dc.name AS indicator, dc.type AS type, '' AS process_name, '' AS process_path, '' AS remote_address, '' AS remote_port, 'flags=' || CAST(dc.flags AS TEXT) AS detail, '' AS event_time
+      FROM dns_cache dc CROSS JOIN system_info si
+      WHERE lower(dc.name) LIKE '%<domain_suffix>%'
+      UNION ALL
+      SELECT si.hostname AS host, 'hosts_file' AS evidence_area, eh.hostnames AS indicator, '' AS type, '' AS process_name, '' AS process_path, '' AS remote_address, '' AS remote_port, 'hosts mapping=' || eh.address || ' ' || eh.hostnames AS detail, '' AS event_time
+      FROM etc_hosts eh CROSS JOIN system_info si
+      WHERE lower(eh.hostnames) LIKE '%<domain_suffix>%'
+      UNION ALL
+      SELECT si.hostname AS host, 'active_socket_process_domain_literal' AS evidence_area, p.name AS indicator, CAST(pos.protocol AS TEXT) AS type, p.name AS process_name, p.path AS process_path, pos.remote_address, CAST(pos.remote_port AS TEXT), 'socket_state=' || COALESCE(pos.state, '') || '; cmdline=' || COALESCE(p.cmdline, '') AS detail, datetime(p.start_time, 'unixepoch') AS event_time
+      FROM process_open_sockets pos CROSS JOIN system_info si LEFT JOIN processes p ON p.pid = pos.pid
+      WHERE pos.remote_address NOT IN ('', '0.0.0.0', '::', '::1', '127.0.0.1')
+        AND (lower(COALESCE(p.path, '')) LIKE '%<domain_suffix>%' OR lower(COALESCE(p.cmdline, '')) LIKE '%<domain_suffix>%');
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: true
+  live_query_tested: true
+  notes:
+    - "Upstream osquery schema was checked for all listed tables and columns."
+    - "Tested against one Windows Orbital endpoint on 2026-06-15 with a scheduled host query."
+    - "The working combined query returned current DNS-cache evidence; hosts-file, active-socket literal, and constrained event-log branches returned no rows in that run."
+    - "Method record intentionally omits endpoint names, node IDs, result domains, job IDs, raw API responses, and row values."
+
+lessons:
+  - date: "2026-06-15"
+    note: "Schema-valid tables can still be unavailable in Orbital on a given endpoint. In the tested Windows endpoint, dns_lookup_events and socket_events returned no-such-table errors."
+  - date: "2026-06-15"
+    note: "windows_eventlog rejected a broad WHERE clause with provider_name OR channel conditions. Use exact channel equality branches."
+  - date: "2026-06-15"
+    note: "Use Job-ID follow-up for slow scheduled host queries instead of rerunning. The constrained event-log query took close to the scheduled expiry window."
+  - date: "2026-06-15"
+    note: "dns_cache evidence indicates current cached DNS names, not active communication or process attribution."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<domain_suffix>"
+    - "<ipv4>"
+  forbidden_values:
+    - "hostnames"
+    - "domain_names"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

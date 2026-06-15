@@ -1,7 +1,7 @@
 title: "Query Cisco Secure Endpoint Host Based Firewall events and communication on Windows"
 status: "tested"
 created: "2026-06-12"
-updated: "2026-06-12"
+updated: "2026-06-15"
 
 investigation_inputs:
   source_type: "analyst_lesson"
@@ -50,6 +50,7 @@ query_goal:
     - "Whether a connection is still active; use process_open_sockets for current-state sockets."
     - "Whether the rule was effective for endpoints that did not answer the query."
     - "Whether policy should allow or block the traffic; review Secure Endpoint policy/rule configuration."
+    - "Secure Endpoint Cloud detection details such as detection name, detected file path, parent process, PID, or file hash."
   use_when:
     - "Secure Endpoint presence has been confirmed and the analyst needs Host Based Firewall event evidence."
     - "Investigating allowed or blocked communication on a Windows endpoint protected by Secure Endpoint."
@@ -58,6 +59,7 @@ query_goal:
     - "Secure Endpoint/EDR is not installed; CiscoSecureEndpoint/Events may not exist or may contain no relevant rows."
     - "The goal is standard Windows Firewall configuration only; use windows_firewall_rules or firewall profile registry methods."
     - "The goal is active current sockets only; use process_open_sockets joined to processes."
+    - "The goal is Secure Endpoint malware, file, or behavioral detection telemetry; use CiscoSecureEndpoint/Cloud event ID 401 with EVENT_DETECTION instead."
   preferred_next_queries:
     - "Verify Cisco Secure Endpoint presence before querying CiscoSecureEndpoint/Events."
     - "Current process communication check with process_open_sockets joined to processes."
@@ -381,6 +383,12 @@ lessons:
     note: "Use EventData fields for protocol, local/remote IP and port, direction, PID, application path, rule GUID, rule name, and configuration GUID."
   - date: "2026-06-12"
     note: "Follow event-log evidence with process_open_sockets joined to processes when checking whether communication is still active."
+  - date: "2026-06-15"
+    note: "For Windows Event Log investigations across multiple Cisco Secure Client channels, avoid one broad multi-channel union first. Start with the known Secure Endpoint channel CiscoSecureEndpoint/Events and event IDs 1800/1801, then fan out to other exact channels only if needed."
+  - date: "2026-06-15"
+    note: "When a multi-channel windows_eventlog query does not return within the scheduled window, keep the Job ID and follow up with narrower exact-channel queries instead of rerunning the same broad query."
+  - date: "2026-06-15"
+    note: "Do not confuse Host Based Firewall events with Secure Endpoint Cloud detection telemetry. Host Based Firewall uses channel CiscoSecureEndpoint/Events with event IDs 1800 and 1801. Secure Endpoint detections use channel CiscoSecureEndpoint/Cloud with event ID 401 and EVENT_DETECTION payloads."
 
 privacy:
   stores_endpoint_results: false

@@ -457,6 +457,56 @@ sql_patterns:
       WHERE lower(name) LIKE '%cisco%'
          OR lower(display_name) LIKE '%cisco%'
       ORDER BY service_name;
+  - name: "Secure Endpoint and Secure Client driver artifact set"
+    description: "Check known Secure Endpoint / Secure Client connector driver artifacts using services, drivers, and exact-path file evidence."
+    sql_file: "02_Working_Files/Generated_Queries/windows_secure_endpoint_secure_client_driver_set_marble.sql"
+    evidence_tables:
+      - "drivers"
+      - "services"
+      - "file"
+    driver_names:
+      - "bddci"
+      - "Trufos"
+      - "ImmunetSelfProtectDriver"
+      - "ImmunetProtectDriver"
+      - "ImmunetNetworkMonitorDriver"
+      - "CiscoAMPHeurDriver"
+      - "CiscoAMPELAMDriver"
+      - "CiscoAMPCEFWDriver"
+      - "ancrcl"
+    notes:
+      - "Use exact path constraints for the file table."
+      - "Driver state can vary by connector version, policy, feature enablement, and reboot state."
+      - "A STOPPED BOOT_START ELAM driver is not automatically a problem."
+      - "A driver service can report RUNNING even when start_type reports DISABLED; interpret driver state with product context."
+  - name: "Cisco Secure Client and Secure Endpoint CLSID registry entries"
+    description: "Find Cisco-related COM class registrations under HKEY_CLASSES_ROOT\\CLSID and return all values under matching CLSID keys."
+    sql_file: "02_Working_Files/Generated_Queries/windows_cisco_hkcr_clsid_entries.sql"
+    sql: |
+      WITH matching_clsids AS (
+        SELECT DISTINCT key AS clsid_key
+        FROM registry
+        WHERE key LIKE 'HKEY_CLASSES_ROOT\CLSID\{%'
+          AND (
+            data LIKE '%Cisco%'
+            OR data LIKE '%AnyConnect%'
+            OR data LIKE '%Secure Client%'
+            OR data LIKE '%SecureClient%'
+          )
+      )
+      SELECT
+        r.key AS reg_key,
+        r.path,
+        r.name,
+        r.type,
+        r.data,
+        datetime(r.mtime, 'unixepoch', 'UTC') AS modified_utc
+      FROM registry r
+      JOIN matching_clsids m
+        ON r.key = m.clsid_key
+        OR r.key LIKE m.clsid_key || '\%'
+      ORDER BY r.key, r.path, r.name
+      LIMIT 500;
   - name: "Secure Endpoint uninstall and install registry evidence"
     description: "Registry evidence from uninstall keys and Cisco AMP/Secure Endpoint paths."
     sql: |
@@ -516,6 +566,8 @@ sql_patterns:
           r.key LIKE 'HKEY_CLASSES_ROOT\Installer\Products\%%'
           OR r.key LIKE 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\%%'
           OR r.key LIKE 'HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\%%'
+          OR r.key LIKE 'HKEY_LOCAL_MACHINE\SOFTWARE\Cisco\Cloud Management%%'
+          OR r.key LIKE 'HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Cisco\Cloud Management%%'
         )
         AND (
           lower(r.data) LIKE '%cisco%'
@@ -523,6 +575,7 @@ sql_patterns:
           OR lower(r.data) LIKE '%secure endpoint%'
           OR lower(r.data) LIKE '%amp%'
           OR lower(r.data) LIKE '%anyconnect%'
+          OR lower(r.path) LIKE '%\cisco\cloud management%'
         )
       UNION ALL
       SELECT
@@ -600,6 +653,16 @@ lessons:
     note: "When an analyst asks to extract Secure Client / Secure Endpoint context from a Windows host, start with the combined inventory method over programs, registry installer/uninstall keys, services, and processes. Avoid process_memory_map unless the explicit question is Exploit Prevention DLL injection."
   - date: "2026-06-14"
     note: "For installed Secure Client modules on Windows, prefer the low-impact programs table filtered to Cisco Secure Client product names and SecureClientUI. Return module, installed_product, version, publisher, install_location, install_source, install_date, and uninstall_string."
+  - date: "2026-06-15"
+    note: "Secure Client Cloud Management registry evidence can appear under HKEY_LOCAL_MACHINE\\SOFTWARE\\Cisco\\Cloud Management and HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Cisco\\Cloud Management, including a CMID subkey. Include these branches when collecting Secure Client registry context; do not limit the registry query to SecureClient or Cisco Secure Client key names."
+  - date: "2026-06-15"
+    note: "Cisco Secure Client / Secure Endpoint can register COM classes under HKEY_CLASSES_ROOT\\CLSID. Search for Cisco, AnyConnect, Secure Client, or SecureClient in CLSID value data, then expand all values under the matching CLSID key to capture AppID, InprocServer32, ProgID, TypeLib, and VersionIndependentProgID context."
+  - date: "2026-06-15"
+    note: "Orbital stock catalog includes installed-product inventory through the programs table, including Installed Programs On Windows Host and Installed Programs Search. Do not assume WMI Win32_Product is available as an Orbital table or low-impact; native Win32_Product inventory can be slow and can trigger MSI consistency checks. Prefer programs for Secure Client installation searches."
+  - date: "2026-06-15"
+    note: "For Secure Endpoint / Secure Client driver context, check the known connector driver set with services, drivers, and exact-path file lookups: bddci, Trufos, ImmunetSelfProtectDriver, ImmunetProtectDriver, ImmunetNetworkMonitorDriver, CiscoAMPHeurDriver, CiscoAMPELAMDriver, CiscoAMPCEFWDriver, and ancrcl. Avoid broad wildcard file-table scans."
+  - date: "2026-06-15"
+    note: "For additional Cisco endpoint driver discovery, query drivers plus services where service_type contains DRIVER, filter for Cisco/Secure Client/AMP/Immunet/Bitdefender path or naming hints, and exclude the already-known connector driver set. Additional Cisco endpoint driver artifacts observed through this method include CiscoEVMDriver, CiscoEVMElam, acsock, cscnvmpt, vpnva, CiscoSAM, and csadc. Treat CiscoSAM exact module ownership as a candidate until verified against product documentation."
   - date: "2026-06-14"
     note: "For TDNR module readiness on Windows, check the five diagram-derived modules with low-impact evidence: EDR/Secure Endpoint, Orbital Query & Script, EVM, NVM, and Digital Forensics/XDR Forensics. Use programs for installation evidence and services/processes for active status."
 

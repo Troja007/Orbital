@@ -126,6 +126,9 @@ Interpretation notes:
 - `STOPPED / BOOT_START` for ELAM or adapter drivers can be normal depending on driver type and runtime state.
 - Secure Client module versions can differ from the base VPN version.
 - Installation evidence should combine `programs`, Microsoft Installer/uninstall registry keys, `services`, and current `processes`.
+- For installed-product inventory in Orbital, prefer the catalog-backed `programs` table patterns such as `Installed Programs On Windows Host` and `Installed Programs Search`. Do not assume WMI `Win32_Product` is available as an Orbital table or safe to use; native Windows `Win32_Product` inventory can be slow and is known to trigger MSI consistency checks in some environments.
+- Registry evidence for Secure Client Cloud Management can appear outside the `SecureClient` key family under `HKEY_LOCAL_MACHINE\SOFTWARE\Cisco\Cloud Management` and `HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Cisco\Cloud Management`; the `CMID` subkey is relevant to Cloud Management identity/component context and should be included in Secure Client registry queries.
+- Secure Client and Secure Endpoint can also register COM classes under `HKEY_CLASSES_ROOT\CLSID`. Cisco-related CLSID evidence observed in this project includes `Cisco Secure Client Surrogate64` with `InprocServer32` pointing to `C:\Program Files (x86)\Cisco\Cisco Secure Client\NVM\Surrogate64.dll`, and `Cisco AMP AMSI Provider` with `InProcServer32` pointing to an AMP `scriptid\damsicom64.dll` path. Include `HKEY_CLASSES_ROOT\CLSID` searches when building deep registry context for Secure Client / Secure Endpoint.
 
 ### Cisco Orbital
 
@@ -143,6 +146,38 @@ Orbital is not Secure Endpoint/Secure Client, but it is part of the same endpoin
 | `AIR.exe` | Cisco Forensics AIR | `C:\Program Files\Cisco\Forensics\AIR\AIR.exe` |
 
 Treat AIR as related Cisco context, not as Secure Endpoint/Secure Client core health.
+
+### Secure Endpoint / Secure Client Driver Artifacts
+
+Full observed driver/service/file evidence from current Windows Connector context. This list combines the original Secure Endpoint / Secure Client driver-set query and the follow-up query for additional Cisco endpoint driver candidates.
+
+Observed on the reference Windows host through Orbital jobs:
+
+- `wA7HwCGFTmdmi3LGdzKeKQ`: known Secure Endpoint / Secure Client driver set from `drivers`, `services`, and exact-path `file` checks.
+- `CJ1qcwyTY3idJuZs4Ekuog`: additional Cisco endpoint driver discovery from `drivers` and driver-type `services`, excluding the known driver set.
+
+Treat this as product artifact knowledge, not as a complete health verdict; installed driver state can change by connector version, policy, feature enablement, and reboot state. A driver can appear in more than one evidence source; for example, `vpnva` was visible in both `drivers` and `services` but represents one driver artifact.
+
+| Driver/service | Typical path | Role / module hint | Observed state / version notes |
+| --- | --- | --- | --- |
+| `bddci` / `bddci.sys` | `C:\Windows\System32\Drivers\bddci.sys` | URLScannerEngine / Bitdefender BDDCI component used by connector stack | Observed `3.0.7.18`; service can run as `KERNEL_DRIVER` with `AUTO_START`. |
+| `Trufos` / `trufos.sys` | `C:\Windows\System32\Drivers\trufos.sys` | Trufos kernel module / Bitdefender Antivirus component used by connector stack | Observed `2.5.4.62`; service can run as `FILE_SYSTEM_DRIVER` with `DEMAND_START`. |
+| `ImmunetSelfProtectDriver` / `immunetselfprotect.sys` | `C:\Windows\System32\Drivers\immunetselfprotect.sys` | Secure Endpoint self-protection driver | Observed `7.3.2.575`; service can run as `FILE_SYSTEM_DRIVER` with `SYSTEM_START`. |
+| `ImmunetProtectDriver` / `immunetprotect.sys` | `C:\Windows\System32\Drivers\immunetprotect.sys` | Secure Endpoint protection driver | Observed `7.3.2.575`; service can run as `FILE_SYSTEM_DRIVER` with `SYSTEM_START`. |
+| `ImmunetNetworkMonitorDriver` / `ImmunetNetworkMonitor.sys` | `C:\Windows\System32\Drivers\ImmunetNetworkMonitor.sys` | Secure Endpoint network monitor driver | Observed `2.0.1.510`; service can run as `KERNEL_DRIVER` with `AUTO_START`. |
+| `CiscoAMPHeurDriver` / `CiscoAMPHeurDriver.sys` | `C:\Windows\System32\Drivers\CiscoAMPHeurDriver.sys` | Secure Endpoint heuristic driver | Observed `1.0.0.514`; service can run as `FILE_SYSTEM_DRIVER` with `SYSTEM_START`. |
+| `CiscoAMPELAMDriver` / `CiscoAMPELAMDriver.sys` | `C:\Windows\System32\Drivers\CiscoAMPELAMDriver.sys` | Secure Endpoint ELAM driver | Observed `1.0.0.37`; `STOPPED / BOOT_START` can be normal for ELAM-style drivers. |
+| `CiscoAMPCEFWDriver` / `CiscoAMPCEFWDriver.sys` | `C:\Windows\System32\Drivers\CiscoAMPCEFWDriver.sys` | Common Event Framework driver | Observed `7.3.2.575`; service can run as `FILE_SYSTEM_DRIVER` with `SYSTEM_START`. |
+| `ancrcl` / `ancrcl64.sys` | `C:\Program Files\Cisco\AMP\endpointisolation\ancrcl64.sys` | Endpoint isolation / network driver framework socket layer interceptor | Observed `1.3.2.0`; service can be `RUNNING` even when start type reports `DISABLED`. |
+| `CiscoEVMDriver` / `evm_driver.sys` | `C:\Program Files\Cisco\Cisco Secure Client\EVM\bin\evm_driver.sys` | Secure Client Endpoint Visibility Module kernel driver | Service can run as `KERNEL_DRIVER` with `DEMAND_START`. |
+| `CiscoEVMElam` / `evm_elam.sys` | `C:\Windows\System32\drivers\evm_elam.sys` | Secure Client Endpoint Visibility Module ELAM/PPL attestation driver | `STOPPED / BOOT_START` can be normal for ELAM-style drivers. |
+| `acsock` / `acsock64.sys` | `C:\Windows\System32\DRIVERS\acsock64.sys` | Secure Client kernel driver framework socket layer interceptor | Service can run as `KERNEL_DRIVER` with `DEMAND_START`. |
+| `cscnvmpt` / `cscnvmpt64.sys` | `C:\Program Files (x86)\Cisco\Cisco Secure Client\NVM\cscnvmpt64.sys` | Secure Client NVM packet/tap driver | Service can be `RUNNING` even when start type reports `DISABLED`. |
+| `vpnva` / `vpnva64-6.sys` | `C:\Windows\System32\drivers\vpnva64-6.sys` | Cisco AnyConnect / Secure Client virtual miniport adapter | Observed `5.1.11.80`; service can be `STOPPED` with `DEMAND_START` when VPN is not active. |
+| `CiscoSAM` / `CiscoSAM.sys` | `C:\Windows\System32\Drivers\CiscoSAM.sys` | Cisco endpoint file-system driver candidate | Observed as `FILE_SYSTEM_DRIVER` with `SYSTEM_START`; exact module ownership still needs product-documentation validation. |
+| `csadc` / `csadc.sys` | `C:\Windows\System32\DRIVERS\csadc.sys` | Cisco DeviceControl driver | Observed as `KERNEL_DRIVER` with `BOOT_START`; stopped boot-start state can be normal depending on feature use and reboot state. |
+
+For driver checks, combine `services`, `drivers`, and exact-path `file` lookups. The `file` table should use exact paths or constrained path lists; broad wildcard searches can fail or be expensive.
 
 ## Important Paths
 
@@ -584,9 +619,105 @@ WHERE r.key LIKE 'HKEY_CLASSES_ROOT\Installer\Products\%%'
 ORDER BY si.hostname, r.key, r.name;
 ```
 
-### Secure Endpoint Event Log Context
+### Secure Endpoint Windows Event Log Context
 
-Purpose: read Cisco Secure Endpoint firewall/event telemetry when available. Based on a redacted organization catalog query pattern for Windows firewall/event telemetry.
+Purpose: read Cisco Secure Endpoint endpoint telemetry written into Windows Event Log channels. Do not treat all `CiscoSecureEndpoint/*` channels as equivalent; the channel and event ID determine the telemetry type.
+
+| Event Viewer path | osquery `windows_eventlog.channel` | Event ID | Meaning | Primary query method |
+| --- | --- | --- | --- | --- |
+| `Applications and Services Logs > CiscoSecureEndpoint > Cloud` | `CiscoSecureEndpoint/Cloud` | `401` | Secure Endpoint Cloud detection telemetry. Detection payloads include `EVENT_DETECTION` and a nested `EventData.JsonEvent` JSON string. | `02_Working_Files/Query_Methods/suspicious_processes/windows_secure_endpoint_cloud_detection_events.yaml` |
+| `Applications and Services Logs > CiscoSecureEndpoint > Events` | `CiscoSecureEndpoint/Events` | `1800` | Secure Endpoint Host Based Firewall allow event. | `02_Working_Files/Query_Methods/network/windows_secure_endpoint_firewall_events_and_communication.yaml` |
+| `Applications and Services Logs > CiscoSecureEndpoint > Events` | `CiscoSecureEndpoint/Events` | `1801` | Secure Endpoint Host Based Firewall block event. | `02_Working_Files/Query_Methods/network/windows_secure_endpoint_firewall_events_and_communication.yaml` |
+
+Use exact channel equality in Orbital queries. Broad multi-channel `windows_eventlog` searches can be slow or fail to return during the scheduled window.
+
+#### Secure Endpoint Cloud Detection Events
+
+Purpose: find Secure Endpoint malware/file/behavioral detections shown in Event Viewer under `CiscoSecureEndpoint > Cloud`. These are not Host Based Firewall events.
+
+```sql
+WITH cloud_events AS (
+  SELECT
+    datetime AS event_time,
+    eventid,
+    JSON_EXTRACT(json(data), '$.EventData.JsonEvent') AS json_event
+  FROM windows_eventlog
+  WHERE channel = 'CiscoSecureEndpoint/Cloud'
+    AND eventid = 401
+    AND data LIKE '%EVENT_DETECTION%'
+)
+SELECT
+  event_time,
+  eventid,
+  'EVENT_DETECTION' AS detection_type,
+  JSON_EXTRACT(json(json_event), '$.dnm') AS detection_name,
+  JSON_EXTRACT(json(json_event), '$.fnd') AS file_name,
+  JSON_EXTRACT(json(json_event), '$.fpd') AS file_path,
+  JSON_EXTRACT(json(json_event), '$.fnp') AS parent_file_name,
+  JSON_EXTRACT(json(json_event), '$.pid') AS pid,
+  JSON_EXTRACT(json(json_event), '$.dete') AS detection_engine,
+  JSON_EXTRACT(json(json_event), '$.sha256d') AS sha256,
+  JSON_EXTRACT(json(json_event), '$.md5d') AS md5
+FROM cloud_events
+ORDER BY event_time DESC
+LIMIT 50;
+```
+
+The useful detection details are embedded as a nested JSON string in `EventData.JsonEvent`. Use the two-step `JSON_EXTRACT(json(JSON_EXTRACT(...)))` pattern when parsing fields.
+
+#### Secure Endpoint Cloud API Compared With Windows Event Log
+
+The local Windows Event Log and the Secure Endpoint Cloud Events API do not expose the same shape of data.
+
+Windows Event Log `CiscoSecureEndpoint/Cloud` event ID `401` contains local detection telemetry. The `data` column is a JSON object with fields such as `EventData.Description`, `EventData.EventTypeId`, `EventData.EventId`, `EventData.TimeStamp`, and a nested JSON-formatted string in `EventData.JsonEvent`. The nested `JsonEvent` contains compact endpoint-side fields such as detection name, detected file name/path, parent file name when present, PID, engine/context fields, and hashes.
+
+The Secure Endpoint Cloud Events API normalizes and enriches this data. For a matching `Threat Detected` event, cloud-visible fields can include readable `event_type`, `severity`, normalized file disposition, computer/group context, external IP, API links, and MITRE tactics/techniques. These are not directly present as normalized fields in the local Windows Event Log row.
+
+The cloud API can also return a separate `Exploit Prevention` event adjacent to the `Threat Detected` event. This richer Exploit Prevention record can include attack details that are not included in the local `EVENT_DETECTION` Windows Event Log row, such as attacked module, base address, threat module/submodule, application type, process integrity/user, full process command line, parent full command line, parent process hashes, file size, product metadata, and certificate metadata.
+
+Interpretation: the Windows Event Log is enough to prove that a Secure Endpoint detection was written locally and to extract compact detection evidence. It is not equivalent to the Secure Endpoint Cloud Events API. For severity, MITRE mapping, cloud grouping, API trajectory links, normalized disposition, and detailed Exploit Prevention attack details, query the Secure Endpoint backend or use the console/API enrichment path.
+
+#### Time-Bounded Detection Checks
+
+Use the Windows Event Log when the investigation question is whether Secure Endpoint wrote any detection events during a specific time period. This is a good local confirmation check after a test, alert simulation, or suspected activity window.
+
+Detailed rows for a time window:
+
+```sql
+SELECT
+  datetime AS event_time,
+  channel,
+  eventid,
+  data
+FROM windows_eventlog
+WHERE channel = 'CiscoSecureEndpoint/Cloud'
+  AND eventid = 401
+  AND data LIKE '%EVENT_DETECTION%'
+  AND datetime >= '<start_time_utc>'
+  AND datetime <= '<end_time_utc>'
+ORDER BY datetime DESC;
+```
+
+Summary for a time window:
+
+```sql
+SELECT
+  COUNT(*) AS detection_event_count,
+  MIN(datetime) AS first_detection_time,
+  MAX(datetime) AS last_detection_time
+FROM windows_eventlog
+WHERE channel = 'CiscoSecureEndpoint/Cloud'
+  AND eventid = 401
+  AND data LIKE '%EVENT_DETECTION%'
+  AND datetime >= '<start_time_utc>'
+  AND datetime <= '<end_time_utc>';
+```
+
+Interpretation: a positive count proves that Secure Endpoint detection events were written locally in that time window. It does not provide full cloud enrichment such as severity, MITRE mapping, trajectory links, or detailed Exploit Prevention attack context.
+
+#### Secure Endpoint Host Based Firewall Events
+
+Purpose: read Cisco Secure Endpoint Host Based Firewall allow/block telemetry when available. Based on a redacted organization catalog query pattern for Windows firewall/event telemetry.
 
 ```sql
 SELECT
@@ -617,7 +748,7 @@ ORDER BY datetime DESC
 LIMIT 500;
 ```
 
-Validate `windows_eventlog` availability before using this in broad automation; evented or log-backed tables can vary by endpoint and configuration.
+Validate `windows_eventlog` availability before using this in broad automation; evented or log-backed tables can vary by endpoint and configuration. If the investigation asks for detections, start with `CiscoSecureEndpoint/Cloud` event ID `401`; if it asks for local firewall decisions, use `CiscoSecureEndpoint/Events` event IDs `1800` and `1801`.
 
 ## API Body Pattern
 

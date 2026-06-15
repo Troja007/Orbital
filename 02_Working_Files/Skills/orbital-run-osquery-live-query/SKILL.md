@@ -15,7 +15,7 @@ Use `orbital-api-access` for API connectivity tests, authentication troubleshoot
 
 Before executing anything, confirm these inputs are defined:
 
-- Well-defined target selector: at least one explicit Orbital target selector, for example `host:MONIKA`, `ipv4:10.0.0.1`, `netmask:192.168.1.168/24`, `orb:<id>`, or `queryId:<id>`.
+- Well-defined target selector: at least one explicit Orbital target selector, for example `host:EXAMPLE-HOST`, `ipv4:10.0.0.1`, `netmask:192.168.1.168/24`, `orb:<id>`, or `queryId:<id>`.
 - SQL: either user-provided SQL or enough user intent to build SQL.
 - Query purpose: a short label/name for the query.
 - Region/credentials: project credentials through env vars or `02_Working_Files/orbital_credentials.env`.
@@ -33,11 +33,13 @@ Important ID distinction:
 Operational run ledger:
 
 - Every future query submission must persist the returned `orbital_queryID` / Job ID before attempting result interpretation.
+- When one analyst task requires multiple Orbital query submissions, assign one stable task name before the first submission and pass it to every helper call with `--task-name`. If a short stable identifier is useful, also pass `--task-id`. The run ledger must then allow the full set of query names and Job IDs for that task to be reconstructed.
 - Host-targeted queries must be scheduled runs with 2-minute expiry unless the user explicitly requests live mode.
 - The project helper writes query run metadata to `local/orbital_query_runs/live_query_runs.jsonl` by default. This path is ignored by git and is for operational follow-up only.
-- The ledger may include job ID, label, query name, target selectors, SQL hash, API status, and job/status check metadata.
+- The ledger may include task ID, task name, job ID, label, query name, target selectors, SQL hash, API status, and job/status check metadata.
 - Do not store endpoint result rows in the ledger or method memory.
 - If the API response does not expose a Job ID for a host-targeted scheduled query, record that fact in the ledger and report it as unexpected.
+- For final answers after multi-query tasks, include a compact "Queries Run" summary with each query name/label, `orbital_queryID`, status/error outcome, and why that query was needed. This is operational metadata and may include Job IDs; do not include endpoint result rows in method memory.
 
 ## Project Context Checks
 
@@ -89,6 +91,7 @@ If the output shows `CODEX_SANDBOX_NETWORK_DISABLED=1` or socket calls fail with
 6. Verify table names and column names against `osquery_schema_5_23_0.json` when the query uses upstream osquery tables.
 7. Check platform assumptions, evented tables, required constraints, expensive tables, and whether `os` or `allowOS` filters are needed.
 8. Choose a short, generic query label. Prefer `codex_<table_or_goal>`.
+8a. If the task may need more than one query submission, choose a stable `--task-name` before the first submission. Reuse it for corrected, follow-up, or supporting queries so the ledger can show which Job IDs were needed for the one task.
 9. Before executing, show the user:
    - the exact SQL query
    - the exact target selector list
@@ -98,6 +101,7 @@ If the output shows `CODEX_SANDBOX_NETWORK_DISABLED=1` or socket calls fail with
 12. Run `scripts/run_live_query.py`. For `host:` or `hostname:` targets, the helper defaults to scheduled mode: `POST /query`, `expiry = now + 120 seconds`, and `interval = 0`.
 13. After completion, always report:
    - `orbital_queryID` / Job ID from the response `ID` field
+   - task name/task ID when used for a multi-query task
    - whether the helper stored the run in `local/orbital_query_runs/live_query_runs.jsonl`
    - how many endpoints answered
    - row count
@@ -115,7 +119,8 @@ If the output shows `CODEX_SANDBOX_NETWORK_DISABLED=1` or socket calls fail with
    - if `done_count` does not increase between checks, stop waiting and show a message with the `orbital_queryID`
    - if the 20 second maximum is reached, stop waiting and show a message with the `orbital_queryID`
 17. For expensive tables such as `process_memory_map`, `hash`, `authenticode`, broad `file`, or event/log tables, never rerun the same query to validate execution. First check the stored Job ID. If no Job ID was captured, treat that as a workflow defect for host-targeted queries and use scheduled mode on the next run.
-18. If the SQL/table/caveat pattern is reusable, ask whether to save or update it through `orbital-query-method-memory`. Save only the method, not endpoint result rows or tenant-specific output.
+18. If multiple query submissions were required, review the run ledger entries for the task name before the final response and list the query names and Job IDs that were needed to gather or validate the information.
+19. If the SQL/table/caveat pattern is reusable, ask whether to save or update it through `orbital-query-method-memory`. Save only the method, not endpoint result rows or tenant-specific output.
 
 ## Query Helper Script
 
@@ -123,9 +128,10 @@ Run the helper from the Orbital project root. It reads credentials from environm
 
 ```bash
 python3 /Users/tschranz/.codex/skills/orbital-run-osquery-live-query/scripts/run_live_query.py \
-  --target host:MONIKA \
+  --target host:EXAMPLE-HOST \
   --label codex_processes \
   --name "codex scheduled processes lookup" \
+  --task-name "Investigate specific endpoint process state" \
   --sql-file /tmp/query.sql
 ```
 
@@ -141,7 +147,7 @@ The SQL can also be piped through stdin:
 ```bash
 printf '%s\n' "SELECT pid, name, path, cmdline FROM processes ORDER BY pid LIMIT 50;" \
   | python3 /Users/tschranz/.codex/skills/orbital-run-osquery-live-query/scripts/run_live_query.py \
-      --target host:MONIKA \
+      --target host:EXAMPLE-HOST \
       --label codex_processes \
       --name "codex scheduled process inventory"
 ```
@@ -151,7 +157,7 @@ To force immediate live mode, use `--live`. Only do this when the user explicitl
 ```bash
 python3 /Users/tschranz/.codex/skills/orbital-run-osquery-live-query/scripts/run_live_query.py \
   --live \
-  --target host:MONIKA \
+  --target host:EXAMPLE-HOST \
   --label codex_processes \
   --sql-file /tmp/query.sql
 ```
@@ -175,7 +181,7 @@ The helper polls job status briefly after new query submission by default when t
 
 ```bash
 python3 /Users/tschranz/.codex/skills/orbital-run-osquery-live-query/scripts/run_live_query.py \
-  --target host:MONIKA \
+  --target host:EXAMPLE-HOST \
   --label codex_processes \
   --sql-file /tmp/query.sql \
   --no-status-poll
@@ -185,7 +191,7 @@ Multiple target selectors are allowed:
 
 ```bash
 python3 /Users/tschranz/.codex/skills/orbital-run-osquery-live-query/scripts/run_live_query.py \
-  --target host:MONIKA \
+  --target host:EXAMPLE-HOST \
   --target ipv4:192.168.1.% \
   --allow-os windows \
   --label codex_logged_in_users \
@@ -204,8 +210,8 @@ Supported credential inputs:
 
 Use documented selectors from `Orbital_Target_Node_Selectors.md`. Examples:
 
-- `host:MONIKA`
-- `hostname:MONIKA`
+- `host:EXAMPLE-HOST`
+- `hostname:EXAMPLE-HOST`
 - `ipv4:192.168.1.%`
 - `ip:10.0.0.1`
 - `netmask:192.168.1.168/24`
@@ -227,6 +233,9 @@ The helper emits JSON:
 
 - `submitted_sql`: SQL submitted to Orbital.
 - `query_label`: label submitted to Orbital.
+- `query_name`: display name submitted to Orbital.
+- `task_id`: optional investigation/task identifier used to group multiple query jobs.
+- `task_name`: optional investigation/task name used to group multiple query jobs.
 - `query_mode`: `scheduled` or `live`.
 - `api_path`: `/query` for scheduled mode or `/query/run` for live mode.
 - `targets`: target selectors submitted to Orbital.
