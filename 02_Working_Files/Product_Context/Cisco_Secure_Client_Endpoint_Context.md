@@ -193,6 +193,75 @@ Use path discovery rather than fixed versions.
 | Orbital binaries | `C:\Program Files\Cisco\Orbital\%` |
 | Forensics AIR | `C:\Program Files\Cisco\Forensics\AIR\%` |
 
+### Observed Cisco Folder Structure
+
+Observed Windows folder structure from a reference host through Orbital `file` table directory-only queries. Treat this as practical installation context, not a guaranteed universal layout. Installed folders vary by product version, enabled modules, migration history, and policy.
+
+Source jobs:
+
+- `Ex8xRLoHANV-FJV4LPHKSQ`: Cisco root directories under `C:\Program Files\Cisco`, `C:\Program Files (x86)\Cisco`, and `C:\ProgramData\Cisco`.
+- `Wr3bVZXl3HaOJKOEe7orAw`: second-level Cisco product/module directories below the discovered roots.
+
+```text
+C:\Program Files\Cisco
+├─ AMP
+│  ├─ 8.6.1.30582
+│  ├─ Quarantine
+│  ├─ URLScanner
+│  ├─ apde
+│  ├─ cefw
+│  ├─ clamav
+│  ├─ config
+│  ├─ dc
+│  ├─ elam
+│  ├─ endpointisolation
+│  ├─ exprev
+│  ├─ heuristic
+│  ├─ ioc
+│  ├─ jobs
+│  ├─ scriptid
+│  ├─ tetra
+│  ├─ tmp
+│  └─ update
+├─ Cisco Secure Client
+│  ├─ CM
+│  └─ EVM
+└─ Forensics
+   └─ AIR
+
+C:\Program Files (x86)\Cisco
+├─ Cisco AnyConnect Secure Mobility Client
+└─ Cisco Secure Client
+   ├─ DART
+   ├─ Install
+   ├─ NVM
+   ├─ Plugins
+   ├─ UI
+   └─ ossl-modules
+
+C:\ProgramData\Cisco
+├─ AMP
+├─ Cisco AnyConnect Secure Mobility Client
+└─ Cisco Secure Client
+   ├─ CustomerExperienceFeedback
+   ├─ EVM
+   ├─ Help
+   ├─ NVM
+   ├─ VPN
+   └─ l10n
+```
+
+Interpretation notes:
+
+- Secure Endpoint connector binaries and engines commonly appear under `C:\Program Files\Cisco\AMP`.
+- Endpoint isolation artifacts appear under `C:\Program Files\Cisco\AMP\endpointisolation`.
+- Exploit Prevention artifacts appear under `C:\Program Files\Cisco\AMP\exprev`.
+- Secure Client Cloud Management and Endpoint Visibility Module directories were observed under `C:\Program Files\Cisco\Cisco Secure Client`.
+- Secure Client UI, DART, NVM, plugins, and compatibility/migration paths were observed under `C:\Program Files (x86)\Cisco\Cisco Secure Client`.
+- Runtime/configuration data was observed under `C:\ProgramData\Cisco\Cisco Secure Client`.
+
+For folder discovery with Orbital, query `file` with `type = 'directory'` and constrain paths to known Cisco roots. Avoid unrestricted recursive filesystem searches.
+
 ## Query Building Blocks
 
 Use these tables for monitor/check logic:

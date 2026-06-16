@@ -1,0 +1,101 @@
+title: "Windows Orbital Catalog Query Validation"
+status: "tested"
+created: "2026-06-16"
+updated: "2026-06-16"
+
+investigation_inputs:
+  source_type: "analyst_task"
+  examples:
+    - "Execute each Windows-related Orbital catalog query against a test endpoint and compare catalog intent with result shape."
+    - "Validate Windows catalog queries one by one and document how to interpret the output."
+    - "Run Windows catalog entries with delay between jobs and stop if the endpoint stops responding."
+  keywords:
+    - "windows catalog"
+    - "catalog validation"
+    - "result interpretation"
+    - "job id"
+    - "endpoint overload"
+
+query_goal: >
+  Validate Windows-related Orbital Catalog queries against a controlled Windows endpoint,
+  preserve every execution-specific Job ID, identify query compatibility problems, and
+  create reusable guidance for reading catalog result shapes without storing endpoint rows.
+
+catalog_context:
+  source: "Orbital Catalog API stock query catalog"
+  selection: "active Windows-related stock catalog queries"
+  total_catalog_entries_validated: 384
+  note: >
+    Catalog entries may contain one or many osQuery blocks. When validating or
+    executing a catalog entry, preserve all blocks and their labels so the result
+    can be mapped back to the catalog definition.
+
+catalog_table_context:
+  note: >
+    This method validates full catalog entries rather than one table-specific
+    SQL pattern. For individual investigations, enrich the specific table method
+    from the catalog entry used.
+
+related_table_ttp_context:
+  note: >
+    Catalog categories and MITRE mappings are useful for routing and prioritizing
+    review, but they do not turn every returned row into a detection claim.
+
+osquery_context:
+  validation_rule: >
+    Validate catalog SQL against the actual Orbital/osquery runtime, not only
+    upstream osquery documentation. A stock catalog entry can fail if the endpoint
+    runtime lacks a referenced column.
+  observed_incompatibilities:
+    - catalog_id: "eqnedt32_child_processes_monitoring"
+      issue: "Endpoint SQL error: no such column: p.is_elevated_token"
+    - catalog_id: "windows_hh_process_monitoring"
+      issue: "Endpoint SQL error: no such column: is_elevated_token"
+
+orbital_guidance:
+  query_type: "scheduled query via POST /query for durable Job ID tracking"
+  targeting: >
+    Use explicit host selectors for validation. Avoid `all` or broad dynamic
+    selectors when validating high-volume catalog content.
+  pacing: "Wait at least 30 seconds between catalog entries during endpoint validation."
+  job_id_handling: >
+    Store the execution-specific `orbital_queryID`, catalog ID/name, status,
+    row count, labels, endpoint errors, and timestamp for every catalog entry.
+  result_checking: >
+    If a result-fetch API call fails but a Job ID exists, re-check the existing
+    Job ID before marking the endpoint as failed or launching a duplicate query.
+  broad_target_warning: >
+    Full snapshots, loaded modules, broad file searches, registry searches,
+    certificate searches, temporary directory listings, and service inventory
+    can produce large result sets. Narrow parameters before broad deployment.
+
+sql_patterns:
+  catalog_entry_execution: >
+    Use the catalog-provided SQL blocks as-is for compatibility validation,
+    including multi-query catalog entries. Inject catalog parameter defaults
+    only when needed to run a catalog template outside the UI.
+  result_mapping: >
+    Interpret each returned label independently. A multi-label catalog entry
+    can partly succeed and partly fail.
+
+validation:
+  date: "2026-06-16"
+  result: "384 Windows-related catalog entries processed; endpoint stayed responsive with pacing."
+  verified_job_follow_up:
+    - catalog_id: "registry_safe_dll_search_monitoring"
+      note: "Runner recorded an API HTTP error during result fetch, but direct existing Job ID lookup returned successfully with 0 rows."
+
+lessons:
+  - "A successful empty result means the endpoint answered with no matching evidence; it is not a query failure."
+  - "For catalog entries that search for malicious activity, suspicious behavior, vulnerable state, or unwanted configuration, 0 rows usually means the endpoint is not affected by that exact checked condition in the queried data scope."
+  - "Do not generalize a 0-row result beyond the query's scope, telemetry source, time window, table availability, and endpoint response status."
+  - "Rows must be interpreted according to catalog intent: inventory, posture, forensic artifact, event evidence, or higher-signal detection logic."
+  - "Endpoint SQL errors can be hidden inside a completed job; always inspect per-label errors."
+  - "Historical artifact tables do not prove current live state."
+  - "Event-log queries depend on event retention, channel availability, and timestamp filters."
+  - "Store Job IDs and names for every query in multi-query tasks so existing jobs can be audited without rerunning endpoint work."
+
+privacy:
+  stores_endpoint_rows: false
+  stores_endpoint_identifiers: false
+  notes: "This memory stores reusable method and compatibility guidance only."

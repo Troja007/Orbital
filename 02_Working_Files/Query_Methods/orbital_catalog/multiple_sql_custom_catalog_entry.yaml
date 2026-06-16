@@ -35,7 +35,7 @@ query_goal:
     - "Live or scheduled API request shape for multiple labeled osQuery SQL blocks."
     - "Natural-language summary of what the query targets, how long it runs, and what endpoint evidence each SQL block collects."
   answers:
-    - "A single organization catalog query can contain multiple objects under config.osquery."
+    - "A single organization catalog query can contain multiple SQL blocks. For POST /catalogs creation, use top-level osquery. When fetched back through GET /catalogs, the stored entry appears under config.osquery."
     - "A single API query request can contain multiple objects under osQuery."
     - "Each SQL block should have its own label and sql string; name and types are optional per API schema."
     - "A provided API query body can be contextualized by translating nodes, interval, expiry, and each osQuery label/sql pair into analyst-facing intent."
@@ -69,7 +69,8 @@ catalog_context:
       mitre: []
       updated: "0001-01-01T00:00:00Z"
   notes:
-    - "The example uses config.osquery, lowercase, as an array of query objects."
+    - "Fetched organization catalog entries use config.osquery, lowercase, as an array of query objects."
+    - "Create Organization Catalog Query accepts top-level osquery in the request body; the API stores/readbacks the content under config.osquery."
     - "The catalog entry was refreshed from the Orbital Catalog API on 2026-06-10 and then redacted for public project storage."
     - "Cisco DevNet API docs show osQuery, camelCase, as an array for Create Query and Create Live Query request bodies."
 
@@ -169,6 +170,12 @@ validation:
 lessons:
   - date: "2026-06-10"
     note: "For Orbital organization catalog queries, represent multiple SQL statements as separate objects in config.osquery, each with label and sql."
+  - date: "2026-06-16"
+    note: "For POST /catalogs creation, use top-level osquery in the request body. After creation, GET /catalogs returns the same SQL blocks under config.osquery."
+  - date: "2026-06-16"
+    note: "Normalize multiline SQL blocks to single-line strings before POST /catalogs. Multiline SQL caused server-side GraphQL literal parsing errors, while the same SQL succeeded after whitespace normalization."
+  - date: "2026-06-16"
+    note: "The explicit config.osquery wrapper is useful for understanding readback shape, but POST /catalogs with config.osquery returned 'No sql statements found' during testing."
   - date: "2026-06-10"
     note: "For Orbital API query requests, represent multiple SQL statements as separate objects in osQuery, each with label and sql. Use expiry for scheduled /query and expiryInMinutes for live /query/run."
   - date: "2026-06-10"

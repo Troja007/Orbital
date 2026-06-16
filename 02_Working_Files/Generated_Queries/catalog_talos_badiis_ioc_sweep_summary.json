@@ -1,0 +1,8 @@
+{
+  "source": "https://github.com/Cisco-Talos/IOCs/blob/main/2026/05/commodity_badiis.json",
+  "sha256_count": 151,
+  "url_count": 7,
+  "ip_count": 5,
+  "domain_count": 2,
+  "path_fragment_count": 6
+}

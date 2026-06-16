@@ -1,0 +1,15 @@
+{
+  "title": "Codex Test - Process Inventory",
+  "description": "Minimal test catalog query created through the Orbital catalog update workflow. It lists running processes and is intended only to validate organization catalog query creation.",
+  "platform": [
+    "windows"
+  ],
+  "version": "1.0",
+  "osquery": [
+    {
+      "label": "codex_test_processes",
+      "name": "Codex test process inventory",
+      "sql": "SELECT * FROM processes;"
+    }
+  ]
+}

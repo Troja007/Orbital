@@ -1,0 +1,15 @@
+{
+  "title": "codex - process inventory",
+  "description": "Simple Codex-generated organization catalog query for validating Orbital API catalog access. It lists rows from the osquery processes table and does not execute until selected and run against explicit targets.",
+  "platform": [
+    "windows"
+  ],
+  "version": "1.0",
+  "osquery": [
+    {
+      "label": "codex_processes",
+      "name": "codex process inventory",
+      "sql": "SELECT * FROM processes;"
+    }
+  ]
+}

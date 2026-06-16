@@ -30,6 +30,8 @@ Use the UI context files to understand product terminology and how users see cat
 
 For query-specific source mapping, use `Orbital_Query_Catalog_Source_Map.md`. It links upstream osquery structure, Catalog API access, and authenticated UI metadata.
 
+For interpretation guidance from validated Windows catalog execution, use `Orbital_Windows_Catalog_Result_Reading.md`. It documents how to distinguish empty successful results, row-returning inventory queries, endpoint SQL errors, API result-fetch issues, and broad/high-volume catalog entries.
+
 ## Project Mapping
 
 In this project, the Orbital repo source folder uses these folders:
