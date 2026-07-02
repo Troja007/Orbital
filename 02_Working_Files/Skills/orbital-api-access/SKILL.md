@@ -7,6 +7,12 @@ description: Access Cisco Orbital API and catalog context. Use when Codex needs 
 
 Use this skill for Cisco Orbital API connectivity and catalog context work. Keep this separate from live endpoint query execution; use `orbital-run-osquery-live-query` when the task is to run osquery SQL against explicit target endpoints. Use `orbital-query-method-memory` when the task is to improve SQL design, reuse prior query methods, or find relevant catalog/osquery mappings.
 
+## Project Change Log
+
+After changing project context, catalog/API source files, helper scripts, skill instructions, or other durable project files, append a sanitized entry to `local/project-change-log.md`. Do not use the project change log for routine sync activity.
+
+Use `local/sync-activity-log.md` for useful operational sync traceability, such as GitHub sync issues, skill installation/update events, workspace-to-global skill sync dates, authentication problems, or permission troubleshooting. Both local logs must not be staged, committed, pushed, or contain credentials, bearer tokens, raw API responses, tenant data, endpoint results, hostnames, IP addresses, GUIDs, or customer-identifying values.
+
 ## Project Context Checks
 
 Read these files as needed:

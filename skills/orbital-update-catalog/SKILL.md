@@ -7,6 +7,12 @@ description: Create, preview, validate, and upload Cisco Orbital organization ca
 
 Use this skill for write-capable Orbital Catalog query work. Keep it separate from endpoint query execution: this skill creates, previews, or removes organization catalog query definitions, while `orbital-run-osquery-live-query` runs queries against endpoints.
 
+## Project Change Log
+
+After changing catalog request bodies, catalog helper scripts, skill instructions, project context, reusable catalog artifacts, or other durable project artifacts, append a sanitized entry to `local/project-change-log.md`. Do not use the project change log for routine sync activity.
+
+Use `local/sync-activity-log.md` for useful operational sync traceability, such as GitHub sync issues, skill installation/update events, workspace-to-global skill sync dates, authentication problems, or permission troubleshooting. Both local logs must not be staged, committed, pushed, or contain credentials, bearer tokens, raw API responses, tenant data, endpoint results, hostnames, IP addresses, GUIDs, or customer-identifying values.
+
 ## Core Rule
 
 Do not execute endpoint queries from this skill. Catalog creation saves reusable query content only.

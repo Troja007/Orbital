@@ -25,6 +25,8 @@ For Codex or human review, read these files first:
   osquery schema, Orbital Catalog API, and authenticated UI context.
 - `project-context/Orbital_Target_Node_Selectors.md`: target/device/endpoint
   terminology and API `nodes` selector rules.
+- `project-context/Orbital_Source_Repository_Model.md`: source ownership model
+  for catalog templates versus user-owned custom query/script repository files.
 - `02_Working_Files/Query_Methods/README.md`: reusable query-method memory.
 - `product-context/Cisco_Secure_Client_Endpoint_Context.md`:
   Secure Client / Secure Endpoint investigation context.
@@ -38,13 +40,13 @@ For Codex or human review, read these files first:
 - `01_Source_Files/API_References/`: osquery schema references and API reference
   material.
 - `01_Source_Files/Orbital_Repo_Source/Catalog_queries/`: Cisco-managed catalog
-  query source copies. Do not edit in place.
+  query source snapshots/templates. Do not edit in place.
 - `01_Source_Files/Orbital_Repo_Source/Catalog_scripts/`: Cisco-managed catalog
-  script source copies. Do not edit in place.
+  script source snapshots/templates. Do not edit in place.
 - `01_Source_Files/Orbital_Repo_Source/custom_queries/`: user-owned custom query
-  source material. Edit only when intentionally updating that GitHub-tracked work.
+  repository content. Edit only when intentionally updating personal custom work.
 - `01_Source_Files/Orbital_Repo_Source/custom_scripts/`: user-owned custom script
-  source material. Edit only when intentionally updating that GitHub-tracked work.
+  repository content. Edit only when intentionally updating personal custom work.
 - `02_Working_Files/`: drafts, adapted templates, generated queries, active
   helpers, project skills, and investigation work.
 - `02_Working_Files/Generated_Queries/`: generated or adapted SQL/JSON query
@@ -58,6 +60,33 @@ For Codex or human review, read these files first:
 - `notes-and-memory/`: decision logs, learning notes, and query-memory summaries.
 - `local/`, `.codex/`, `tmp/`, `.tmp/`, SQLite files, and real credential files:
   local runtime state only. Do not commit.
+
+## Local Logs
+
+Local traceability that should be visible to future Codex work but not synced to
+GitHub lives under `local/`.
+
+Use `local/project-change-log.md` for durable project-scope changes:
+
+- File and folder structure changes.
+- Scope changes.
+- Main behavior changes.
+- Durable project rules.
+- Project/product context changes.
+- Notes, memory model, skill, or helper-script changes that affect how the
+  project is used.
+
+Use `local/sync-activity-log.md` for useful operational traceability:
+
+- GitHub push/pull runs when the result or issue is worth remembering.
+- Workspace skill to global skill syncs.
+- Skill installation or update events.
+- Authentication, permission, or sync troubleshooting notes.
+- Dates when a skill was synced.
+
+Do not store credentials, endpoint results, tenant data, raw API responses,
+hostnames, IP addresses, GUIDs, or customer-identifying values in either log.
+Both files are local-only and must not be staged or pushed.
 
 ## Query-Method Memory
 

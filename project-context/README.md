@@ -13,6 +13,7 @@ Current project context files:
 - `Orbital_Catalog.md`: Structured catalog notes and mapping to local source folders.
 - `Orbital_Catalog_UI_Terms.md`: Authenticated product UI terminology notes for Catalog fields, especially `ID`.
 - `Orbital_Queries.md`: Structured query behavior notes, including query types, prefixes, and `allowos`.
+- `Orbital_Source_Repository_Model.md`: Ownership and edit rules for catalog query/script templates versus user-owned custom query/script repository files.
 - `Orbital_Scripts.md`: Structured script behavior notes, including Python response actions, node concurrency, disabling, and linked scripts.
 - `Orbital_Script_Page_Linked_Context.md`: Consolidated import of all help-topic links visible from the Script page.
 - `Orbital_API_DevNet.md`: Cisco DevNet Orbital API context, server/auth notes, operation links, and model/schema link index.

@@ -1,5 +1,12 @@
 # Catalog Templates
 
-Store exported Orbital product catalog templates for queries and scripts here.
+Reserved for future normalized catalog template organization.
 
-When possible, keep template identifiers, names, versions, and export dates with the source files.
+Current catalog template snapshots live in:
+
+- `01_Source_Files/Orbital_Repo_Source/Catalog_queries/`
+- `01_Source_Files/Orbital_Repo_Source/Catalog_scripts/`
+
+They are read-only source/template material. When possible, keep template identifiers, names, versions, and export dates with the source files.
+
+Do not store user-owned custom query or script work here.

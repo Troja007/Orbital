@@ -31,3 +31,5 @@ Personal work folders:
 - `custom_scripts` contains the user's personal Orbital script work.
 
 These folders are maintained through VS Code and GitHub as part of the top-level project repository. Treat them as user-owned source material unless the user explicitly asks to update them.
+
+Use `Orbital_Source_Repository_Model.md` for the current source ownership model. Catalog folders are stable read-only source snapshots/templates; custom folders are the user's personal reusable query/script repository.

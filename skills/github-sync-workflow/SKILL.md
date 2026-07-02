@@ -12,6 +12,8 @@ Use this skill to move content between a local Codex workspace and GitHub withou
 - Inspect the repository before changing anything: current branch, remote URL, status, recent commits, and ignored files.
 - Treat a dirty working tree as user-owned until proven otherwise. Do not discard changes unless the user explicitly asks and the effect is clear.
 - Never commit secrets, `.env` files, local Codex runtime state, local Git metadata backups, generated tenant-specific API snapshots, or machine-local files.
+- Do not add routine GitHub sync reports to `local/project-change-log.md`. If a sync publishes or downloads durable project changes, append a sanitized entry for the underlying project/content change, not for the sync mechanics.
+- Append useful sync activity to `local/sync-activity-log.md`: GitHub push/pull results, connector fallback, authentication or permission issues, metadata reconciliation, and troubleshooting notes. Skip noise-only entries. This file is local-only and must never be staged, committed, or pushed.
 - Use `rg`, `git status --short --branch`, `git log --oneline --decorate -5`, `git remote -v`, and `git check-ignore` to understand the sync surface.
 - Prefer normal Git operations when local credentials work. Use the GitHub connector when terminal push fails or when the user wants to avoid local credentials.
 - After connector-based publishing, reconcile local metadata because local Git may still think it is ahead, behind, or diverged.

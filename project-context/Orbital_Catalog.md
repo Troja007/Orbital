@@ -41,6 +41,8 @@ In this project, the Orbital repo source folder uses these folders:
 - `01_Source_Files/Orbital_Repo_Source/custom_queries`: user's personal Orbital query work.
 - `01_Source_Files/Orbital_Repo_Source/custom_scripts`: user's personal Orbital script work.
 
+Use `Orbital_Source_Repository_Model.md` for the ownership and edit rules that keep catalog template snapshots separated from user-owned custom query/script repository content.
+
 ## Handling Rules
 
 Treat `Catalog_queries` and `Catalog_scripts` as read-only source references. Do not edit these files directly.

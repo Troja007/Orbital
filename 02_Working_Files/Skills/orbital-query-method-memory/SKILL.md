@@ -9,6 +9,12 @@ Use this skill to improve Orbital investigation speed and quality over time by b
 
 Use `orbital-api-access` for catalog import, catalog freshness checks, authentication, API connectivity, and raw catalog context. Use `orbital-run-osquery-live-query` only when the user has explicit targets and wants to execute a live osquery query. When live query work requires SQL design, table choice, catalog reuse, or repeated investigation patterns, this skill should be used before execution to speed up and improve query quality.
 
+## Project Change Log
+
+After changing query-method records, query-memory summaries, project context, skill instructions, generated durable artifacts, or other durable project files, append a sanitized entry to `local/project-change-log.md`. Do not use the project change log for routine sync activity.
+
+Use `local/sync-activity-log.md` for useful operational sync traceability, such as GitHub sync issues, skill installation/update events, workspace-to-global skill sync dates, authentication problems, or permission troubleshooting. Both local logs must not be staged, committed, pushed, or contain endpoint results, hostnames, IP addresses, GUIDs, raw API responses, tenant data, credentials, or customer-identifying values.
+
 ## Core Boundary
 
 Store:
@@ -48,7 +54,7 @@ Required order:
 
 1. Produce the user-facing answer, result summary, SQL recommendation, or proposed method record.
 2. Ask the user to validate that the response is correct, useful, and should be learned.
-3. Do not write to `02_Working_Files/Query_Methods/`, regenerate reports, or sync global memory until the user explicitly confirms.
+3. Do not write to `02_Working_Files/Query_Methods/`, regenerate reports under `notes-and-memory/`, or sync global memory until the user explicitly confirms.
 4. After confirmation, save only reusable method knowledge and sanitized input patterns. Never save endpoint results or sensitive values.
 
 Acceptable confirmation examples:
@@ -72,12 +78,26 @@ Read these files as needed:
 - `project-context/Orbital_Queries.md` for live/custom query, scheduled query, prefix, dynamic/static, and `allowOS` behavior.
 - `project-context/Orbital_Target_Node_Selectors.md` for target/node selector terminology.
 - `project-context/Osquery_Schema_5_23_0.md` and `01_Source_Files/API_References/osquery_schema_5_23_0.json` for table and column validation.
+- `project-context/Orbital_Source_Repository_Model.md` before deciding whether a query/script belongs to catalog source/template material or user-owned custom repository content.
+- `product-context/Cisco_Secure_Client_Endpoint_Context.md` when Secure Client, Secure Endpoint, NVM, EVM, endpoint drivers, modules, or product-specific Windows/macOS evidence matters.
+- `product-context/Orbital_AI_Investigation_Layer_Context.md` when query-memory output feeds a broader investigation or assistant workflow.
+- `notes-and-memory/Orbital_Query_Memory.md` for the current query-memory report pointer.
+- `notes-and-memory/Codex_Network_Access_Fix.md` if network or DNS failures affect catalog/API refresh or live query checks from Codex.
+
+Do not use the old moved paths `00_Project_Context/` or `04_Notes/`. Their content now lives under `project-context/`, `product-context/`, and `notes-and-memory/`.
 
 Use catalog source files as read-only references:
 
 - `01_Source_Files/API_References/Orbital_Catalog_API/*.json`
+- `01_Source_Files/Catalog_Templates`
 - `01_Source_Files/Orbital_Repo_Source/Catalog_queries`
 - `01_Source_Files/Orbital_Repo_Source/Catalog_scripts`
+- `01_Source_Files/Queries`
+
+Use generated and working query files as implementation context, not as source-of-truth memory:
+
+- `02_Working_Files/Generated_Queries`
+- `02_Working_Files/Queries`
 
 Do not edit catalog source folders directly. If a catalog query is adapted, copy the adapted method into `02_Working_Files/Query_Methods`, not back into source.
 
@@ -88,6 +108,14 @@ Store reusable query-method records under:
 ```text
 02_Working_Files/Query_Methods/
 ```
+
+Store query-memory reports and summaries under:
+
+```text
+notes-and-memory/
+```
+
+Use `notes-and-memory/Orbital_Query_Memory.md` as the current report pointer. Versioned reports should use names like `notes-and-memory/Orbital_Query_Memory_vYYYY-MM-DD.md`.
 
 Recommended category folders:
 
@@ -260,9 +288,9 @@ Mark records as `draft` until the method has been reviewed or used successfully.
 Use `rg` against method memory and source context. Useful searches:
 
 ```bash
-rg -i "powershell|encodedcommand|scriptblock|bitsadmin" 02_Working_Files/Query_Methods 01_Source_Files/API_References/Orbital_Catalog_API 01_Source_Files/Orbital_Repo_Source/Catalog_queries
-rg -i "persistence|services|scheduled_tasks|startup|launchd|autorun" 02_Working_Files/Query_Methods 01_Source_Files/API_References/Orbital_Catalog_API 01_Source_Files/Orbital_Repo_Source/Catalog_queries
-rg -i "processes|listening_ports|process_open_sockets|hash|file|registry" 02_Working_Files/Query_Methods 01_Source_Files/API_References/Orbital_Catalog_API 01_Source_Files/Orbital_Repo_Source/Catalog_queries
+rg -i "powershell|encodedcommand|scriptblock|bitsadmin" 02_Working_Files/Query_Methods 02_Working_Files/Generated_Queries 01_Source_Files/API_References/Orbital_Catalog_API 01_Source_Files/Orbital_Repo_Source/Catalog_queries project-context product-context
+rg -i "persistence|services|scheduled_tasks|startup|launchd|autorun" 02_Working_Files/Query_Methods 02_Working_Files/Generated_Queries 01_Source_Files/API_References/Orbital_Catalog_API 01_Source_Files/Orbital_Repo_Source/Catalog_queries project-context product-context
+rg -i "processes|listening_ports|process_open_sockets|hash|file|registry" 02_Working_Files/Query_Methods 02_Working_Files/Generated_Queries 01_Source_Files/API_References/Orbital_Catalog_API 01_Source_Files/Orbital_Repo_Source/Catalog_queries project-context product-context
 ```
 
 If `02_Working_Files/Query_Methods` does not exist yet, create it before saving records.

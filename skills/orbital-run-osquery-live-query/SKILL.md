@@ -11,6 +11,12 @@ For host-targeted investigations, use a scheduled query with a 2-minute expiry b
 
 Use `orbital-api-access` for API connectivity tests, authentication troubleshooting, and catalog download/import work. Use `orbital-query-method-memory` to speed up query design by reusing prior query methods and catalog/osquery mappings. Keep these skills separated unless the user explicitly confirms a larger skill scope change.
 
+## Project Change Log
+
+After changing query helpers, skill instructions, reusable SQL artifacts, project context, query-memory files, or other durable project artifacts, append a sanitized entry to `local/project-change-log.md`. Do not use the project change log for routine sync activity.
+
+Use `local/sync-activity-log.md` for useful operational sync traceability, such as GitHub sync issues, skill installation/update events, workspace-to-global skill sync dates, authentication problems, or permission troubleshooting. Both local logs must not be staged, committed, pushed, or contain endpoint results, hostnames, IP addresses, GUIDs, raw API responses, tenant data, credentials, or customer-identifying values.
+
 ## Required Inputs
 
 Before executing anything, confirm these inputs are defined:

@@ -12,6 +12,10 @@ skills/.DS_Store
 shell_snapshots/
 tmp/
 .tmp/
+# Local-only project change history. Keep out of GitHub.
+local/project-change-log.md
+# Local-only sync and operational activity history. Keep out of GitHub.
+local/sync-activity-log.md
 local/
 *.sqlite
 *.sqlite-shm
