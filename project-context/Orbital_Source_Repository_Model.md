@@ -28,7 +28,7 @@ The catalog source folders preserve useful catalog entries locally so Codex and 
 
 `queries_and_scripts/catalog_snapshot/` stores the full offline Cisco-managed stock catalog JSON used for decision support. Refresh it from the Orbital API when freshness matters.
 
-Organization catalog exports do not belong in `queries_and_scripts/catalog_snapshot/` because they may contain tenant-specific content. Keep them local-only under `01_Source_Files/API_References/Orbital_Catalog_API/`.
+Organization catalog exports do not belong in `queries_and_scripts/catalog_snapshot/` because they may contain tenant-specific content. Keep them local-only under `local/orbital-catalog-api-cache/`.
 
 ## Cross-Reference Rule
 

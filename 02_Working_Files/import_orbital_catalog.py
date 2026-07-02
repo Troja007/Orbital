@@ -23,7 +23,7 @@ from urllib.request import Request, urlopen
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RAW_DIR = ROOT / "01_Source_Files" / "API_References" / "Orbital_Catalog_API"
+RAW_DIR = ROOT / "local" / "orbital-catalog-api-cache"
 SNAPSHOT_DIR = ROOT / "queries_and_scripts" / "catalog_snapshot"
 CONTEXT_FILE = ROOT / "project-context" / "Orbital_Catalog_API_Import.md"
 
@@ -266,7 +266,7 @@ def write_summary(region: str, base_url: str, fetched_at: str, results: dict[str
         "",
         f"Retrieved: {fetched_at}",
         "",
-        "Import type: Structured context generated from read-only Orbital API catalog calls. Raw API responses are stored under `01_Source_Files/API_References/Orbital_Catalog_API`. GitHub-synced Cisco-managed stock snapshots are stored under `queries_and_scripts/catalog_snapshot`.",
+        "Import type: Structured context generated from read-only Orbital API catalog calls. Raw API responses are stored under `local/orbital-catalog-api-cache`. GitHub-synced Cisco-managed stock snapshots are stored under `queries_and_scripts/catalog_snapshot`.",
         "",
         "## API Source",
         "",

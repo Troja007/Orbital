@@ -26,8 +26,5 @@ installation_id
 .DS_Store
 **/.DS_Store
 
-# Source-folder scratch files
-01_Source_Files/Orbital_Repo_Source/temp.json
-
 # API snapshots can contain tenant-specific catalog data. Regenerate locally.
-01_Source_Files/API_References/Orbital_Catalog_API/
+local/orbital-catalog-api-cache/

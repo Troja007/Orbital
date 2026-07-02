@@ -49,7 +49,7 @@ The project has several distinct knowledge asset groups:
 | Project instructions | Defines terminology, source priority, handling rules, and safety boundaries | `AGENTS.md` |
 | Project overview | Human/Codex orientation for repository layout and workflows | `README.md` |
 | Durable context | Orbital product, query, script, catalog, API, target selector, and schema notes | `project-context/` |
-| Source material | Read-only catalog/query/script source copies and user-owned custom work | `01_Source_Files/` |
+| Source material | Read-only catalog/query/script source copies and user-owned custom work | `queries_and_scripts/` |
 | Generated/adapted work | Drafts, generated SQL, product context, helper scripts, and active skills | `02_Working_Files/` |
 | Query-method memory | Reusable methods describing when and how to query, without endpoint result rows | `02_Working_Files/Query_Methods/` |
 | Product context | Secure Client / Secure Endpoint endpoint artifact and query context | `product-context/` |

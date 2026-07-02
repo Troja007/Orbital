@@ -2,7 +2,7 @@
 
 Store drafts, adapted templates, experiments, and files that are actively being changed here.
 
-Do not overwrite source files directly. Copy source material from `01_Source_Files` into this area before modifying it.
+Do not overwrite source files directly. Copy catalog or custom source material from `queries_and_scripts/` into this area before modifying it.
 
 Key working areas:
 

@@ -89,7 +89,7 @@ Do not use the old moved paths `00_Project_Context/` or `04_Notes/`. Their conte
 
 Use catalog source files as read-only references:
 
-- `01_Source_Files/API_References/Orbital_Catalog_API/*.json`
+- `local/orbital-catalog-api-cache/*.json`
 - `queries_and_scripts/catalog_snapshot/*.json`
 - `queries_and_scripts/catalog_result_profiles/*.jsonl`
 - `queries_and_scripts/catalog_result_profiles/windows/*.md`
@@ -290,9 +290,9 @@ Mark records as `draft` until the method has been reviewed or used successfully.
 Use `rg` against method memory and source context. Useful searches:
 
 ```bash
-rg -i "powershell|encodedcommand|scriptblock|bitsadmin" 02_Working_Files/Query_Methods 02_Working_Files/Generated_Queries 01_Source_Files/API_References/Orbital_Catalog_API queries_and_scripts/catalog_queries project-context product-context
-rg -i "persistence|services|scheduled_tasks|startup|launchd|autorun" 02_Working_Files/Query_Methods 02_Working_Files/Generated_Queries 01_Source_Files/API_References/Orbital_Catalog_API queries_and_scripts/catalog_queries project-context product-context
-rg -i "processes|listening_ports|process_open_sockets|hash|file|registry" 02_Working_Files/Query_Methods 02_Working_Files/Generated_Queries 01_Source_Files/API_References/Orbital_Catalog_API queries_and_scripts/catalog_queries project-context product-context
+rg -i "powershell|encodedcommand|scriptblock|bitsadmin" 02_Working_Files/Query_Methods 02_Working_Files/Generated_Queries local/orbital-catalog-api-cache queries_and_scripts/catalog_queries project-context product-context
+rg -i "persistence|services|scheduled_tasks|startup|launchd|autorun" 02_Working_Files/Query_Methods 02_Working_Files/Generated_Queries local/orbital-catalog-api-cache queries_and_scripts/catalog_queries project-context product-context
+rg -i "processes|listening_ports|process_open_sockets|hash|file|registry" 02_Working_Files/Query_Methods 02_Working_Files/Generated_Queries local/orbital-catalog-api-cache queries_and_scripts/catalog_queries project-context product-context
 ```
 
 If `02_Working_Files/Query_Methods` does not exist yet, create it before saving records.

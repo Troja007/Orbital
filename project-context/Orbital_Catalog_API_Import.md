@@ -2,7 +2,7 @@
 
 Retrieved: 2026-06-10T17:39:04+00:00
 
-Import type: Structured context generated from read-only Orbital API catalog calls. Raw API responses are stored under `01_Source_Files/API_References/Orbital_Catalog_API`.
+Import type: Structured context generated from read-only Orbital API catalog calls. Raw API responses are stored under `local/orbital-catalog-api-cache`.
 
 ## API Source
 
@@ -21,8 +21,8 @@ Import type: Structured context generated from read-only Orbital API catalog cal
 
 ## Raw Files
 
-- `01_Source_Files/API_References/Orbital_Catalog_API/stock_query_catalog.json`
-- `01_Source_Files/API_References/Orbital_Catalog_API/stock_catalog_scripts.json`
+- `local/orbital-catalog-api-cache/stock_query_catalog.json`
+- `local/orbital-catalog-api-cache/stock_catalog_scripts.json`
 
 ## GitHub-Synced Stock Snapshot
 

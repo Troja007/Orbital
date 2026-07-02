@@ -35,10 +35,6 @@ For Codex or human review, read these files first:
 
 - `project-context/`: durable project context, source maps, terminology, API
   notes, catalog notes, target selector notes, and osquery schema summaries.
-- `01_Source_Files/`: original or exported source material. Treat this area as
-  read-only unless explicitly updating source material.
-- `01_Source_Files/API_References/`: API reference material and ignored local
-  raw Orbital catalog API cache.
 - `queries_and_scripts/catalog_queries/`: Cisco-managed catalog
   query source snapshots/templates. Do not edit in place.
 - `queries_and_scripts/catalog_scripts/`: Cisco-managed catalog
@@ -65,6 +61,8 @@ For Codex or human review, read these files first:
   store query design and lessons, not endpoint result rows.
 - `skills/`: installable Orbital Codex skills for use from GitHub.
 - `notes-and-memory/`: decision logs, learning notes, and query-memory summaries.
+- `local/orbital-catalog-api-cache/`: ignored local raw Orbital catalog API
+  cache, including organization catalog exports that must not be committed.
 - `local/`, `.codex/`, `tmp/`, `.tmp/`, SQLite files, and real credential files:
   local runtime state only. Do not commit.
 

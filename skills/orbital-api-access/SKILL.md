@@ -68,7 +68,7 @@ Use this workflow when the user asks to test Orbital API access, download the ca
 
 ```bash
 stat -f '%Sm %N' -t '%Y-%m-%d %H:%M:%S %Z' \
-  01_Source_Files/API_References/Orbital_Catalog_API/*.json \
+  local/orbital-catalog-api-cache/*.json \
   queries_and_scripts/catalog_snapshot/*.json \
   project-context/Orbital_Catalog_API_Import.md
 ```
