@@ -11,6 +11,10 @@ Treat every useful query design, endpoint investigation, catalog comparison, con
 
 Use `orbital-api-access` for catalog import, catalog freshness checks, authentication, API connectivity, and raw catalog context. Use `orbital-run-osquery-live-query` only when the user has explicit targets and wants to execute a live osquery query. When live query work requires SQL design, table choice, catalog reuse, or repeated investigation patterns, this skill should be used before execution to speed up and improve query quality.
 
+## Default User-Facing Style
+
+Use all available context and memory internally, but keep the visible answer short by default. When query-method memory influences a query, summarize only the selected method, relevant caveat, and whether memory/context should be updated. Provide long method comparisons, source traces, catalog lists, or full SQL explanations only when needed for approval, troubleshooting, safety, or when the user asks.
+
 ## Project Change Log
 
 After changing query-method records, query-memory summaries, project context, skill instructions, generated durable artifacts, or other durable project files, append a sanitized entry to `local/project-change-log.md`. Do not use the project change log for routine sync activity.

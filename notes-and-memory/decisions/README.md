@@ -40,3 +40,4 @@ Recommended entry format:
 | 2026-07-02 | Store the offline stock catalog snapshot and catalog result profiles in GitHub as sanitized reusable context. | `2026-07-02_catalog_snapshot_and_result_profiles.md` |
 | 2026-07-02 | Store upstream osquery schema snapshots under product context as refreshable source snapshots. | `2026-07-02_osquery_schema_source_snapshots.md` |
 | 2026-07-02 | Promote reusable lessons from local logs into GitHub-synced project memory. | `2026-07-02_log_to_memory_promotion.md` |
+| 2026-07-02 | Keep query answers compact by default while still using the full project capability stack internally. | `2026-07-02_compact_query_responses_full_capability.md` |

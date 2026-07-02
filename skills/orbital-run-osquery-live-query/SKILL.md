@@ -11,6 +11,21 @@ For host-targeted investigations, use a scheduled query with a 2-minute expiry b
 
 Use `orbital-api-access` for API connectivity tests, authentication troubleshooting, and catalog download/import work. Use `orbital-query-method-memory` to speed up query design by reusing prior query methods and catalog/osquery mappings. Keep these skills separated unless the user explicitly confirms a larger skill scope change.
 
+## Default User-Facing Style
+
+Keep query responses short by default while still performing the full internal workflow. Use project context, query-method memory, catalog snapshots, catalog result profiles, osquery schema validation, target-safety checks, and relevant skills even when the user does not explicitly ask for them.
+
+Default query responses should include only:
+
+- exact target selector list
+- query purpose
+- `orbital_queryID` / Job ID and status when available
+- compact answer or result summary
+- key caveat or safety note
+- whether reusable memory/context should be updated
+
+Do not include full SQL, full row tables, raw helper JSON, long reasoning, or detailed source traces unless they are needed for approval, troubleshooting, safety, or the user asks for detail. Still show the exact SQL and target selector list before execution when required for safety or approval.
+
 ## Project Change Log
 
 After changing query helpers, skill instructions, reusable SQL artifacts, project context, query-memory files, or other durable project artifacts, append a sanitized entry to `local/project-change-log.md`. Do not use the project change log for routine sync activity.
