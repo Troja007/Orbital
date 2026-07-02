@@ -1,0 +1,203 @@
+title: "Check Windows Cisco Secure Client EVM EnabledSources registry value"
+status: "tested"
+created: "2026-06-30"
+updated: "2026-06-30"
+category: "software"
+platforms:
+  - "windows"
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Check whether Cisco Secure Client Endpoint Visibility Module has Kernel Extensions enabled in the registry."
+    - "Show true or false if EVM EnabledSources is set to 0x20 or 0xffffffff."
+    - "Query selected Windows endpoints for the Secure Client EVM EnabledSources registry DWORD."
+    - "Check whether the EVM registry value was set after running reg add for EnabledSources."
+  keywords:
+    - "Secure Client"
+    - "Endpoint Visibility Module"
+    - "EVM"
+    - "EnabledSources"
+    - "registry"
+    - "REG_DWORD"
+    - "kernel extensions"
+query_goal:
+  question: "Determine whether the Cisco Secure Client Endpoint Visibility Module registry value EnabledSources exists and whether it enables kernel-extension telemetry or all event classes."
+  answers:
+    - "Whether the EVM EnabledSources registry value exists."
+    - "Whether bit 0x20 is enabled for Kernel Extensions."
+    - "Whether all EVM event classes are enabled via 0xffffffff."
+    - "The raw REG_DWORD value returned by osquery for troubleshooting representation differences."
+  does_not_answer:
+    - "Whether EVM is actively transmitting telemetry to the cloud."
+    - "Whether the CiscoEVMService process or EVM driver is currently running."
+    - "Whether telemetry events are successfully processed by the backend."
+use_when:
+  - "An analyst needs a low-impact configuration check for Cisco Secure Client Endpoint Visibility Module on Windows."
+  - "The desired evidence is the Windows registry setting under HKLM for EVM EnabledSources."
+  - "The analyst needs per-endpoint true/false output for 0x20 and 0xffffffff states."
+do_not_use_when:
+  - "The question is runtime health; use services/processes/drivers for CiscoEVMService, CiscoEVMDriver, and CiscoEVMElam instead."
+  - "The question is backend telemetry arrival; use backend/cloud evidence, not local registry state."
+  - "The target platform is not Windows."
+preferred_next_queries:
+  - "Check installed Cisco Secure Client modules with the programs table."
+  - "Check EVM runtime service and driver state with services and processes."
+  - "If the registry value is absent but EVM is installed, query broader Cisco SecureClient registry context with direct key constraints."
+catalog_context:
+  exact_matches:
+    - "No exact stock or organization catalog query for Cisco Secure Client EVM EnabledSources was found in local catalog sources during this update."
+  related:
+    - name: "Registry Key Search"
+      id: "registry_parameterized_search"
+      source: "Orbital stock catalog"
+      relevance: "Generic Windows registry parameterized search; useful as conceptual context, but the tested method uses a direct registry key constraint for reliability."
+catalog_table_context:
+  - table: "registry"
+    catalog_name: "Registry Key Search"
+    catalog_id: "registry_parameterized_search"
+    source: "Orbital stock catalog"
+    os:
+      - "windows"
+    categories: []
+    mitre_tactics: []
+    mitre_techniques: []
+    relevance: "Registry table is the required osquery source for local Windows registry values."
+related_table_ttp_context:
+  - table: "registry"
+    note: "Many registry catalog queries map to persistence, configuration, or defense-evasion investigations, but this EVM EnabledSources method is a product-configuration check and should not be treated as malicious activity by itself."
+osquery_context:
+  tables:
+    - "registry"
+    - "system_info"
+  columns:
+    registry:
+      - "key"
+      - "path"
+      - "name"
+      - "type"
+      - "data"
+      - "mtime"
+    system_info:
+      - "hostname"
+  target_registry_key: "HKEY_LOCAL_MACHINE\\SOFTWARE\\Cisco\\SecureClient\\Endpoint Visibility Module"
+  target_registry_value: "EnabledSources"
+  expected_type: "REG_DWORD"
+  known_value_semantics:
+    - value: "0x00000020 / decimal 32"
+      meaning: "Kernel Extension Activity and Module Activity source enabled for EVM 1.7.x testing."
+    - value: "0xffffffff / decimal 4294967295 / signed -1"
+      meaning: "All Event Classes enabled; also implies bit 0x20 is set."
+  configuration_command:
+    command: 'reg add "HKLM\Software\Cisco\SecureClient\Endpoint Visibility Module" /v EnabledSources /t REG_DWORD /d 0xffffffff'
+    meaning: "Sets the one EVM EnabledSources REG_DWORD to all event classes; this includes Kernel Extension Activity / Module Activity."
+    operational_note: "Restart EVM after changing the registry value. A reboot may be needed if the EVM driver update is pending."
+orbital_guidance:
+  query_type: "scheduled host query"
+  recommended_targets:
+    - "host:<hostname>"
+    - "multiple explicit host:<hostname> selectors"
+    - "os:windows only after broad-targeting approval"
+  platform_filter: "Windows only."
+  performance_notes:
+    - "Low-impact registry query when constrained directly to the exact key and value name."
+    - "Avoid broad lower(key) or lower(path) registry enumeration for this check; it can miss values or force inefficient enumeration."
+  result_shape:
+    - "Use the matrix pattern when the analyst needs one row per answering host, including false when the value is missing."
+    - "Use the direct lookup pattern when the analyst only wants hosts where the value exists."
+    - "For a full true/false matrix including missing values, wrap this direct lookup in host-side EXISTS logic; keep the direct key constraint inside the EXISTS subquery."
+sql_patterns:
+  - name: "Matrix EVM EnabledSources lookup"
+    description: "Return one row per answering host and show true/false for value existence, Kernel Extensions bit 0x20, and all event classes 0xffffffff."
+    sql: |
+      WITH evm_enabled_sources AS (
+        SELECT
+          key,
+          path,
+          name,
+          type,
+          data,
+          datetime(mtime, 'unixepoch', 'UTC') AS modified_utc
+        FROM registry
+        WHERE key = 'HKEY_LOCAL_MACHINE\SOFTWARE\Cisco\SecureClient\Endpoint Visibility Module'
+          AND name = 'EnabledSources'
+      )
+      SELECT
+        si.hostname AS host,
+        CASE
+          WHEN EXISTS (SELECT 1 FROM evm_enabled_sources) THEN 'true'
+          ELSE 'false'
+        END AS enabledsources_value_exists,
+        COALESCE((SELECT group_concat(data, '; ') FROM evm_enabled_sources), '') AS enabledsources_raw_data,
+        CASE
+          WHEN EXISTS (
+            SELECT 1
+            FROM evm_enabled_sources
+            WHERE data IN ('0xffffffff', '0xFFFFFFFF', '4294967295', '-1')
+               OR data IN ('0x20', '0x0020', '0x00000020', '32')
+               OR ((CAST(data AS INTEGER) & 32) = 32)
+          ) THEN 'true'
+          ELSE 'false'
+        END AS evm_kernel_extensions_enabled_0x20,
+        CASE
+          WHEN EXISTS (
+            SELECT 1
+            FROM evm_enabled_sources
+            WHERE data IN ('0xffffffff', '0xFFFFFFFF', '4294967295', '-1')
+          ) THEN 'true'
+          ELSE 'false'
+        END AS evm_all_event_classes_enabled_0xffffffff,
+        COALESCE((SELECT group_concat(path, '; ') FROM evm_enabled_sources), '') AS registry_path,
+        COALESCE((SELECT group_concat(type, '; ') FROM evm_enabled_sources), '') AS registry_type,
+        COALESCE((SELECT group_concat(modified_utc, '; ') FROM evm_enabled_sources), '') AS modified_utc
+      FROM system_info si;
+  - name: "Direct EVM EnabledSources lookup"
+    description: "Return the raw EVM EnabledSources value and true/false flags for Kernel Extensions and all event classes."
+    sql: |
+      SELECT
+        si.hostname AS host,
+        CASE WHEN r.name = 'EnabledSources' THEN 'true' ELSE 'false' END AS enabledsources_value_exists,
+        r.data AS enabledsources_raw_data,
+        CASE
+          WHEN r.data IN ('0xffffffff', '0xFFFFFFFF', '4294967295', '-1')
+            OR r.data IN ('0x20', '0x0020', '0x00000020', '32')
+            OR ((CAST(r.data AS INTEGER) & 32) = 32)
+          THEN 'true'
+          ELSE 'false'
+        END AS evm_kernel_extensions_enabled_0x20,
+        CASE
+          WHEN r.data IN ('0xffffffff', '0xFFFFFFFF', '4294967295', '-1')
+          THEN 'true'
+          ELSE 'false'
+        END AS evm_all_event_classes_enabled_0xffffffff,
+        r.key AS reg_key,
+        r.path AS registry_path,
+        r.type AS registry_type,
+        datetime(r.mtime, 'unixepoch', 'UTC') AS modified_utc
+      FROM registry r
+      CROSS JOIN system_info si
+      WHERE r.key = 'HKEY_LOCAL_MACHINE\SOFTWARE\Cisco\SecureClient\Endpoint Visibility Module'
+        AND r.name = 'EnabledSources';
+  - name: "True/false logic notes"
+    description: "When building a one-row-per-host matrix, use EXISTS subqueries with the exact key and value constraints instead of broad lower(key) filters."
+    sql: |
+      -- Core predicate to reuse inside EXISTS:
+      r.key = 'HKEY_LOCAL_MACHINE\SOFTWARE\Cisco\SecureClient\Endpoint Visibility Module'
+      AND r.name = 'EnabledSources'
+validation:
+  status: "tested"
+  tested_date: "2026-06-30"
+  notes:
+    - "The first query version used lower(r.key) and lower(r.path) around registry constraints and failed to find a visible value. The corrected direct key/value constraint returned the expected registry data."
+    - "Windows Registry Editor can display EnabledSources 0xffffffff as 4294967295, while osquery can return the same REG_DWORD as -1. Treat -1, 4294967295, 0xffffffff, and 0xFFFFFFFF as equivalent for all event classes."
+    - "A value of 32 is equivalent to 0x20 and means the Kernel Extensions source bit is enabled."
+    - "The matrix query pattern was tested after the direct lookup pattern and returns one row per answering host while preserving exact registry constraints in the CTE."
+    - "WebEx engineering context: in EVM 1.7.x builds, Kernel Extension Activity and Module Activity are disabled by default; setting EnabledSources to 0xffffffff enables all event classes and includes those activities. They are expected to be enabled by default in EVM 1.8."
+lessons:
+  - "For osquery registry table lookups, prefer exact key and name constraints. Avoid wrapping key/path constraints in lower() when querying a specific Windows registry value."
+  - "For REG_DWORD comparisons, account for signed, unsigned decimal, and hexadecimal representations."
+  - "0xffffffff includes the 0x20 bit, so Kernel Extensions should be true when all event classes are enabled."
+  - "Changing EnabledSources config is not enough to prove telemetry arrival. After setting the value, restart EVM and use separate runtime/backend checks if telemetry is still missing."
+privacy:
+  stores_endpoint_results: false
+  notes:
+    - "This record stores reusable method knowledge only. It intentionally omits hostnames, node IDs, Job IDs, and endpoint result rows."

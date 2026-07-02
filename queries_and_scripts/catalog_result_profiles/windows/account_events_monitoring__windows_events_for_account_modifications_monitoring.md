@@ -121,3 +121,9 @@ This profile intentionally does not store:
 - Tenant data
 - Raw API responses
 - Credentials
+
+## Sample Result Data
+
+Representative sanitized sample rows, when available. These examples preserve result shape only and are not endpoint evidence.
+
+No sanitized sample result data was recorded for this profile.

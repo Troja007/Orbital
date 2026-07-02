@@ -1,0 +1,151 @@
+title: "Locate Cisco Secure Endpoint sfc.exe.log on Windows"
+status: "tested"
+created: "2026-06-17"
+updated: "2026-06-17"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Check a Windows endpoint where the file sfc.exe.log is located."
+    - "Find the local Secure Endpoint log file for sfc.exe activity."
+    - "Confirm whether sfc.exe.log is part of Cisco Secure Endpoint."
+  keywords:
+    - "sfc.exe.log"
+    - "sfc.exe"
+    - "Secure Endpoint"
+    - "AMP"
+    - "connector log"
+    - "activity log"
+
+query_goal:
+  summary: "Locate the local Cisco Secure Endpoint sfc.exe activity log on a Windows endpoint."
+  answers:
+    - "Whether an sfc.exe process is currently running."
+    - "Which directory contains the active sfc.exe connector binary."
+    - "Whether sfc.exe.log exists in the same Secure Endpoint / AMP version directory."
+    - "Basic file metadata for sfc.exe.log, such as path, size, modification time, and file type."
+  does_not_answer:
+    - "The contents of sfc.exe.log."
+    - "Whether every historical sfc.exe event was logged."
+    - "Whether Secure Endpoint policy or cloud telemetry contains the same events."
+    - "Whether the connector is healthy beyond the presence of the process and log file."
+
+use_when:
+  - "An analyst needs to find the local sfc.exe.log file."
+  - "A troubleshooting workflow needs local Secure Endpoint connector activity evidence."
+  - "A repair or monitoring script needs to derive the active AMP version directory dynamically."
+
+do_not_use_when:
+  - "The task requires reading or parsing log contents; this method locates the file only."
+  - "The endpoint does not currently have sfc.exe running and there is no known install path; run broader Secure Endpoint presence checks first."
+  - "The goal is Secure Endpoint cloud detection telemetry; use Windows Event Log method for CiscoSecureEndpoint/Cloud instead."
+
+preferred_next_queries:
+  - "Verify Cisco Secure Endpoint presence using running processes, installed programs, services, and registry paths."
+  - "Query CiscoSecureEndpoint/Cloud or CiscoSecureEndpoint/Events in windows_eventlog when detection or firewall telemetry is needed."
+  - "Inspect Secure Endpoint service state if sfc.exe is absent."
+
+catalog_context:
+  exact_matches: []
+  notes:
+    - "No exact stock catalog entry for sfc.exe.log location is recorded in the local method memory."
+    - "Related organization scripts exist for sfc.exe start, stop, and force update, but those are action scripts rather than file-location queries."
+
+catalog_table_context:
+  - table: "processes"
+    columns:
+      - "pid"
+      - "name"
+      - "path"
+      - "cmdline"
+    relevance: "Find the active sfc.exe process and derive its version directory."
+  - table: "file"
+    columns:
+      - "path"
+      - "directory"
+      - "filename"
+      - "size"
+      - "mtime"
+      - "type"
+    relevance: "Check for sfc.exe.log in the derived directory and return file metadata."
+
+related_table_ttp_context:
+  notes:
+    - "This is a product troubleshooting and inventory method, not a threat-detection method."
+    - "Do not infer MITRE mappings from the use of processes or file tables here."
+
+osquery_context:
+  platform: "windows"
+  tables:
+    - "processes"
+    - "file"
+  constraints:
+    - "Use lower(name) = 'sfc.exe' or lower(path) LIKE '%\\sfc.exe' to identify the active connector process."
+    - "Use directory-constrained file lookup after the active directory is known."
+  caveats:
+    - "Broad file.path LIKE patterns such as C:\\Program Files\\Cisco\\AMP%\\sfc.exe.log may not enumerate reliably."
+    - "Exact path or directory-constrained file queries are preferred once the active sfc.exe directory is known."
+    - "Do not hard-code the AMP version directory in reusable scripts."
+
+orbital_guidance:
+  query_type: "scheduled host query for endpoint-specific troubleshooting"
+  target_selector_guidance:
+    - "Use an explicit host selector such as host:<hostname> for first checks."
+    - "For broad fleet checks, first validate endpoint cost and avoid expensive broad file enumeration."
+  platform_guidance:
+    - "Windows only."
+  performance_notes:
+    - "The processes table is low cost."
+    - "The file table is safer when constrained by exact path or exact directory plus filename."
+
+sql_patterns:
+  - name: "Discover active sfc.exe directory"
+    description: "Find current sfc.exe process and derive the parent directory."
+    sql: |
+      SELECT
+        p.pid,
+        p.name AS process_name,
+        p.path AS process_path,
+        rtrim(replace(p.path, '\sfc.exe', ''), '\') AS sfc_directory,
+        p.cmdline AS command_line
+      FROM processes p
+      WHERE lower(p.name) = 'sfc.exe'
+         OR lower(p.path) LIKE '%\sfc.exe';
+  - name: "Find sfc.exe.log in discovered directory"
+    description: "After discovering the active directory, query the file table using a directory-constrained lookup."
+    sql: |
+      SELECT
+        path,
+        directory,
+        filename,
+        size,
+        datetime(mtime, 'unixepoch', 'UTC') AS modified_utc,
+        type
+      FROM file
+      WHERE directory = '<active_sfc_directory>'
+        AND lower(filename) = 'sfc.exe.log';
+  - name: "Exact expected AMP version-directory lookup"
+    description: "Use when the active sfc.exe path is already known."
+    sql: |
+      SELECT
+        path,
+        directory,
+        filename,
+        size,
+        datetime(mtime, 'unixepoch', 'UTC') AS modified_utc,
+        type
+      FROM file
+      WHERE path = '<active_sfc_directory>\sfc.exe.log';
+
+validation:
+  validation_status: "tested_on_single_windows_endpoint"
+  tested_date: "2026-06-17"
+  lessons:
+    - "The active sfc.exe path can identify the Secure Endpoint / AMP version directory."
+    - "sfc.exe.log can be co-located with the active sfc.exe binary under C:\\Program Files\\Cisco\\AMP\\<version>."
+    - "A broad path LIKE search may miss the log file where exact path and directory-constrained file queries succeed."
+
+privacy:
+  stores_endpoint_results: false
+  notes:
+    - "Do not store hostnames, node IDs, Job IDs, exact version values from a customer endpoint, file sizes, timestamps, or raw result rows in this method record."

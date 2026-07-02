@@ -12,6 +12,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_INPUT = ROOT / "local/orbital_catalog_windows_validation/windows_catalog_execution_results.jsonl"
+PROFILE_UPDATES_INPUT = ROOT / "local/orbital_catalog_windows_validation/profile_updates.jsonl"
 OUTPUT_DIR = ROOT / "queries_and_scripts/catalog_result_profiles"
 
 
@@ -158,12 +159,20 @@ def assumptions_and_limits(
     return output
 
 
+def iter_jsonl_records(input_path: Path) -> list[dict[str, Any]]:
+    if not input_path.exists():
+        return []
+    records: list[dict[str, Any]] = []
+    for line in input_path.read_text().splitlines():
+        if line.strip():
+            records.append(json.loads(line))
+    return records
+
+
 def load_best_records(input_path: Path) -> list[dict[str, Any]]:
     best_by_catalog_id: dict[str, dict[str, Any]] = {}
-    for line in input_path.read_text().splitlines():
-        if not line.strip():
-            continue
-        record = json.loads(line)
+    records = iter_jsonl_records(input_path) + iter_jsonl_records(PROFILE_UPDATES_INPUT)
+    for record in records:
         catalog_id = record.get("catalog", {}).get("catalog_id")
         if not catalog_id:
             continue
@@ -223,7 +232,7 @@ def build_profiles(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "catalog_updated": catalog.get("updated"),
                 "validation": {
                     "source": "sanitized_from_local_windows_catalog_validation",
-                    "source_run_date": "2026-06-15/2026-06-16",
+                    "source_run_date": record.get("profile_source_run_date") or "2026-06-15/2026-06-16",
                     "target_scope": "one explicit Windows endpoint",
                     "status": status,
                     "endpoint_answered": bool(result_summary.get("answered_endpoint_count"))
@@ -238,6 +247,7 @@ def build_profiles(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
                     "label_errors": result_summary.get("label_errors") or {},
                     "endpoint_errors": result_summary.get("endpoint_errors") or [],
                     "error_class": caveat,
+                    "sample_result_data": result_summary.get("sample_result_data") or {},
                 },
                 "responder_reading": responder_reading(catalog, status, result_summary, caveat),
                 "assumptions_and_limits": assumptions_and_limits(catalog, status, result_summary, caveat),
@@ -378,6 +388,49 @@ def explanation_template(profile: dict[str, Any]) -> str:
     )
 
 
+def markdown_table_from_rows(rows: list[dict[str, Any]]) -> list[str]:
+    if not rows:
+        return ["No sanitized sample rows recorded for this label."]
+
+    columns: list[str] = []
+    for row in rows:
+        for column in row:
+            if column not in columns:
+                columns.append(column)
+
+    lines = [
+        "| " + " | ".join(f"`{escape_cell(column)}`" for column in columns) + " |",
+        "| " + " | ".join("---" for _ in columns) + " |",
+    ]
+    for row in rows:
+        lines.append("| " + " | ".join(escape_cell(row.get(column, "")) for column in columns) + " |")
+    return lines
+
+
+def sample_result_data_lines(profile: dict[str, Any]) -> list[str]:
+    sample_data = profile["validation"].get("sample_result_data") or {}
+    lines = [
+        "## Sample Result Data",
+        "",
+        "Representative sanitized sample rows, when available. These examples preserve result shape only and are not endpoint evidence.",
+        "",
+    ]
+    if not sample_data:
+        lines.append("No sanitized sample result data was recorded for this profile.")
+        return lines
+
+    for label, rows in sorted(sample_data.items()):
+        lines.extend(
+            [
+                f"Label: `{escape_cell(label)}`",
+                "",
+                *markdown_table_from_rows(rows if isinstance(rows, list) else []),
+                "",
+            ]
+        )
+    return lines
+
+
 def write_per_catalog_markdown(profiles: list[dict[str, Any]], output_dir: Path) -> None:
     windows_dir = output_dir / "windows"
     windows_dir.mkdir(parents=True, exist_ok=True)
@@ -502,6 +555,7 @@ def write_per_catalog_markdown(profiles: list[dict[str, Any]], output_dir: Path)
             "- Raw API responses",
             "- Credentials",
             "",
+            *sample_result_data_lines(profile),
         ]
         path.write_text("\n".join(lines))
 

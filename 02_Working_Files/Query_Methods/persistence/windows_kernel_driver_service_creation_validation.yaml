@@ -1,0 +1,302 @@
+title: "Validate Windows kernel driver service creation"
+status: "tested"
+created: "2026-06-30"
+updated: "2026-06-30"
+category: "persistence"
+platforms:
+  - "windows"
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Check whether a kernel driver service was created with sc.exe create."
+    - "Validate whether a suspicious Windows service exists after sc.exe create type= kernel."
+    - "Query selected hosts for a driver service name and its ImagePath."
+  keywords:
+    - "sc.exe create"
+    - "kernel driver"
+    - "KERNEL_DRIVER"
+    - "SYSTEM_START"
+    - "Windows service"
+    - "CurrentControlSet Services"
+query_goal:
+  question: "Determine whether a named Windows kernel driver service creation succeeded and whether the referenced driver file exists."
+  answers:
+    - "Whether the service exists in the osquery services table."
+    - "Whether the SCM registry key exists under HKLM\\SYSTEM\\CurrentControlSet\\Services."
+    - "Whether the service type/start type/path match the intended kernel driver service creation."
+    - "Whether the referenced driver file exists at the expected path."
+    - "Whether a driver appears currently loaded when using the drivers table or a running driver service state."
+  does_not_answer:
+    - "Who created the service unless Windows event log auditing is also queried."
+    - "Whether the driver was successfully loaded unless service status/event logs/runtime driver evidence are also checked."
+    - "Whether the driver is malicious."
+use_when:
+  - "An analyst has a service name from sc.exe create and needs current endpoint state."
+  - "The expected service is a kernel driver service, for example type= kernel and start= system."
+  - "The analyst wants a low-impact current-state check before moving to event logs or file hashing."
+do_not_use_when:
+  - "The service name is unknown; use broader service hunting or event log queries first."
+  - "The analyst needs historical creation time or creator attribution; query Windows event logs 7045/4697 and process creation logs."
+  - "The analyst needs file reputation or content analysis; add hash/authenticode/file metadata."
+  preferred_next_queries:
+    - "Windows Services Event Logs Monitoring for event IDs 7045 and 4697."
+    - "Process creation event logs for sc.exe command line if Security 4688 or Sysmon/EDR telemetry is available."
+    - "Hash and authenticode checks for the driver path."
+    - "Drivers table lookup if the driver is expected to be currently loaded."
+catalog_context:
+  exact_matches:
+    - "No exact stock catalog query for validating a specific sc.exe-created kernel driver service plus its file path was found in local catalog sources during this update."
+  related:
+    - name: "Running Services Search"
+      id: "running_services_search"
+      source: "Orbital stock catalog"
+      relevance: "Stock service inventory query; useful for service-table evidence."
+    - name: "Windows Services Event Logs Monitoring"
+      id: "windows_services_events_monitoring"
+      source: "Orbital stock catalog"
+      relevance: "Historical event-log evidence for service installed/start/stop/start-type changes; includes 7045 and 4697."
+    - name: "Windows Event Logs Service Created Remotely"
+      id: "windows_eventlogs_remote_service_created"
+      source: "Orbital stock catalog"
+      relevance: "Related attribution method for remote service creation when Security 4697 is logged."
+catalog_table_context:
+  - table: "services"
+    catalog_name: "Running Services Search"
+    catalog_id: "running_services_search"
+    source: "Orbital stock catalog"
+    os:
+      - "windows"
+    categories: []
+    mitre_tactics: []
+    mitre_techniques: []
+    relevance: "Current Windows service state, type, start mode, status, path, and PID."
+  - table: "registry"
+    catalog_name: "Registry Key Search"
+    catalog_id: "registry_parameterized_search"
+    source: "Orbital stock catalog"
+    os:
+      - "windows"
+    categories: []
+    mitre_tactics: []
+    mitre_techniques: []
+    relevance: "SCM services registry key evidence under CurrentControlSet."
+  - table: "file"
+    catalog_name: ""
+    catalog_id: ""
+    source: "osquery schema"
+    os:
+      - "windows"
+    categories: []
+    mitre_tactics: []
+    mitre_techniques: []
+    relevance: "Exact-path driver file existence and basic metadata."
+related_table_ttp_context:
+  - table: "windows_eventlog"
+    catalog_name: "Windows Services Event Logs Monitoring"
+    catalog_id: "windows_services_events_monitoring"
+    related_mitre:
+      - "T1569.002 Service Execution"
+    note: "Related event-log method for service install/start/stop evidence; not part of the low-impact current-state query."
+  - table: "windows_eventlog"
+    catalog_name: "Windows Event Logs Service Created Remotely"
+    catalog_id: "windows_eventlogs_remote_service_created"
+    related_mitre:
+      - "T1543.003 Windows Service"
+    note: "Related attribution method when Security 4697 and remote logon events are available."
+osquery_context:
+  tables:
+    - "drivers"
+    - "services"
+    - "registry"
+    - "file"
+    - "system_info"
+  service_indicators:
+    expected_service_type: "KERNEL_DRIVER"
+    expected_start_type_for_sc_start_system: "SYSTEM_START"
+    driver_services_pid_note: "Kernel driver services commonly report pid 0; pid 0 should not be interpreted as missing."
+  registry_key_pattern: "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\<service_name>"
+orbital_guidance:
+  query_type: "scheduled host query"
+  recommended_targets:
+    - "host:<hostname>"
+    - "multiple explicit host:<hostname> selectors"
+  platform_filter: "Windows only."
+  performance_notes:
+    - "Use exact service name and exact registry key constraints."
+    - "Use exact file path constraints for the driver file. Avoid broad wildcard file scans."
+  result_shape:
+    - "One row per answering host."
+    - "Return separate booleans for services-table evidence, registry-key evidence, and driver-file evidence."
+    - "For loaded-driver checks, return separate booleans for drivers-table evidence, running driver service evidence, service entry, registry ImagePath, and file existence."
+sql_patterns:
+  - name: "Specific loaded driver by path"
+    description: "Check whether a driver file path is currently loaded, while also showing installed service and file evidence."
+    parameters:
+      driver_filename: "<driver_filename>"
+      driver_path: "<driver_path>"
+    sql: |
+      WITH loaded_driver AS (
+        SELECT
+          service,
+          device_name,
+          image,
+          description,
+          provider,
+          manufacturer,
+          signed,
+          service_key
+        FROM drivers
+        WHERE lower(image) LIKE '%' || lower('<driver_filename>') || '%'
+           OR lower(device_name) LIKE '%' || lower('<driver_filename_without_extension>') || '%'
+           OR lower(service) LIKE '%' || lower('<driver_filename_without_extension>') || '%'
+      ),
+      driver_service AS (
+        SELECT
+          name,
+          display_name,
+          service_type,
+          status,
+          pid,
+          start_type,
+          path,
+          module_path,
+          win32_exit_code,
+          service_exit_code
+        FROM services
+        WHERE lower(path) LIKE '%' || lower('<driver_filename>') || '%'
+           OR lower(name) LIKE '%' || lower('<driver_filename_without_extension>') || '%'
+           OR lower(display_name) LIKE '%' || lower('<driver_filename_without_extension>') || '%'
+      ),
+      service_registry AS (
+        SELECT
+          key,
+          path,
+          name,
+          type,
+          data,
+          datetime(mtime, 'unixepoch', 'UTC') AS modified_utc
+        FROM registry
+        WHERE key LIKE 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\%'
+          AND name = 'ImagePath'
+          AND lower(data) LIKE '%' || lower('<driver_filename>') || '%'
+      ),
+      driver_file AS (
+        SELECT
+          path,
+          size,
+          type,
+          datetime(btime, 'unixepoch', 'UTC') AS created_utc,
+          datetime(mtime, 'unixepoch', 'UTC') AS modified_utc
+        FROM file
+        WHERE path = '<driver_path>'
+      )
+      SELECT
+        si.hostname AS host,
+        CASE
+          WHEN EXISTS (SELECT 1 FROM loaded_driver)
+            OR EXISTS (
+              SELECT 1
+              FROM driver_service
+              WHERE lower(service_type) LIKE '%driver%'
+                AND lower(status) = 'running'
+            )
+          THEN 'true'
+          ELSE 'false'
+        END AS driver_loaded,
+        CASE WHEN EXISTS (SELECT 1 FROM loaded_driver) THEN 'true' ELSE 'false' END AS drivers_table_found,
+        CASE
+          WHEN EXISTS (
+            SELECT 1
+            FROM driver_service
+            WHERE lower(service_type) LIKE '%driver%'
+              AND lower(status) = 'running'
+          ) THEN 'true'
+          ELSE 'false'
+        END AS running_driver_service_found,
+        CASE WHEN EXISTS (SELECT 1 FROM driver_service) THEN 'true' ELSE 'false' END AS service_entry_found,
+        CASE WHEN EXISTS (SELECT 1 FROM service_registry) THEN 'true' ELSE 'false' END AS service_registry_imagepath_found,
+        CASE WHEN EXISTS (SELECT 1 FROM driver_file) THEN 'true' ELSE 'false' END AS driver_file_found,
+        COALESCE((SELECT group_concat(service || ' image=' || image || ' signed=' || CAST(signed AS TEXT), '; ') FROM loaded_driver), '') AS drivers_evidence,
+        COALESCE((SELECT group_concat(name || ' type=' || service_type || ' status=' || status || ' start=' || start_type || ' path=' || path, '; ') FROM driver_service), '') AS service_evidence,
+        COALESCE((SELECT group_concat(key || ' ' || name || '=' || data, '; ') FROM service_registry), '') AS registry_evidence,
+        COALESCE((SELECT group_concat(path || ' size=' || CAST(size AS TEXT) || ' type=' || type, '; ') FROM driver_file), '') AS file_evidence
+      FROM system_info si;
+  - name: "Specific kernel driver service creation validation"
+    description: "Validate a named kernel driver service created with sc.exe and check the expected driver file path."
+    parameters:
+      service_name: "<service_name>"
+      driver_path: "<driver_path>"
+    sql: |
+      WITH svc AS (
+        SELECT
+          name,
+          display_name,
+          service_type,
+          status,
+          pid,
+          start_type,
+          path,
+          module_path,
+          user_account,
+          win32_exit_code,
+          service_exit_code
+        FROM services
+        WHERE lower(name) = lower('<service_name>')
+      ),
+      svc_reg AS (
+        SELECT
+          path,
+          name,
+          type,
+          data,
+          datetime(mtime, 'unixepoch', 'UTC') AS modified_utc
+        FROM registry
+        WHERE key = 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\<service_name>'
+      ),
+      driver_file AS (
+        SELECT
+          path,
+          size,
+          type,
+          datetime(btime, 'unixepoch', 'UTC') AS created_utc,
+          datetime(mtime, 'unixepoch', 'UTC') AS modified_utc
+        FROM file
+        WHERE path = '<driver_path>'
+      )
+      SELECT
+        si.hostname AS host,
+        CASE
+          WHEN EXISTS (SELECT 1 FROM svc) OR EXISTS (SELECT 1 FROM svc_reg) THEN 'true'
+          ELSE 'false'
+        END AS service_created,
+        CASE WHEN EXISTS (SELECT 1 FROM svc) THEN 'true' ELSE 'false' END AS services_table_found,
+        CASE WHEN EXISTS (SELECT 1 FROM svc_reg) THEN 'true' ELSE 'false' END AS registry_key_found,
+        CASE WHEN EXISTS (SELECT 1 FROM driver_file) THEN 'true' ELSE 'false' END AS driver_file_found,
+        COALESCE((SELECT group_concat(name, '; ') FROM svc), '') AS service_name,
+        COALESCE((SELECT group_concat(service_type, '; ') FROM svc), '') AS service_type,
+        COALESCE((SELECT group_concat(start_type, '; ') FROM svc), '') AS start_type,
+        COALESCE((SELECT group_concat(status, '; ') FROM svc), '') AS status,
+        COALESCE((SELECT group_concat(CAST(pid AS TEXT), '; ') FROM svc), '') AS pid,
+        COALESCE((SELECT group_concat(path, '; ') FROM svc), '') AS service_path,
+        COALESCE((SELECT group_concat(name || '=' || data, '; ') FROM svc_reg WHERE name IN ('ImagePath', 'Type', 'Start', 'ErrorControl')), '') AS registry_values,
+        COALESCE((SELECT group_concat(path || ' size=' || CAST(size AS TEXT) || ' type=' || type, '; ') FROM driver_file), '') AS driver_file_evidence,
+        COALESCE((SELECT group_concat(modified_utc, '; ') FROM svc_reg), '') AS registry_modified_utc
+      FROM system_info si;
+validation:
+  status: "tested"
+  tested_date: "2026-06-30"
+  notes:
+    - "The pattern was tested as a scheduled multi-host query using explicit host selectors. Endpoint result rows, hostnames, node IDs, and Job IDs are intentionally not stored."
+    - "The query can show service_created=true even when status is STOPPED. Creation and successful start/load are separate questions."
+    - "For sc.exe create type= kernel start= system, expected service evidence is service_type KERNEL_DRIVER and start_type SYSTEM_START."
+    - "The loaded-driver-by-path pattern was tested as a scheduled exact-host query on 2026-07-01. Endpoint rows, hostnames, node IDs, and Job IDs are intentionally not stored."
+lessons:
+  - "Use services for current SCM service state and registry for direct SCM key evidence."
+  - "Use exact CurrentControlSet service registry key constraints; avoid broad registry scans when the service name is known."
+  - "Use exact driver file path constraints; service creation can succeed even if the driver file is absent."
+  - "Driver services commonly report pid 0."
+  - "A driver file and service ImagePath can exist while driver_loaded remains false. Treat drivers-table evidence or a RUNNING driver service as stronger loaded-state evidence than registry/file presence."
+privacy:
+  stores_endpoint_results: false
+  notes:
+    - "This record stores reusable method knowledge only. It intentionally omits hostnames, node IDs, Job IDs, and endpoint result rows."

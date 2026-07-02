@@ -13,6 +13,7 @@ Each per-Catalog-ID Markdown file should help an incident responder answer:
 - What assumptions are safe?
 - What assumptions are unsafe?
 - What follow-up is appropriate?
+- What does representative sanitized result data look like?
 
 Do not optimize these files for developers only. They are analyst-facing explanation artifacts.
 
@@ -30,6 +31,9 @@ Generate each file with these sections:
 8. `Recommended Follow-Up`
 9. `Explanation Template`
 10. `Privacy Boundary`
+11. `Sample Result Data`
+
+`Sample Result Data` must be the final section in the generated Markdown file.
 
 ## Result Reading Rules
 
@@ -39,6 +43,30 @@ Separate these states clearly:
 - Endpoint answered with zero rows: read as no matching rows for the exact query scope. This is not a query failure and not proof the behavior never happened.
 - Endpoint did not respond: do not treat as zero rows or clean. Check target selection, endpoint online state, job status, result retrieval, and API errors before rerunning.
 - Completed with label or endpoint errors: read error fields before interpreting row counts.
+
+## Sample Result Data
+
+For profiles generated from validation output with rows, append a small sanitized sample at the end of each per-Catalog-ID Markdown file.
+
+Sampling rules:
+
+- Prefer 1-3 representative rows per returned label.
+- Do not show more than 15 sanitized sample rows total in a single per-Catalog-ID Markdown profile, even when the response includes many more rows.
+- When multiple labels return rows, allocate the 15-row maximum across labels so the sample remains representative of the result shape.
+- Keep column names intact.
+- Keep safe structural hints where they help interpretation, such as timestamp format, hash length, registry hive family, file-extension class, process-name class, or status/state category.
+- Do not include full raw values when they identify a person, endpoint, tenant, customer, target, validation run, or credential.
+- If a row cannot be sanitized safely, omit it and state that sample data was omitted for privacy.
+
+Redaction rules:
+
+- Replace usernames with `<redacted:username>`.
+- Replace user profile paths with a neutral equivalent such as `C:\Users\<redacted:username>\...`.
+- Replace hostnames with `<redacted:hostname>`.
+- Replace IP addresses with `<redacted:ip>`.
+- Replace GUIDs with `<redacted:guid>`.
+- Replace customer, tenant, organization, or target selector values with `<redacted:sensitive-value>`.
+- Replace Job IDs, `orbital_queryID` values, API URLs, tokens, secrets, bearer strings, client IDs, and client secrets with `<redacted:sensitive-value>`.
 
 ## Filename Rule
 
@@ -82,10 +110,11 @@ Allowed:
 - Returned column names
 - Sanitized error classes
 - Generic target scope, such as "one explicit Windows endpoint"
+- Sanitized sample result rows in the final Markdown section, capped at 15 rows per per-Catalog-ID Markdown profile
 
 Forbidden:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors such as `host:<value>`
 - Orbital Job IDs / `orbital_queryID`

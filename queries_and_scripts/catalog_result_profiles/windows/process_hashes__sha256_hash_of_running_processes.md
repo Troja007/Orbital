@@ -6,7 +6,7 @@
 - Catalog name: `SHA256 Hash Of Running Processes`
 - Platform: windows, darwin, linux
 - Profile type: sanitized catalog result profile
-- Source run: 2026-06-15/2026-06-16
+- Source run: 2026-07-02
 - Catalog updated: 2023-11-14T17:51:59.150055646Z
 
 ## What This Query Answers
@@ -28,7 +28,7 @@ This profile does not prove maliciousness by itself. It explains how to read thi
 
 - Endpoint answered in validation: yes
 - Validation status: `completed`
-- Observed row count: 151
+- Observed row count: 157
 - Row-count bucket: `high_101_1000`
 - Returned labels:
 - `sha256_hash_of_running_processes`
@@ -40,13 +40,13 @@ Observed columns:
 | `sha256_hash_of_running_processes` | `pid`, `name`, `path`, `cmdline`, `state`, `sha256` |
 
 Label row counts:
-- `sha256_hash_of_running_processes`: 151
+- `sha256_hash_of_running_processes`: 157
 
 ## How To Read The Result
 
 Observed validation result:
 
-The endpoint answered and returned 151 rows in the validation run.
+The endpoint answered and returned 157 rows in the validation run.
 
 If rows are returned:
 
@@ -115,3 +115,15 @@ This profile intentionally does not store:
 - Tenant data
 - Raw API responses
 - Credentials
+
+## Sample Result Data
+
+Representative sanitized sample rows, when available. These examples preserve result shape only and are not endpoint evidence.
+
+Label: `sha256_hash_of_running_processes`
+
+| `pid` | `name` | `path` | `cmdline` | `state` | `sha256` |
+| --- | --- | --- | --- | --- | --- |
+| <redacted:pid> | system_process.exe | C:\Windows\System32\system_process.exe | <redacted:system-command-line> | STILL_ACTIVE | <redacted:sha256-64-hex> |
+| <redacted:pid> | service_host_process.exe | C:\Windows\System32\service_host_process.exe | <redacted:service-command-line> | STILL_ACTIVE | <redacted:sha256-64-hex> |
+| <redacted:pid> | application_process.exe | C:\Program Files\Vendor\Application\application_process.exe | <redacted:application-command-line> | STILL_ACTIVE | <redacted:sha256-64-hex> |
