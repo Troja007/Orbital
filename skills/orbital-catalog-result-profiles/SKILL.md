@@ -116,6 +116,8 @@ Sanitized sample rows are still subject to a maximum of 15 rows per generated pe
 
 When profile generation behavior, profile format, project references, or skill instructions change, append a sanitized entry to `local/project-change-log.md`.
 
+When profile work creates or changes a durable project decision, also add or update a GitHub-synced decision record under `notes-and-memory/decisions/`. Use this for decisions about profile format, sanitization boundaries, sample data policy, catalog snapshot usage, result interpretation assumptions, folder ownership, or skill responsibility.
+
 When pushing profile changes to GitHub, append a sanitized operational entry to `local/sync-activity-log.md`.
 
 Neither local log may be staged or pushed.

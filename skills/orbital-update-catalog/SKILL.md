@@ -13,6 +13,8 @@ After changing catalog request bodies, catalog helper scripts, skill instruction
 
 Use `local/sync-activity-log.md` for useful operational sync traceability, such as GitHub sync issues, skill installation/update events, workspace-to-global skill sync dates, authentication problems, or permission troubleshooting. Both local logs must not be staged, committed, pushed, or contain credentials, bearer tokens, raw API responses, tenant data, endpoint results, hostnames, IP addresses, GUIDs, or customer-identifying values.
 
+When catalog-update work creates or changes a durable project decision, also add or update a GitHub-synced decision record under `notes-and-memory/decisions/`. Use this for decisions about organization catalog handling, catalog request shape, source priority, custom query ownership, naming rules, privacy boundaries, helper behavior, or skill responsibility. Keep the record sanitized and do not include credentials, bearer tokens, raw API responses, tenant data, endpoint results, hostnames, IP addresses, GUIDs, or customer-identifying values.
+
 ## Core Rule
 
 Do not execute endpoint queries from this skill. Catalog creation saves reusable query content only.

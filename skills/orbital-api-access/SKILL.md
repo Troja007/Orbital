@@ -13,6 +13,8 @@ After changing project context, catalog/API source files, helper scripts, skill 
 
 Use `local/sync-activity-log.md` for useful operational sync traceability, such as GitHub sync issues, skill installation/update events, workspace-to-global skill sync dates, authentication problems, or permission troubleshooting. Both local logs must not be staged, committed, pushed, or contain credentials, bearer tokens, raw API responses, tenant data, endpoint results, hostnames, IP addresses, GUIDs, or customer-identifying values.
 
+When API or catalog work creates or changes a durable project decision, also add or update a GitHub-synced decision record under `notes-and-memory/decisions/`. Use this for decisions about API assumptions, catalog source handling, source priority, privacy boundaries, helper behavior, folder ownership, or skill responsibility. Keep the record sanitized and do not include credentials, raw API responses, tenant data, endpoint identifiers, or customer-identifying values.
+
 ## Project Context Checks
 
 Read these files as needed:

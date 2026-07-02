@@ -17,6 +17,8 @@ After changing query helpers, skill instructions, reusable SQL artifacts, projec
 
 Use `local/sync-activity-log.md` for useful operational sync traceability, such as GitHub sync issues, skill installation/update events, workspace-to-global skill sync dates, authentication problems, or permission troubleshooting. Both local logs must not be staged, committed, pushed, or contain endpoint results, hostnames, IP addresses, GUIDs, raw API responses, tenant data, credentials, or customer-identifying values.
 
+When live-query work creates or changes a durable project decision, also add or update a GitHub-synced decision record under `notes-and-memory/decisions/`. Use this for decisions about target safety, execution mode, result handling, endpoint evidence boundaries, reusable SQL ownership, helper behavior, or skill responsibility. Keep the record sanitized and do not include endpoint results, hostnames, IP addresses, GUIDs, raw API responses, tenant data, credentials, or customer-identifying values.
+
 ## Required Inputs
 
 Before executing anything, confirm these inputs are defined:
