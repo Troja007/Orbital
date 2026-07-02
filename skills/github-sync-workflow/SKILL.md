@@ -240,7 +240,7 @@ When the user says content is missing on GitHub:
 For the Orbital project pattern, existing query and script content may live under:
 
 ```text
-01_Source_Files/Orbital_Repo_Source/
+queries_and_scripts/
 ```
 
 ## Credential Handling

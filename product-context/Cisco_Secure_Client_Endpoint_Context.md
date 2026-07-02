@@ -709,7 +709,7 @@ Validation note:
 - The UI target selector used lowercase `host:<hostname>`. If API live query returns `answered_endpoint_count = 0` for an exact host while the UI returns rows, retry with the exact UI selector spelling/case before interpreting the result as no protected processes.
 - Repeated execution of this `process_memory_map` query can destabilize or crash the Orbital query on the endpoint. Store the job ID for every run and use `/jobs/{id}` and `/jobs/{id}/results` for follow-up instead of rerunning the endpoint query.
 - User testing on 2026-06-12 showed that the generated simplified combined Protector32/Protector64 query in `02_Working_Files/Generated_Queries/windows_secure_endpoint_exploit_prevention_protected_processes.sql` can put the Orbital endpoint service into a faulty state. Restarting the Orbital service restores operation. Do not use that query shape.
-- The project query file `01_Source_Files/Orbital_Repo_Source/custom_queries/Orbital_Running Processes including the loaded DLLs and signing Certificate.sql` works consistently and should be preferred for this investigation.
+- The project query file `queries_and_scripts/custom_queries/Orbital_Running Processes including the loaded DLLs and signing Certificate.sql` works consistently and should be preferred for this investigation.
 - No live endpoint result rows are stored in this context file.
 
 ### Cisco Registry Inventory

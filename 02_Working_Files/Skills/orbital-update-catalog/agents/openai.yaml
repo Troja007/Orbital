@@ -1,4 +1,0 @@
-interface:
-  display_name: "Orbital Update Catalog"
-  short_description: "Create and update Cisco Orbital organization catalog queries."
-  default_prompt: "Create or update an Orbital organization catalog query from one or more labeled osquery SQL blocks."

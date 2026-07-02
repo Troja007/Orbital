@@ -79,7 +79,7 @@ For a known-ID rename, use the fast path: fetch the existing entry with `GET /v0
 Use the bundled helper:
 
 ```bash
-python3 02_Working_Files/Skills/orbital-update-catalog/scripts/update_catalog_query.py \
+python3 skills/orbital-update-catalog/scripts/update_catalog_query.py \
   --input-json 02_Working_Files/Generated_Queries/example_catalog_query.json \
   --region us \
   --preview
@@ -88,7 +88,7 @@ python3 02_Working_Files/Skills/orbital-update-catalog/scripts/update_catalog_qu
 Create the catalog entry:
 
 ```bash
-python3 02_Working_Files/Skills/orbital-update-catalog/scripts/update_catalog_query.py \
+python3 skills/orbital-update-catalog/scripts/update_catalog_query.py \
   --input-json 02_Working_Files/Generated_Queries/example_catalog_query.json \
   --region us \
   --create
@@ -99,7 +99,7 @@ The helper rejects non-`codex` titles by default. Use `--allow-non-codex-title` 
 Rename a catalog entry while preserving the existing SQL blocks:
 
 ```bash
-python3 02_Working_Files/Skills/orbital-update-catalog/scripts/update_catalog_query.py \
+python3 skills/orbital-update-catalog/scripts/update_catalog_query.py \
   --region us \
   --rename-catalog-id org:<catalog_id> \
   --new-title "new title"
@@ -112,7 +112,7 @@ Known-ID rename is optimized by default and skips duplicate-title scans. Use `--
 Remove/disable catalog entries:
 
 ```bash
-python3 02_Working_Files/Skills/orbital-update-catalog/scripts/update_catalog_query.py \
+python3 skills/orbital-update-catalog/scripts/update_catalog_query.py \
   --region us \
   --delete-catalog-id org:<catalog_id>
 ```

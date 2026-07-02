@@ -4,8 +4,8 @@ Reserved for future normalized catalog template organization.
 
 Current catalog template snapshots live in:
 
-- `01_Source_Files/Orbital_Repo_Source/Catalog_queries/`
-- `01_Source_Files/Orbital_Repo_Source/Catalog_scripts/`
+- `queries_and_scripts/catalog_queries/`
+- `queries_and_scripts/catalog_scripts/`
 
 They are read-only source/template material. When possible, keep template identifiers, names, versions, and export dates with the source files.
 

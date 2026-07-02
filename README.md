@@ -39,13 +39,13 @@ For Codex or human review, read these files first:
   read-only unless explicitly updating source material.
 - `01_Source_Files/API_References/`: osquery schema references and API reference
   material.
-- `01_Source_Files/Orbital_Repo_Source/Catalog_queries/`: Cisco-managed catalog
+- `queries_and_scripts/catalog_queries/`: Cisco-managed catalog
   query source snapshots/templates. Do not edit in place.
-- `01_Source_Files/Orbital_Repo_Source/Catalog_scripts/`: Cisco-managed catalog
+- `queries_and_scripts/catalog_scripts/`: Cisco-managed catalog
   script source snapshots/templates. Do not edit in place.
-- `01_Source_Files/Orbital_Repo_Source/custom_queries/`: user-owned custom query
+- `queries_and_scripts/custom_queries/`: user-owned custom query
   repository content. Edit only when intentionally updating personal custom work.
-- `01_Source_Files/Orbital_Repo_Source/custom_scripts/`: user-owned custom script
+- `queries_and_scripts/custom_scripts/`: user-owned custom script
   repository content. Edit only when intentionally updating personal custom work.
 - `02_Working_Files/`: drafts, adapted templates, generated queries, active
   helpers, project skills, and investigation work.
@@ -55,7 +55,7 @@ For Codex or human review, read these files first:
   currently focused on Cisco Secure Client and Cisco Secure Endpoint.
 - `02_Working_Files/Query_Methods/`: reusable query-method memory. These records
   store query design and lessons, not endpoint result rows.
-- `02_Working_Files/Skills/`: workspace copies of Orbital Codex skills.
+- `skills/`: installable Orbital Codex skills for use from GitHub.
 - `03_Outputs/`: finished deliverables intended for reuse or handoff.
 - `notes-and-memory/`: decision logs, learning notes, and query-memory summaries.
 - `local/`, `.codex/`, `tmp/`, `.tmp/`, SQLite files, and real credential files:
@@ -182,14 +182,14 @@ The example supports:
 
 ## Local Helpers
 
-Useful helper files in `02_Working_Files/`:
+Useful helper files in the project:
 
 - `check_orbital_api_auth.py`: validate Orbital API authentication.
 - `import_orbital_catalog.py`: import or refresh Orbital catalog data.
 - `run_orbital_catalog_import.sh`: wrapper for catalog import.
 - `run_windows_catalog_query_validation.py`: validate Windows catalog query
   assumptions.
-- `Skills/orbital-run-osquery-live-query/scripts/run_live_query.py`: run
+- `skills/orbital-run-osquery-live-query/scripts/run_live_query.py`: run
   host-targeted scheduled queries or explicit live queries and record operational
   Job ID metadata locally.
 

@@ -36,16 +36,16 @@ For interpretation guidance from validated Windows catalog execution, use `Orbit
 
 In this project, the Orbital repo source folder uses these folders:
 
-- `01_Source_Files/Orbital_Repo_Source/Catalog_queries`: 1:1 copy of Cisco-managed catalog query templates.
-- `01_Source_Files/Orbital_Repo_Source/Catalog_scripts`: 1:1 copy of Cisco-managed catalog script templates.
-- `01_Source_Files/Orbital_Repo_Source/custom_queries`: user's personal Orbital query work.
-- `01_Source_Files/Orbital_Repo_Source/custom_scripts`: user's personal Orbital script work.
+- `queries_and_scripts/catalog_queries`: 1:1 copy of Cisco-managed catalog query templates.
+- `queries_and_scripts/catalog_scripts`: 1:1 copy of Cisco-managed catalog script templates.
+- `queries_and_scripts/custom_queries`: user's personal Orbital query work.
+- `queries_and_scripts/custom_scripts`: user's personal Orbital script work.
 
 Use `Orbital_Source_Repository_Model.md` for the ownership and edit rules that keep catalog template snapshots separated from user-owned custom query/script repository content.
 
 ## Handling Rules
 
-Treat `Catalog_queries` and `Catalog_scripts` as read-only source references. Do not edit these files directly.
+Treat `catalog_queries` and `catalog_scripts` as read-only source references. Do not edit these files directly.
 
 Treat `custom_queries` and `custom_scripts` as user-owned source material maintained through VS Code and GitHub. Do not modify these files unless explicitly asked to update the GitHub-tracked work.
 

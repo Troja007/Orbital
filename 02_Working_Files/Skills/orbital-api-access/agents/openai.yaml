@@ -1,4 +1,0 @@
-interface:
-  display_name: "Orbital API Access"
-  short_description: "Test Orbital API access and refresh catalog context."
-  default_prompt: "Use the configured Orbital API to test access, refresh catalog context, or inspect the imported catalog files."

@@ -6,10 +6,10 @@ This project separates Cisco-managed catalog source material from user-owned cus
 
 | Source class | Current folder | Ownership | Edit rule | Purpose |
 | --- | --- | --- | --- | --- |
-| Catalog query templates | `01_Source_Files/Orbital_Repo_Source/Catalog_queries/` | Cisco-managed catalog source copy | Read-only | Stable source/template material for query design without repeatedly pulling from the live catalog. |
-| Catalog script templates | `01_Source_Files/Orbital_Repo_Source/Catalog_scripts/` | Cisco-managed catalog source copy | Read-only | Stable source/template material for response script design without repeatedly pulling from the live catalog. |
-| Custom queries | `01_Source_Files/Orbital_Repo_Source/custom_queries/` | User-owned personal repository content | Editable only when intentionally updating personal GitHub work | Personal collection of custom Orbital SQL queries generated manually, with Codex, or with other tools. |
-| Custom scripts | `01_Source_Files/Orbital_Repo_Source/custom_scripts/` | User-owned personal repository content | Editable only when intentionally updating personal GitHub work | Personal collection of custom Orbital Python scripts generated manually, with Codex, or with other tools. |
+| Catalog query templates | `queries_and_scripts/catalog_queries/` | Cisco-managed catalog source copy | Read-only | Stable source/template material for query design without repeatedly pulling from the live catalog. |
+| Catalog script templates | `queries_and_scripts/catalog_scripts/` | Cisco-managed catalog source copy | Read-only | Stable source/template material for response script design without repeatedly pulling from the live catalog. |
+| Custom queries | `queries_and_scripts/custom_queries/` | User-owned personal repository content | Editable only when intentionally updating personal GitHub work | Personal collection of custom Orbital SQL queries generated manually, with Codex, or with other tools. |
+| Custom scripts | `queries_and_scripts/custom_scripts/` | User-owned personal repository content | Editable only when intentionally updating personal GitHub work | Personal collection of custom Orbital Python scripts generated manually, with Codex, or with other tools. |
 
 ## Working Rule
 

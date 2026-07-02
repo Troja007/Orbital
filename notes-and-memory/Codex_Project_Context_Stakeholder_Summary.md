@@ -58,11 +58,11 @@ The project has several distinct knowledge asset groups:
 
 Important source distinctions:
 
-- `01_Source_Files/Orbital_Repo_Source/Catalog_queries` and
-  `01_Source_Files/Orbital_Repo_Source/Catalog_scripts` are 1:1 Cisco-managed
+- `queries_and_scripts/catalog_queries` and
+  `queries_and_scripts/catalog_scripts` are 1:1 Cisco-managed
   catalog source copies and should not be edited directly.
-- `01_Source_Files/Orbital_Repo_Source/custom_queries` and
-  `01_Source_Files/Orbital_Repo_Source/custom_scripts` are user-owned source
+- `queries_and_scripts/custom_queries` and
+  `queries_and_scripts/custom_scripts` are user-owned source
   material and should only be modified when intentionally updating that work.
 - Adapted or generated query work belongs under `02_Working_Files` before it is
   promoted to an output or reusable method.
@@ -105,10 +105,10 @@ These counters are scale indicators, not audited productivity metrics.
 | Durable context | Project context files | 14 | `project-context` file count |
 | Query-method memory | Method/template records | 20 | `02_Working_Files/Query_Methods` file count excluding `.DS_Store` |
 | Generated query artifacts | SQL/JSON files | 34 | `02_Working_Files/Generated_Queries` file count |
-| User-owned source queries | Custom query source files | 26 | `01_Source_Files/Orbital_Repo_Source/custom_queries` count |
-| User-owned source scripts | Custom script source files | 12 | `01_Source_Files/Orbital_Repo_Source/custom_scripts` count |
-| Cisco-managed catalog source copies | Catalog query/script source files | 7 | `Catalog_queries` plus `Catalog_scripts` count |
-| Project-local Orbital skills | Local `SKILL.md` files under `02_Working_Files/Skills` | 4 | Skill file inventory |
+| User-owned source queries | Custom query source files | 26 | `queries_and_scripts/custom_queries` count |
+| User-owned source scripts | Custom script source files | 12 | `queries_and_scripts/custom_scripts` count |
+| Cisco-managed catalog source copies | Catalog query/script source files | 7 | `catalog_queries` plus `catalog_scripts` count |
+| Project-local Orbital skills | Local `SKILL.md` files under `skills` | 4 | Skill file inventory |
 | Supporting repository skill | GitHub sync workflow skill | 1 | `skills/github-sync-workflow/SKILL.md` |
 | Sensitive-data handling | Explicit guardrail level | High | `AGENTS.md`, query-method README, root README, skill rules |
 
@@ -117,7 +117,7 @@ These counters are scale indicators, not audited productivity metrics.
 ### Project-Local Orbital Skills
 
 These are local workspace skills with `SKILL.md` files under
-`02_Working_Files/Skills/`:
+`skills/`:
 
 - `orbital-api-access`: Orbital API connectivity, authentication checks, catalog
   import, and catalog context inspection.
@@ -205,8 +205,8 @@ This report is based on inspection of:
 - `02_Working_Files/Query_Methods/README.md`
 - `product-context/Cisco_Secure_Client_Endpoint_Context.md`
 - `notes-and-memory/Orbital_Query_Memory_v2026-06-12.md`
-- `02_Working_Files/Skills/README.md`
-- Local project skill headers under `02_Working_Files/Skills/`
+- `skills/README.md`
+- Local project skill headers under `skills/`
 - Project file inventory and representative folder/file counts
 
 ### Not Inspected

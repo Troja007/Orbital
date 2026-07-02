@@ -90,8 +90,8 @@ Use catalog source files as read-only references:
 
 - `01_Source_Files/API_References/Orbital_Catalog_API/*.json`
 - `01_Source_Files/Catalog_Templates`
-- `01_Source_Files/Orbital_Repo_Source/Catalog_queries`
-- `01_Source_Files/Orbital_Repo_Source/Catalog_scripts`
+- `queries_and_scripts/catalog_queries`
+- `queries_and_scripts/catalog_scripts`
 - `01_Source_Files/Queries`
 
 Use generated and working query files as implementation context, not as source-of-truth memory:
@@ -288,9 +288,9 @@ Mark records as `draft` until the method has been reviewed or used successfully.
 Use `rg` against method memory and source context. Useful searches:
 
 ```bash
-rg -i "powershell|encodedcommand|scriptblock|bitsadmin" 02_Working_Files/Query_Methods 02_Working_Files/Generated_Queries 01_Source_Files/API_References/Orbital_Catalog_API 01_Source_Files/Orbital_Repo_Source/Catalog_queries project-context product-context
-rg -i "persistence|services|scheduled_tasks|startup|launchd|autorun" 02_Working_Files/Query_Methods 02_Working_Files/Generated_Queries 01_Source_Files/API_References/Orbital_Catalog_API 01_Source_Files/Orbital_Repo_Source/Catalog_queries project-context product-context
-rg -i "processes|listening_ports|process_open_sockets|hash|file|registry" 02_Working_Files/Query_Methods 02_Working_Files/Generated_Queries 01_Source_Files/API_References/Orbital_Catalog_API 01_Source_Files/Orbital_Repo_Source/Catalog_queries project-context product-context
+rg -i "powershell|encodedcommand|scriptblock|bitsadmin" 02_Working_Files/Query_Methods 02_Working_Files/Generated_Queries 01_Source_Files/API_References/Orbital_Catalog_API queries_and_scripts/catalog_queries project-context product-context
+rg -i "persistence|services|scheduled_tasks|startup|launchd|autorun" 02_Working_Files/Query_Methods 02_Working_Files/Generated_Queries 01_Source_Files/API_References/Orbital_Catalog_API queries_and_scripts/catalog_queries project-context product-context
+rg -i "processes|listening_ports|process_open_sockets|hash|file|registry" 02_Working_Files/Query_Methods 02_Working_Files/Generated_Queries 01_Source_Files/API_References/Orbital_Catalog_API queries_and_scripts/catalog_queries project-context product-context
 ```
 
 If `02_Working_Files/Query_Methods` does not exist yet, create it before saving records.

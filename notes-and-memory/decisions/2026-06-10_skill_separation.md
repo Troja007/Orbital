@@ -21,4 +21,4 @@ Keeping skills separated makes behavior easier to predict, avoids one skill beco
 ## References
 
 - User instruction on 2026-06-10: keep skills separated and require confirmation for bigger skill changes.
-- `02_Working_Files/Skills/README.md`
+- `skills/README.md`

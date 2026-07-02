@@ -6,7 +6,7 @@ Purpose: Top-level Codex and VS Code workspace repository for Cisco Orbital quer
 
 Local project root: `_Codex_Orbital`
 
-Orbital query/script source folder: `01_Source_Files/Orbital_Repo_Source`
+Orbital query/script source folder: `queries_and_scripts`
 
 Default branch: `main`
 
@@ -20,15 +20,15 @@ Use this repository as the full project workspace. Before relying on source-fold
 
 Catalog folders:
 
-- `Catalog_queries` is a 1:1 copy from the Orbital product catalog.
-- `Catalog_scripts` is a 1:1 copy from the Orbital product catalog.
+- `queries_and_scripts/catalog_queries` is a 1:1 copy from the Orbital product catalog.
+- `queries_and_scripts/catalog_scripts` is a 1:1 copy from the Orbital product catalog.
 
 Do not edit these catalog folders directly. Use them as source files and copy items into `02_Working_Files` before making changes.
 
 Personal work folders:
 
-- `custom_queries` contains the user's personal Orbital query work.
-- `custom_scripts` contains the user's personal Orbital script work.
+- `queries_and_scripts/custom_queries` contains the user's personal Orbital query work.
+- `queries_and_scripts/custom_scripts` contains the user's personal Orbital script work.
 
 These folders are maintained through VS Code and GitHub as part of the top-level project repository. Treat them as user-owned source material unless the user explicitly asks to update them.
 

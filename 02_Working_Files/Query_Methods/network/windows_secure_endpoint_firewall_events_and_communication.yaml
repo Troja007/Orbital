@@ -76,7 +76,7 @@ catalog_context:
   matches:
     - name: "Firewall_Log_Windows_Statistics.sql"
       id: "local_custom_query:Firewall_Log_Windows_Statistics"
-      source: "01_Source_Files/Orbital_Repo_Source/custom_queries/Firewall/Firewall_Log_Windows_Statistics.sql"
+      source: "queries_and_scripts/custom_queries/Firewall/Firewall_Log_Windows_Statistics.sql"
       relevance: "Project query that extracts Secure Endpoint Host Based Firewall allow/block events from windows_eventlog and reports event IDs 1800/1801."
       os:
         - "windows"
