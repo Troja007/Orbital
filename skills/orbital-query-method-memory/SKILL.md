@@ -99,7 +99,7 @@ Use catalog source files as read-only references:
 Use generated and working query files as implementation context, not as source-of-truth memory:
 
 - `queries_and_scripts/Generated_Queries`
-- `02_Working_Files/Queries`
+- `queries_and_scripts/draft_queries`
 
 Do not edit catalog source folders directly. If a catalog query is adapted, save only reusable method knowledge into query-method memory after user validation, not the generated SQL artifact.
 

@@ -11,6 +11,8 @@ This is the root source repository for Orbital query and script content.
 | `catalog_snapshot/` | Offline Cisco-managed stock catalog snapshot | Sync to GitHub and refresh periodically from Orbital API. |
 | `catalog_result_profiles/` | Sanitized catalog validation result profiles | Sync to GitHub and use for query-result explanation. |
 | `Generated_Queries/` | Generated SQL/JSON query artifacts | Temporary by default; commit only explicitly retained project artifacts. |
+| `draft_queries/` | Draft, test, validation, adapted, or investigation-specific queries | Use for query work that is not yet promoted to `custom_queries/`. |
+| `draft_scripts/` | Draft, test, validation, adapted, or investigation-specific scripts | Use for script work that is not yet promoted to `custom_scripts/`. |
 | `custom_queries/` | User-created query repository | Edit only when intentionally updating personal custom query work. |
 | `custom_scripts/` | User-created script repository | Edit only when intentionally updating personal custom script work. |
 
@@ -18,7 +20,7 @@ Subfolders are allowed when separating queries or scripts by purpose, product ar
 
 Do not mix catalog imports and custom user-created work in the same folder.
 
-When adapting a catalog item, copy it into `02_Working_Files/` first. Promote finished custom work into `custom_queries/` or `custom_scripts/` only when the user explicitly wants it stored as personal reusable repository content.
+When adapting a catalog query, copy it into `draft_queries/` first. When adapting a catalog script, copy it into `draft_scripts/` first. Promote finished custom work into `custom_queries/` or `custom_scripts/` only when the user explicitly wants it stored as personal reusable repository content.
 
 Generated SQL/JSON under `Generated_Queries/` is not the same as personal custom query work. Keep new generated scratch files local-only by default. Move or copy a finished query into `custom_queries/` only when it should become reusable personal repository content.
 

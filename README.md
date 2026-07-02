@@ -50,14 +50,20 @@ For Codex or human review, read these files first:
 - `queries_and_scripts/Generated_Queries/`: generated SQL/JSON query artifacts.
   Existing tracked files are retained for project continuity; new generated
   scratch files are ignored by default unless explicitly promoted.
+- `queries_and_scripts/draft_queries/`: draft, test, validation, adapted, and
+  investigation-specific query files that are not yet promoted to custom query
+  work.
+- `queries_and_scripts/draft_scripts/`: draft, test, validation, adapted, and
+  investigation-specific script files that are not yet promoted to custom script
+  work.
 - `queries_and_scripts/custom_queries/`: user-owned custom query
   repository content. Store a query here only when the user explicitly asks to
   save that query as a custom query.
 - `queries_and_scripts/custom_scripts/`: user-owned custom script
   repository content. Edit only when intentionally updating personal custom work.
-- `02_Working_Files/`: legacy working area for drafts, adapted templates,
-  active helpers, project skills, and investigation work. This folder is being
-  evaluated for removal.
+- `02_Working_Files/`: legacy working area for active helpers, project skills,
+  query-method memory, and investigation support files. Query and script files
+  should live under `queries_and_scripts/`.
 - Generated query artifacts are temporary by default. Do not add new generated
   SQL/JSON files to GitHub unless the user explicitly asks to promote a specific
   query into `queries_and_scripts/custom_queries/`.

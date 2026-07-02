@@ -1,10 +1,10 @@
 # Working Files
 
-Legacy working area for drafts, adapted templates, experiments, and files that are actively being changed here.
+Legacy working area for active helpers, query-method memory, project skills, experiments, and investigation support files.
 
-Do not overwrite source files directly. Copy or reference catalog source material from `queries_and_scripts/` in a temporary/local working area before modifying it.
+Do not store query or script files here. Query and script files with any status should live under `../queries_and_scripts/`.
 
-Generated SQL/JSON query artifacts now live under `../queries_and_scripts/Generated_Queries/`. They remain temporary by default. Do not commit new generated queries unless the user explicitly asks to retain a specific generated artifact or store a finished query as a custom query under `../queries_and_scripts/custom_queries/`.
+Generated SQL/JSON query artifacts live under `../queries_and_scripts/Generated_Queries/`. Draft, test, validation, adapted, or investigation-specific query files live under `../queries_and_scripts/draft_queries/`. Draft, test, validation, adapted, or investigation-specific script files live under `../queries_and_scripts/draft_scripts/`.
 
 Key working areas:
 

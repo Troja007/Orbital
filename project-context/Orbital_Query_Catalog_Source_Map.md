@@ -163,7 +163,7 @@ Do not use alone for:
 5. Check whether Orbital-specific availability, disabled tables, `allowos`, or platform filters apply.
 6. Preserve Catalog metadata such as OS, category, MITRE mapping, owner/updater, and update date.
 7. If explaining an executed catalog result, check the matching per-Catalog-ID Markdown file under `queries_and_scripts/catalog_result_profiles/windows/`. Use the JSONL file for automated lookup or bulk processing.
-8. If adapting the query, copy it into `02_Working_Files/Queries` before editing.
+8. If adapting the query, copy it into `queries_and_scripts/draft_queries/` before editing.
 
 ## Example From UI Analysis
 

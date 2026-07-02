@@ -64,7 +64,7 @@ Custom scripts are similar in concept to custom queries. They are useful for ite
 
 A custom script can be edited and run again, with refreshed results shown after execution.
 
-Project rule: when adapting a catalog script or personal script, copy it to `02_Working_Files/Scripts` before changing it unless the user explicitly asks to update the GitHub-tracked source file.
+Project rule: when adapting a catalog script or personal script, copy it to `queries_and_scripts/draft_scripts/` before changing it unless the user explicitly asks to update the GitHub-tracked source file.
 
 ## Scheduled Scripts
 
