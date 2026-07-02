@@ -19,7 +19,7 @@ This file captures reusable product context from user-provided narrative input a
 - `project-context/Osquery_Schema_5_23_0.md`: upstream osquery table and column reference.
 - `product-context/Cisco_Secure_Client_Endpoint_Context.md`: Secure Endpoint, Secure Client, Orbital, and adjacent Cisco endpoint artifact context.
 - `02_Working_Files/Query_Methods/README.md`: query-method memory rules and storage boundaries.
-- `02_Working_Files/Generated_Queries/windows_tdnr_secure_client_module_status.sql`: generated Windows query for TDNR-relevant Cisco endpoint module installation and active-state evidence.
+- `queries_and_scripts/Generated_Queries/windows_tdnr_secure_client_module_status.sql`: generated Windows query for TDNR-relevant Cisco endpoint module installation and active-state evidence.
 - Local Codex skills for Orbital API access, catalog updates, live osquery execution, and query-method memory.
 
 ## Product Outcome
@@ -99,7 +99,7 @@ Reusable interpretation:
 - The task starts from natural language and screenshot/product context, not from a known malicious hash, IP, or domain.
 - The investigation goal is to validate endpoint module presence and active state for a specific host.
 - The useful evidence is a combined view across installed programs, services, and running processes.
-- The generated query `02_Working_Files/Generated_Queries/windows_tdnr_secure_client_module_status.sql` checks module-level state for:
+- The generated query `queries_and_scripts/Generated_Queries/windows_tdnr_secure_client_module_status.sql` checks module-level state for:
   - EDR / Cisco Secure Endpoint
   - Orbital / Query & Script
   - EVM / Endpoint Visibility

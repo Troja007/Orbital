@@ -9,6 +9,7 @@ This project separates Cisco-managed catalog source material from user-owned cus
 | Catalog query templates | `queries_and_scripts/catalog_queries/` | Cisco-managed catalog source copy | Read-only | Stable source/template material for query design without repeatedly pulling from the live catalog. |
 | Catalog script templates | `queries_and_scripts/catalog_scripts/` | Cisco-managed catalog source copy | Read-only | Stable source/template material for response script design without repeatedly pulling from the live catalog. |
 | Catalog snapshot | `queries_and_scripts/catalog_snapshot/` | Cisco-managed stock catalog API snapshot | Refresh from Orbital API; sync to GitHub | Full offline stock catalog data used for query/script selection decisions. |
+| Generated query artifacts | `queries_and_scripts/Generated_Queries/` | Generated project artifacts and local scratch drafts | Temporary by default; new scratch files ignored unless explicitly retained | Staging area for generated SQL/JSON artifacts that are useful near query/script work but are not automatically personal reusable queries. |
 | Custom queries | `queries_and_scripts/custom_queries/` | User-owned personal repository content | Editable only when the user explicitly asks to store or update a custom query | Personal collection of custom Orbital SQL queries that the user intentionally chose to keep. |
 | Custom scripts | `queries_and_scripts/custom_scripts/` | User-owned personal repository content | Editable only when intentionally updating personal GitHub work | Personal collection of custom Orbital Python scripts generated manually, with Codex, or with other tools. |
 
@@ -18,7 +19,7 @@ Catalog folders are source snapshots and templates. Do not adapt files in place.
 
 Custom folders are the user's personal repository content. They can contain work generated manually, with Codex, with VS Code, or with other tools only after the user explicitly chooses to store that work there. Modify them only when the task is explicitly to update the personal query/script repository.
 
-Generated experiments, draft adaptations, validation queries, lab-specific queries, host-specific queries, and investigation-specific queries are temporary by default. Do not store them in GitHub-tracked folders unless the user explicitly asks to store a specific artifact. Prefer chat-only output, direct helper input, or local-only scratch paths.
+Generated experiments, draft adaptations, validation queries, lab-specific queries, host-specific queries, and investigation-specific queries are temporary by default. `queries_and_scripts/Generated_Queries/` may contain explicitly retained project artifacts, but new generated scratch files remain ignored by default. Prefer chat-only output, direct helper input, or local-only scratch paths unless the user asks to retain a generated artifact.
 
 Finished reusable query and script work belongs in `queries_and_scripts/custom_queries/` or `queries_and_scripts/custom_scripts/` only when the user explicitly wants it promoted into the personal custom repository. Finished context, memory, profiles, and notes belong in their dedicated project folders rather than a generic output folder.
 

@@ -370,7 +370,7 @@ sql_patterns:
       ORDER BY si.hostname, pr.name;
   - name: "Secure Client installed modules"
     description: "Installed-program inventory focused on Cisco Secure Client modules such as VPN, Cloud Management, DART, EVM, XDR NVM, and Secure Client UI."
-    sql_file: "02_Working_Files/Generated_Queries/windows_secure_client_installed_modules.sql"
+    sql_file: "queries_and_scripts/Generated_Queries/windows_secure_client_installed_modules.sql"
     sql: |
       SELECT
         si.hostname AS host,
@@ -398,7 +398,7 @@ sql_patterns:
       ORDER BY module, installed_product;
   - name: "TDNR Secure Client module status"
     description: "Check installed and active status for the TDNR-relevant endpoint modules shown in the Secure Client stack: EDR/Secure Endpoint, Orbital, EVM, NVM, and XDR Forensics."
-    sql_file: "02_Working_Files/Generated_Queries/windows_tdnr_secure_client_module_status.sql"
+    sql_file: "queries_and_scripts/Generated_Queries/windows_tdnr_secure_client_module_status.sql"
     evidence_tables:
       - "programs"
       - "services"
@@ -459,7 +459,7 @@ sql_patterns:
       ORDER BY service_name;
   - name: "Secure Endpoint and Secure Client driver artifact set"
     description: "Check known Secure Endpoint / Secure Client connector driver artifacts using services, drivers, and exact-path file evidence."
-    sql_file: "02_Working_Files/Generated_Queries/windows_secure_endpoint_secure_client_driver_set_marble.sql"
+    sql_file: "queries_and_scripts/Generated_Queries/windows_secure_endpoint_secure_client_driver_set_marble.sql"
     evidence_tables:
       - "drivers"
       - "services"
@@ -481,7 +481,7 @@ sql_patterns:
       - "A driver service can report RUNNING even when start_type reports DISABLED; interpret driver state with product context."
   - name: "Cisco Secure Client and Secure Endpoint CLSID registry entries"
     description: "Find Cisco-related COM class registrations under HKEY_CLASSES_ROOT\\CLSID and return all values under matching CLSID keys."
-    sql_file: "02_Working_Files/Generated_Queries/windows_cisco_hkcr_clsid_entries.sql"
+    sql_file: "queries_and_scripts/Generated_Queries/windows_cisco_hkcr_clsid_entries.sql"
     sql: |
       WITH matching_clsids AS (
         SELECT DISTINCT key AS clsid_key
@@ -533,7 +533,7 @@ sql_patterns:
       ORDER BY si.hostname, r.path, r.name;
   - name: "Secure Client / Secure Endpoint combined inventory"
     description: "Low-impact first-pass inventory combining Microsoft Installer product data, installer/uninstall registry entries, services, and current running processes."
-    sql_file: "02_Working_Files/Generated_Queries/windows_secure_client_endpoint_inventory.sql"
+    sql_file: "queries_and_scripts/Generated_Queries/windows_secure_client_endpoint_inventory.sql"
     sql: |
       SELECT
         si.hostname AS host,

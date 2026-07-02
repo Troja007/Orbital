@@ -502,7 +502,7 @@ The query intentionally combines four evidence sources:
 - `services` for installed service and driver state.
 - `processes` for currently running Cisco Secure Client / Secure Endpoint processes.
 
-Reusable SQL is stored at `02_Working_Files/Generated_Queries/windows_secure_client_endpoint_inventory.sql`.
+Reusable SQL is stored at `queries_and_scripts/Generated_Queries/windows_secure_client_endpoint_inventory.sql`.
 
 Operational note: for named-host API investigations, submit this as a scheduled query with `POST /v0/query`, a 2-minute expiry, and `interval = 0`, then store and follow the returned `orbital_queryID` through `/v0/jobs/{id}` and `/v0/jobs/{id}/results`.
 
@@ -708,7 +708,7 @@ Validation note:
 - The same catalog query was later verified directly in the Orbital UI against one exact Windows host and returned positive protected-process rows.
 - The UI target selector used lowercase `host:<hostname>`. If API live query returns `answered_endpoint_count = 0` for an exact host while the UI returns rows, retry with the exact UI selector spelling/case before interpreting the result as no protected processes.
 - Repeated execution of this `process_memory_map` query can destabilize or crash the Orbital query on the endpoint. Store the job ID for every run and use `/jobs/{id}` and `/jobs/{id}/results` for follow-up instead of rerunning the endpoint query.
-- User testing on 2026-06-12 showed that the generated simplified combined Protector32/Protector64 query in `02_Working_Files/Generated_Queries/windows_secure_endpoint_exploit_prevention_protected_processes.sql` can put the Orbital endpoint service into a faulty state. Restarting the Orbital service restores operation. Do not use that query shape.
+- User testing on 2026-06-12 showed that the generated simplified combined Protector32/Protector64 query in `queries_and_scripts/Generated_Queries/windows_secure_endpoint_exploit_prevention_protected_processes.sql` can put the Orbital endpoint service into a faulty state. Restarting the Orbital service restores operation. Do not use that query shape.
 - The project query file `queries_and_scripts/custom_queries/Orbital_Running Processes including the loaded DLLs and signing Certificate.sql` works consistently and should be preferred for this investigation.
 - No live endpoint result rows are stored in this context file.
 

@@ -30,5 +30,5 @@ installation_id
 local/orbital-catalog-api-cache/
 
 # Generated query scratch output is temporary by default.
-02_Working_Files/Generated_Queries/
+queries_and_scripts/Generated_Queries/
 local/generated-queries/

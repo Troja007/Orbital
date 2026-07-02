@@ -103,7 +103,7 @@ These counters are scale indicators, not audited productivity metrics.
 | Repository breadth | Files visible through `rg --files` | 161 | File inventory on 2026-06-24 |
 | Durable context | Project context files | 14 | `project-context` file count |
 | Query-method memory | Method/template records | 20 | `02_Working_Files/Query_Methods` file count excluding `.DS_Store` |
-| Generated query artifacts | SQL/JSON files | 34 | `02_Working_Files/Generated_Queries` file count |
+| Generated query artifacts | SQL/JSON files | 34 | `queries_and_scripts/Generated_Queries` file count |
 | User-owned source queries | Custom query source files | 26 | `queries_and_scripts/custom_queries` count |
 | User-owned source scripts | Custom script source files | 12 | `queries_and_scripts/custom_scripts` count |
 | Cisco-managed catalog source copies | Catalog query/script source files | 7 | `catalog_queries` plus `catalog_scripts` count |
