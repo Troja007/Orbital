@@ -2,6 +2,8 @@
 
 Store project descriptions, scope notes, GitHub repository references, access notes, and high-level assumptions here.
 
+Project context is GitHub-synced reusable knowledge. Add or update it when new context changes how Codex should understand Orbital terminology, source priority, catalog/API behavior, osquery mapping, target selection, query behavior, script behavior, or folder ownership.
+
 When adding new project context, check whether a cross-reference file should be created or updated. This is required when new information connects or changes terminology, API fields, identifiers, source priority, folder ownership, catalog data, target selection, query behavior, script behavior, or relationships between UI, API, osquery, catalog, and local source files.
 
 When project context is generated from chat messages or personal input, check whether a project term may be used in the wrong or ambiguous context. If the meaning could conflict with established Orbital terminology, clarify the intended meaning before creating or updating context files.

@@ -7,6 +7,8 @@ description: Build and use a Cisco Orbital/osquery query-method knowledge base w
 
 Use this skill to improve Orbital investigation speed and quality over time by building a knowledge base that explains when to use which Orbital query. This skill stores methods, input patterns, decision guidance, reasoning, catalog references, MITRE/category context, and lessons learned. It must not store live query result rows or endpoint-specific evidence.
 
+Treat every useful query design, endpoint investigation, catalog comparison, context import, and analyst correction as a possible memory improvement. Save only reusable and sanitized method knowledge after user validation so the GitHub-synced project becomes faster and more accurate for future Codex workspaces.
+
 Use `orbital-api-access` for catalog import, catalog freshness checks, authentication, API connectivity, and raw catalog context. Use `orbital-run-osquery-live-query` only when the user has explicit targets and wants to execute a live osquery query. When live query work requires SQL design, table choice, catalog reuse, or repeated investigation patterns, this skill should be used before execution to speed up and improve query quality.
 
 ## Project Change Log

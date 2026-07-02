@@ -15,6 +15,16 @@ The project is not only a collection of SQL snippets. It now contains:
 - Codex skill working copies for Orbital API access, query-method memory, live or
   scheduled osquery execution, and catalog update work.
 
+## Continuous Improvement Model
+
+The project is designed to improve query quality and investigation speed over time.
+
+Each useful query, script, catalog comparison, endpoint investigation, context import, and analyst correction should improve future work when it produces reusable knowledge. Store that reusable knowledge as sanitized project context, product context, query-method memory, catalog result profiles, notes, or skills.
+
+The repository should contain enough GitHub-synced memory, knowledge, context, and reusable skills that a new Codex workspace can import the repo and immediately benefit from prior outcomes.
+
+Do not sync raw endpoint evidence. The reusable outcome is the method: what question was asked, which table/query/script pattern helped, when it applies, what assumptions or caveats matter, and how to interpret the result shape safely.
+
 ## Start Here
 
 For Codex or human review, read these files first:
@@ -110,6 +120,8 @@ Both files are local-only and must not be staged or pushed.
 Query-method memory lives under `tools-and-memory/query-method-memory/`.
 
 It is used to answer: "Which Orbital query should I use now?"
+
+This memory is the main mechanism for improving quality and speed as more endpoint work is performed. After useful query design, endpoint testing, catalog validation, result interpretation, or analyst feedback, update memory only with reusable and sanitized lessons. Never store raw endpoint rows or identifying values.
 
 Method records may store:
 

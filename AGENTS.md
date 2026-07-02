@@ -2,6 +2,10 @@
 
 This project is for working on Cisco Orbital queries and scripts.
 
+The project is a GitHub-synced knowledge and memory system, not just a file store. Each useful query, script, catalog comparison, endpoint investigation, context import, or analyst correction should improve future quality and speed when it produces reusable knowledge. Store reusable knowledge in sanitized project context, product context, query-method memory, catalog result profiles, notes, or skills so a new Codex workspace importing this repository can immediately benefit from prior outcomes.
+
+Do not store raw endpoint evidence in GitHub. The durable memory is the reusable method: the investigation question, table/query/script pattern, catalog and osquery context, target-selection guidance, validation status, caveats, and safe result interpretation.
+
 Orbital queries use SQL syntax and osquery tables to inspect endpoint information. Verify table names, columns, platform assumptions, and expected result shape before finalizing query work.
 
 For Orbital query work, account for query type and targeting behavior. Custom queries, also called live queries or probes, run immediately and return immediate results. Scheduled queries run over a defined time window and frequency. Query prefixes control target devices and can be special, dynamic, or static. Use the `all` prefix with caution because broad targeting can affect endpoint performance. Check whether `allowos` or an operating system filter is required for platform-specific queries.
