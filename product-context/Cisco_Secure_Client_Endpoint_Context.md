@@ -17,6 +17,7 @@ This file collects product context, expected endpoint artifacts, Orbital query p
 - Organization catalog process-memory examples for Cisco DLLs loaded into running processes.
 - Stock catalog script: `List the Definition's Version of Secure Endpoint Engines`, ID `se_engine_definitions`.
 - Organization catalog scripts for `sfc.exe` start, stop, force update, and Secure Client NVM/Umbrella service start/stop.
+- Live-tested Orbital query method for locating the local `sfc.exe.log` file by discovering the active `sfc.exe` path first, then checking the same version directory.
 - Cisco Support TechNote `Required Server Addresses for Proper Secure Endpoint and Malware Analytics`, Document ID `118121`, updated `2026-03-10`: required cloud server addresses, ports, hostname-vs-IP firewall guidance, and TLS decryption caveat.
 - osquery 5.23.0 schema in `01_Source_Files/API_References/osquery_schema_5_23_0.json`.
 
@@ -32,6 +33,12 @@ Primary observed Windows process families:
 | --- | --- | --- | --- |
 | `sfc.exe` | Secure Endpoint connector process / control binary | `C:\Program Files\Cisco\AMP\<version>\sfc.exe` | Used by catalog scripts for connector start, stop, and force update. |
 | `cscm.exe` | Secure Endpoint / AMP component | `C:\Program Files\Cisco\AMP\<version>\cscm.exe` | Seen as a common companion process to `sfc.exe`. |
+
+Observed local `sfc.exe` log pattern:
+
+| Artifact | Likely role | Typical path pattern | Notes |
+| --- | --- | --- | --- |
+| `sfc.exe.log` | Local `sfc.exe` activity log | `C:\Program Files\Cisco\AMP\<version>\sfc.exe.log` | Co-located with the active Secure Endpoint `sfc.exe` connector binary. Discover the active `sfc.exe` directory first, then query this exact log path. |
 
 Secure Endpoint Exploit Prevention context:
 
@@ -51,6 +58,8 @@ Start-Process -NoNewWindow -FilePath "C:\Program Files\Cisco\AMP\<version>\sfc.e
 ```
 
 Do not hard-code the version directory in future repair scripts. Discover `sfc.exe` first through `processes`, `file`, `programs`, registry, or directory search, then execute the discovered path.
+
+For local `sfc.exe` log troubleshooting, use the same discovery rule: locate the active `sfc.exe` path first, derive the version directory, then check for `sfc.exe.log` in that directory. Broad `file.path LIKE 'C:\Program Files\Cisco\AMP%\sfc.exe.log'` patterns may fail to enumerate reliably; exact path or directory-constrained `file` queries are more reliable.
 
 #### Cloud Connectivity and Firewall Requirements
 
@@ -371,6 +380,45 @@ GROUP BY
 ORDER BY
   status,
   si.hostname;
+```
+
+### Locate `sfc.exe.log` From Active `sfc.exe`
+
+Purpose: find the Secure Endpoint local `sfc.exe` activity log without hard-coding an AMP version directory.
+
+Recommended sequence:
+
+1. Query the active `sfc.exe` process and record its directory.
+2. Query the `file` table with `directory = '<active_sfc_directory>'` and `filename = 'sfc.exe.log'`.
+3. Use exact path or directory-constrained lookup. Avoid relying only on broad `file.path LIKE 'C:\Program Files\Cisco\AMP%\sfc.exe.log'` enumeration.
+
+Discovery SQL:
+
+```sql
+SELECT
+  p.pid,
+  p.name AS process_name,
+  p.path AS process_path,
+  rtrim(replace(p.path, '\sfc.exe', ''), '\') AS sfc_directory,
+  p.cmdline AS command_line
+FROM processes p
+WHERE lower(p.name) = 'sfc.exe'
+   OR lower(p.path) LIKE '%\sfc.exe';
+```
+
+Directory-constrained log lookup after the active directory is known:
+
+```sql
+SELECT
+  path,
+  directory,
+  filename,
+  size,
+  datetime(mtime, 'unixepoch', 'UTC') AS modified_utc,
+  type
+FROM file
+WHERE directory = 'C:\Program Files\Cisco\AMP\<version>'
+  AND lower(filename) = 'sfc.exe.log';
 ```
 
 ### Secure Endpoint / Secure Client Memory Consumption
