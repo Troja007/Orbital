@@ -1,0 +1,4 @@
+interface:
+  display_name: "Orbital Run osquery Live Query"
+  short_description: "Run generic Orbital live osquery queries against explicit targets."
+  default_prompt: "Use the configured Orbital API to run an osquery live query against explicit target selectors and return the requested rows."
