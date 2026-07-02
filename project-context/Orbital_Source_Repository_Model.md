@@ -20,7 +20,7 @@ Custom folders are the user's personal repository content. They can contain work
 
 Generated experiments, draft adaptations, and investigation-specific files belong in `02_Working_Files/`, not in the catalog source folders.
 
-Finished reusable deliverables belong in `03_Outputs/` unless the user explicitly wants them promoted into the personal custom query/script repository.
+Finished reusable query and script work belongs in `queries_and_scripts/custom_queries/` or `queries_and_scripts/custom_scripts/` only when the user explicitly wants it promoted into the personal custom repository. Finished context, memory, profiles, and notes belong in their dedicated project folders rather than a generic output folder.
 
 ## Catalog Snapshot Reason
 

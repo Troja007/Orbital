@@ -53,7 +53,6 @@ The project has several distinct knowledge asset groups:
 | Generated/adapted work | Drafts, generated SQL, product context, helper scripts, and active skills | `02_Working_Files/` |
 | Query-method memory | Reusable methods describing when and how to query, without endpoint result rows | `02_Working_Files/Query_Methods/` |
 | Product context | Secure Client / Secure Endpoint endpoint artifact and query context | `product-context/` |
-| Output area | Finished reusable deliverables and handoff artifacts | `03_Outputs/` |
 | Notes and learning records | Decision logs, query memory summaries, and Codex network notes | `notes-and-memory/` |
 
 Important source distinctions:
@@ -65,7 +64,7 @@ Important source distinctions:
   `queries_and_scripts/custom_scripts` are user-owned source
   material and should only be modified when intentionally updating that work.
 - Adapted or generated query work belongs under `02_Working_Files` before it is
-  promoted to an output or reusable method.
+  promoted to a custom query/script repository file or reusable method.
 
 ## How Codex Is Used
 
@@ -240,7 +239,7 @@ reporting.
   should be regenerated to include newer query-method files added after
   2026-06-12.
 - Confirm whether any generated query artifacts should be promoted to
-  `03_Outputs` as finished deliverables.
+  `queries_and_scripts/custom_queries/` as personal reusable query work.
 
 ## Stakeholder Value
 
@@ -256,7 +255,8 @@ Orbital knowledge:
 - **Reduced operational risk:** target selectors, OS filters, broad-targeting
   cautions, script limits, and endpoint-result privacy rules are explicit.
 - **Improved collaboration:** project context separates read-only source
-  material, working files, generated queries, notes, and final outputs.
+  material, working files, generated queries, notes, and reusable query/script
+  repository content.
 - **Stronger Secure Client / Endpoint analysis:** Codex-supported context helps
   distinguish installation evidence, runtime process/service state, event-log
   evidence, connectivity evidence, and product health assumptions.
@@ -266,8 +266,8 @@ Orbital knowledge:
 1. Commit the updated root README if it is accepted as the new project overview.
 2. Refresh the query-method memory summary so it includes all current YAML records
    under `02_Working_Files/Query_Methods/`.
-3. Add a short `03_Outputs` index once generated queries are promoted to finished
-   reusable deliverables.
+3. Add a lightweight promotion checklist for moving generated queries into
+   `queries_and_scripts/custom_queries/` when they become personal reusable work.
 4. Add a lightweight report index in `notes-and-memory/README.md` so stakeholder summaries
    and query-memory reports are easier to find.
 5. Periodically verify catalog/API context freshness, especially when Cisco
