@@ -9,6 +9,7 @@ python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-githu
   --repo Troja007/Orbital \
   --path skills/github-sync-workflow \
   --path skills/orbital-api-access \
+  --path skills/orbital-catalog-result-profiles \
   --path skills/orbital-query-method-memory \
   --path skills/orbital-run-osquery-live-query \
   --path skills/orbital-update-catalog

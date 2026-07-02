@@ -1,0 +1,4 @@
+interface:
+  display_name: "Orbital Catalog Result Profiles"
+  short_description: "Generate sanitized Orbital catalog result profiles."
+  default_prompt: "Use $orbital-catalog-result-profiles to generate or refresh sanitized catalog result profiles from the local Orbital catalog validation output."
