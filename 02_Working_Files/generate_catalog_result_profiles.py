@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -253,6 +254,258 @@ def escape_cell(value: Any) -> str:
     return str(value or "").replace("|", "\\|").replace("\n", " ")
 
 
+def slugify(value: Any) -> str:
+    text = str(value or "").strip().lower()
+    text = re.sub(r"[^a-z0-9]+", "_", text)
+    text = re.sub(r"_+", "_", text).strip("_")
+    return text or "untitled"
+
+
+def bullet_lines(values: list[Any]) -> list[str]:
+    if not values:
+        return ["- None recorded."]
+    return [f"- `{value}`" for value in values if value is not None]
+
+
+def plain_bullet_lines(values: list[Any]) -> list[str]:
+    if not values:
+        return ["- None recorded."]
+    return [f"- {value}" for value in values if value is not None]
+
+
+def format_map(mapping: dict[str, Any]) -> list[str]:
+    if not mapping:
+        return ["- None recorded."]
+    return [f"- `{key}`: {value}" for key, value in sorted(mapping.items())]
+
+
+def markdown_table_for_label_columns(label_columns: dict[str, list[str]]) -> list[str]:
+    lines = ["| Label | Columns |", "| --- | --- |"]
+    if not label_columns:
+        lines.append("| None returned in validation | None observed |")
+        return lines
+    for label, columns in sorted(label_columns.items()):
+        column_text = ", ".join(f"`{column}`" for column in columns) if columns else "None observed"
+        lines.append(f"| `{escape_cell(label)}` | {column_text} |")
+    return lines
+
+
+def result_observation_text(profile: dict[str, Any]) -> str:
+    validation = profile["validation"]
+    status = validation["status"]
+    row_count = validation["row_count"]
+    endpoint_answered = validation["endpoint_answered"]
+    caveat = validation["error_class"]
+
+    if status not in {"completed", "completed_direct_verification"}:
+        return (
+            "The validation did not produce a reliable completed endpoint result. Treat this as no usable "
+            "result profile for endpoint assumptions until the query is rerun or an existing job result is "
+            "checked directly."
+        )
+    if caveat:
+        return (
+            "The endpoint answered, but the validation recorded a caveat. Interpret row counts only after "
+            "reviewing the error details in the profile."
+        )
+    if endpoint_answered and row_count == 0:
+        return (
+            "The endpoint answered and returned zero rows. This is a completed no-hit result for the exact "
+            "query scope, not a query failure."
+        )
+    if endpoint_answered:
+        return f"The endpoint answered and returned {row_count} rows in the validation run."
+    return "Endpoint-answer state was not available in the sanitized validation profile."
+
+
+def zero_row_reading(profile: dict[str, Any]) -> str:
+    validation = profile["validation"]
+    if validation["status"] not in {"completed", "completed_direct_verification"}:
+        return (
+            "No endpoint-response assumption is valid for this profile. If an execution has no response, "
+            "first confirm target availability, query status, and stored job results before interpreting "
+            "the catalog condition."
+        )
+    if validation["endpoint_answered"] and validation["row_count"] == 0:
+        return profile["responder_reading"]
+    return (
+        "If a future execution returns zero rows after the endpoint answered, read it as no matching rows "
+        "for the exact query scope. Do not treat zero rows as proof that the related behavior never happened."
+    )
+
+
+def returned_row_reading(profile: dict[str, Any]) -> str:
+    validation = profile["validation"]
+    if validation["status"] not in {"completed", "completed_direct_verification"}:
+        return (
+            "No returned-row interpretation was validated. If a future execution returns rows, interpret them "
+            "against the catalog description, returned columns, warnings, and follow-up evidence."
+        )
+    if validation["row_count"] and validation["row_count"] > 0:
+        return profile["responder_reading"]
+    return (
+        "If a future execution returns rows, treat them as evidence matching this catalog query's condition "
+        "or inventory shape. Review timestamps, paths, users, signatures, process context, and related "
+        "follow-up queries before making an incident conclusion."
+    )
+
+
+def no_response_reading(profile: dict[str, Any]) -> str:
+    validation = profile["validation"]
+    if validation["status"] not in {"completed", "completed_direct_verification"} or not validation["endpoint_answered"]:
+        return (
+            "No response means the query did not produce endpoint evidence in the observed wait window. "
+            "Do not read this as clean or affected. Verify target selection, endpoint online state, query/job "
+            "status, result availability, and API errors before rerunning."
+        )
+    return (
+        "If a future execution has no endpoint response, do not interpret it as zero rows. Zero rows require "
+        "an answered endpoint. No response requires operational follow-up on target state, job status, and "
+        "result retrieval."
+    )
+
+
+def explanation_template(profile: dict[str, Any]) -> str:
+    title = profile["title"]
+    catalog_id = profile["catalog_id"]
+    return (
+        f"The `{catalog_id}` catalog query ({title}) returned results that should be interpreted according "
+        "to the catalog purpose and observed result shape. An answered endpoint with zero rows means no "
+        "matching rows were returned for this exact query scope. Returned rows are endpoint evidence for "
+        "the query condition or inventory shape, but they are not automatically a malicious verdict. A "
+        "missing endpoint response is operationally different from zero rows and should be checked through "
+        "target availability and job/result status."
+    )
+
+
+def write_per_catalog_markdown(profiles: list[dict[str, Any]], output_dir: Path) -> None:
+    windows_dir = output_dir / "windows"
+    windows_dir.mkdir(parents=True, exist_ok=True)
+    for old_file in windows_dir.glob("*.md"):
+        old_file.unlink()
+
+    for profile in profiles:
+        validation = profile["validation"]
+        filename = f"{slugify(profile['catalog_id'])}__{slugify(profile['title'])}.md"
+        path = windows_dir / filename
+        lines = [
+            f"# {profile['title']}",
+            "",
+            "## Catalog Identity",
+            "",
+            f"- Catalog ID: `{profile['catalog_id']}`",
+            f"- Catalog name: `{profile['title']}`",
+            f"- Platform: {', '.join(profile['platforms']) if profile['platforms'] else 'Not recorded'}",
+            "- Profile type: sanitized catalog result profile",
+            f"- Source run: {validation['source_run_date']}",
+            f"- Catalog updated: {profile['catalog_updated'] or 'Not recorded'}",
+            "",
+            "## What This Query Answers",
+            "",
+            "Use the catalog name, categories, MITRE mapping, and returned columns to decide whether this query is detection-oriented, inventory-oriented, posture-oriented, or forensic context.",
+            "",
+            "Categories:",
+            *bullet_lines(profile["categories"]),
+            "",
+            "MITRE tactics:",
+            *format_map(profile["mitre_tactics"]),
+            "",
+            "MITRE techniques:",
+            *format_map(profile["mitre_techniques"]),
+            "",
+            "This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.",
+            "",
+            "## Expected Result Shape",
+            "",
+            f"- Endpoint answered in validation: {'yes' if validation['endpoint_answered'] else 'no' if validation['endpoint_answered'] is False else 'unknown'}",
+            f"- Validation status: `{validation['status']}`",
+            f"- Observed row count: {validation['row_count'] if validation['row_count'] is not None else 'unknown'}",
+            f"- Row-count bucket: `{validation['row_count_bucket']}`",
+            "- Returned labels:",
+            *bullet_lines(validation["labels_returned"]),
+            "",
+            "Observed columns:",
+            "",
+            *markdown_table_for_label_columns(validation["label_columns"]),
+            "",
+            "Label row counts:",
+            *format_map(validation["label_row_counts"]),
+            "",
+            "## How To Read The Result",
+            "",
+            "Observed validation result:",
+            "",
+            result_observation_text(profile),
+            "",
+            "If rows are returned:",
+            "",
+            returned_row_reading(profile),
+            "",
+            "If zero rows are returned:",
+            "",
+            zero_row_reading(profile),
+            "",
+            "If the endpoint does not respond:",
+            "",
+            no_response_reading(profile),
+            "",
+            "## Incident Responder Assumptions",
+            "",
+            "Safe assumptions and limits:",
+            *plain_bullet_lines(profile["assumptions_and_limits"]),
+            "",
+            "Unsafe assumptions:",
+            "- Do not assume returned rows are malicious without context.",
+            "- Do not assume missing rows prove the behavior never happened.",
+            "- Do not generalize this validation row count to all endpoints.",
+            "- Do not treat no endpoint response as a clean result.",
+            "",
+            "## Caveats",
+            "",
+            "Catalog warnings:",
+            *plain_bullet_lines(profile["warnings"]),
+            "",
+            f"Error class: `{validation['error_class'] or 'none'}`",
+            "",
+            "Label errors:",
+            *format_map(validation["label_errors"]),
+            "",
+            "Endpoint errors:",
+            *plain_bullet_lines(validation["endpoint_errors"]),
+            "",
+            "## Recommended Follow-Up",
+            "",
+            "When the result matters for an investigation:",
+            "",
+            "1. Confirm the endpoint answered before interpreting row counts.",
+            "2. Compare returned rows with the catalog purpose and warnings.",
+            "3. Validate suspicious rows with surrounding context such as time, path, user, process, signature, network, persistence, or related event evidence.",
+            "4. Use narrower targets or parameters before broad execution if the profile shows high-volume output.",
+            "5. If no endpoint response occurred, check target selection and stored job/result status before rerunning.",
+            "",
+            "## Explanation Template",
+            "",
+            explanation_template(profile),
+            "",
+            "## Privacy Boundary",
+            "",
+            "This profile intentionally does not store:",
+            "",
+            "- Endpoint result rows",
+            "- Hostnames",
+            "- Target selectors",
+            "- Job IDs",
+            "- Usernames",
+            "- IP addresses",
+            "- GUIDs",
+            "- Tenant data",
+            "- Raw API responses",
+            "- Credentials",
+            "",
+        ]
+        path.write_text("\n".join(lines))
+
+
 def write_markdown(profiles: list[dict[str, Any]], path: Path) -> None:
     status_counts = Counter(profile["validation"]["status"] for profile in profiles)
     bucket_counts = Counter(profile["validation"]["row_count_bucket"] for profile in profiles)
@@ -331,6 +584,7 @@ Included files:
 
 - `windows_stock_catalog_result_profiles.jsonl`: structured per-Catalog-ID profiles for Windows stock catalog queries.
 - `windows_stock_catalog_result_profiles.md`: human-readable summary and table.
+- `windows/`: one analyst-facing Markdown file per Windows stock catalog query, named `<catalog_id>__<normalized_query_name>.md`.
 
 Privacy boundary:
 
@@ -347,6 +601,7 @@ def main() -> None:
     profiles = build_profiles(load_best_records(DEFAULT_INPUT))
     write_jsonl(profiles, OUTPUT_DIR / "windows_stock_catalog_result_profiles.jsonl")
     write_markdown(profiles, OUTPUT_DIR / "windows_stock_catalog_result_profiles.md")
+    write_per_catalog_markdown(profiles, OUTPUT_DIR)
     write_readme(OUTPUT_DIR / "README.md")
     print(f"Generated {len(profiles)} catalog result profiles in {OUTPUT_DIR}")
 

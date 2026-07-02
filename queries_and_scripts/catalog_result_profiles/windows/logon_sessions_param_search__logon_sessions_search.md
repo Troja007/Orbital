@@ -1,0 +1,115 @@
+# Logon Sessions Search
+
+## Catalog Identity
+
+- Catalog ID: `logon_sessions_param_search`
+- Catalog name: `Logon Sessions Search`
+- Platform: windows
+- Profile type: sanitized catalog result profile
+- Source run: 2026-06-15/2026-06-16
+- Catalog updated: 2023-11-14T17:51:59.150055646Z
+
+## What This Query Answers
+
+Use the catalog name, categories, MITRE mapping, and returned columns to decide whether this query is detection-oriented, inventory-oriented, posture-oriented, or forensic context.
+
+Categories:
+- `posture-assessment`
+
+MITRE tactics:
+- None recorded.
+
+MITRE techniques:
+- None recorded.
+
+This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.
+
+## Expected Result Shape
+
+- Endpoint answered in validation: yes
+- Validation status: `completed`
+- Observed row count: 11
+- Row-count bucket: `medium_11_100`
+- Returned labels:
+- `logon_sessions_search`
+
+Observed columns:
+
+| Label | Columns |
+| --- | --- |
+| `logon_sessions_search` | `logon_id`, `user`, `logon_domain`, `authentication_package`, `logon_type`, `logon_sid`, `Logon_Time`, `logon_server`, `dns_domain_name`, `upn`, `logon_script`, `home_directory`, `home_directory_drive` |
+
+Label row counts:
+- `logon_sessions_search`: 11
+
+## How To Read The Result
+
+Observed validation result:
+
+The endpoint answered and returned 11 rows in the validation run.
+
+If rows are returned:
+
+Endpoint answered with rows. Interpret rows according to the catalog description: often inventory, posture, configuration, or forensic context rather than malicious evidence by itself.
+
+If zero rows are returned:
+
+If a future execution returns zero rows after the endpoint answered, read it as no matching rows for the exact query scope. Do not treat zero rows as proof that the related behavior never happened.
+
+If the endpoint does not respond:
+
+If a future execution has no endpoint response, do not interpret it as zero rows. Zero rows require an answered endpoint. No response requires operational follow-up on target state, job status, and result retrieval.
+
+## Incident Responder Assumptions
+
+Safe assumptions and limits:
+- Validation used one explicit Windows endpoint; do not generalize row counts to other endpoints or fleets.
+- Row counts describe this validation run only; they are useful for expected result shape and interpretation, not baseline truth.
+
+Unsafe assumptions:
+- Do not assume returned rows are malicious without context.
+- Do not assume missing rows prove the behavior never happened.
+- Do not generalize this validation row count to all endpoints.
+- Do not treat no endpoint response as a clean result.
+
+## Caveats
+
+Catalog warnings:
+- None recorded.
+
+Error class: `none`
+
+Label errors:
+- None recorded.
+
+Endpoint errors:
+- None recorded.
+
+## Recommended Follow-Up
+
+When the result matters for an investigation:
+
+1. Confirm the endpoint answered before interpreting row counts.
+2. Compare returned rows with the catalog purpose and warnings.
+3. Validate suspicious rows with surrounding context such as time, path, user, process, signature, network, persistence, or related event evidence.
+4. Use narrower targets or parameters before broad execution if the profile shows high-volume output.
+5. If no endpoint response occurred, check target selection and stored job/result status before rerunning.
+
+## Explanation Template
+
+The `logon_sessions_param_search` catalog query (Logon Sessions Search) returned results that should be interpreted according to the catalog purpose and observed result shape. An answered endpoint with zero rows means no matching rows were returned for this exact query scope. Returned rows are endpoint evidence for the query condition or inventory shape, but they are not automatically a malicious verdict. A missing endpoint response is operationally different from zero rows and should be checked through target availability and job/result status.
+
+## Privacy Boundary
+
+This profile intentionally does not store:
+
+- Endpoint result rows
+- Hostnames
+- Target selectors
+- Job IDs
+- Usernames
+- IP addresses
+- GUIDs
+- Tenant data
+- Raw API responses
+- Credentials

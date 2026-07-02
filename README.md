@@ -48,7 +48,9 @@ For Codex or human review, read these files first:
   refreshes.
 - `queries_and_scripts/catalog_result_profiles/`: GitHub-synced sanitized
   catalog result profiles used to explain expected query outcomes, row-count
-  behavior, returned columns, caveats, and incident-responder assumptions.
+  behavior, returned columns, no-response handling, caveats, and
+  incident-responder assumptions. The `windows/` subfolder contains one
+  analyst-facing Markdown file per Windows stock Catalog ID.
 - `queries_and_scripts/custom_queries/`: user-owned custom query
   repository content. Edit only when intentionally updating personal custom work.
 - `queries_and_scripts/custom_scripts/`: user-owned custom script

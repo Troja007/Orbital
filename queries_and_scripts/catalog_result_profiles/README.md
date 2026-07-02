@@ -8,6 +8,7 @@ Included files:
 
 - `windows_stock_catalog_result_profiles.jsonl`: structured per-Catalog-ID profiles for Windows stock catalog queries.
 - `windows_stock_catalog_result_profiles.md`: human-readable summary and table.
+- `windows/`: one analyst-facing Markdown file per Windows stock catalog query, named `<catalog_id>__<normalized_query_name>.md`.
 
 Privacy boundary:
 

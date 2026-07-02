@@ -119,6 +119,7 @@ Source folder:
 
 ```text
 queries_and_scripts/catalog_result_profiles/
+queries_and_scripts/catalog_result_profiles/windows/
 ```
 
 Use for:
@@ -126,7 +127,7 @@ Use for:
 - Explaining what a catalog query result means after execution
 - Understanding observed row-count behavior from a controlled validation run
 - Seeing returned labels and column shapes for completed catalog entries
-- Separating no-hit results, inventory/posture output, event-log caveats, high-volume output, and query/endpoint caveats
+- Separating no-hit results, inventory/posture output, event-log caveats, high-volume output, query/endpoint caveats, and no-response handling
 - Giving incident responders safe assumptions and limits per Catalog `ID`
 
 Do not use alone for:
@@ -161,7 +162,7 @@ Do not use alone for:
 4. Validate referenced tables and columns against `osquery_schema_5_23_0.json`.
 5. Check whether Orbital-specific availability, disabled tables, `allowos`, or platform filters apply.
 6. Preserve Catalog metadata such as OS, category, MITRE mapping, owner/updater, and update date.
-7. If explaining an executed catalog result, check `queries_and_scripts/catalog_result_profiles/` by Catalog `ID`.
+7. If explaining an executed catalog result, check the matching per-Catalog-ID Markdown file under `queries_and_scripts/catalog_result_profiles/windows/`. Use the JSONL file for automated lookup or bulk processing.
 8. If adapting the query, copy it into `02_Working_Files/Queries` before editing.
 
 ## Example From UI Analysis

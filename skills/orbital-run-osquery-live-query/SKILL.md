@@ -64,7 +64,7 @@ When inside this Orbital workspace, read these files as needed:
 - `project-context/Orbital_API_DevNet.md` for API endpoint and authentication context.
 - `project-context/Osquery_Schema_5_23_0.md` and `01_Source_Files/API_References/osquery_schema_5_23_0.json` for table and column validation.
 - `project-context/Orbital_Query_Catalog_Source_Map.md` when the query comes from a catalog item or should be compared with catalog/API/UI metadata.
-- `project-context/Orbital_Windows_Catalog_Result_Reading.md` and `queries_and_scripts/catalog_result_profiles/` when explaining a Windows stock catalog query result by Catalog `ID`.
+- `project-context/Orbital_Windows_Catalog_Result_Reading.md` and `queries_and_scripts/catalog_result_profiles/windows/` when explaining a Windows stock catalog query result by Catalog `ID`.
 - `notes-and-memory/Codex_Network_Access_Fix.md` if DNS or network calls fail inside Codex but work from the user's terminal.
 - `02_Working_Files/Query_Methods` through `orbital-query-method-memory` when the user asks for investigation guidance, SQL construction, table selection, catalog reuse, or repeated query patterns.
 
@@ -123,7 +123,7 @@ If the output shows `CODEX_SANDBOX_NETWORK_DISABLED=1` or socket calls fail with
    - target metadata/timestamp if useful
    - the result rows as a Markdown table whose columns match the SQL query result shape
    - only the result columns relevant to the user request
-13a. If the query is a catalog-derived Windows stock query and the Catalog `ID` is known, check `queries_and_scripts/catalog_result_profiles/windows_stock_catalog_result_profiles.jsonl` before explaining the result. Use it to distinguish no-hit results, inventory/posture rows, event-log caveats, high-volume output, and known validation caveats.
+13a. If the query is a catalog-derived Windows stock query and the Catalog `ID` is known, check the matching per-Catalog-ID Markdown file under `queries_and_scripts/catalog_result_profiles/windows/` before explaining the result. Use it to distinguish no-hit results, inventory/posture rows, event-log caveats, high-volume output, no-response handling, and known validation caveats. Use `queries_and_scripts/catalog_result_profiles/windows_stock_catalog_result_profiles.jsonl` for automated lookup when the filename is not known.
 14. Explain that scheduled host runs store the query in the cloud and can be checked later through:
    - `GET /v0/jobs/{{orbital_queryID}}`
    - `GET /v0/jobs/{{orbital_queryID}}/results`
