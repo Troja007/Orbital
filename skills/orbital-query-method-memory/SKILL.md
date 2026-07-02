@@ -54,7 +54,7 @@ Required order:
 
 1. Produce the user-facing answer, result summary, SQL recommendation, or proposed method record.
 2. Ask the user to validate that the response is correct, useful, and should be learned.
-3. Do not write to `02_Working_Files/Query_Methods/`, regenerate reports under `notes-and-memory/`, or sync global memory until the user explicitly confirms.
+3. Do not write to `02_Working_Files/query-method-memory/`, regenerate reports under `notes-and-memory/`, or sync global memory until the user explicitly confirms.
 4. After confirmation, save only reusable method knowledge and sanitized input patterns. Never save endpoint results or sensitive values.
 
 Acceptable confirmation examples:
@@ -110,7 +110,7 @@ Do not create or commit generated query files by default. Keep generated SQL in 
 Store reusable query-method records under:
 
 ```text
-02_Working_Files/Query_Methods/
+02_Working_Files/query-method-memory/
 ```
 
 Store query-memory reports and summaries under:
@@ -141,7 +141,7 @@ If a generated search index is needed later, place it under `local/orbital_query
 1. Clarify the input if the user's terms are ambiguous. Examples: "ID" could mean Catalog `ID`, Orbital endpoint ID, Secure Endpoint GUID, Secure Client GUID, AnyConnect UDID, `queryId`, or `orbital_queryID`.
 2. Capture the user's natural-language request as sanitized input-pattern memory. Preserve how the user phrased the need, but remove endpoint names, usernames, IP addresses, customer names, GUIDs, incident IDs, tokens, and result values.
 3. Normalize the input into searchable concepts: threat name, behavior, IOC type, platform, table/domain hints, and expected endpoint information.
-4. Search local method memory in `02_Working_Files/Query_Methods` before writing new SQL.
+4. Search local method memory in `02_Working_Files/query-method-memory` before writing new SQL.
 5. Use `orbital-api-access` when catalog data may be stale, missing, or needed from `/v0/stock` or organization catalog sources.
 6. Search Orbital Catalog context for matching stock or organization queries. Prefer catalog templates when they fit the investigation goal.
 7. Record both catalog `Name` and catalog `ID` for any catalog item used as context.
@@ -292,12 +292,12 @@ Mark records as `draft` until the method has been reviewed or used successfully.
 Use `rg` against method memory and source context. Useful searches:
 
 ```bash
-rg -i "powershell|encodedcommand|scriptblock|bitsadmin" 02_Working_Files/Query_Methods queries_and_scripts/Generated_Queries local/orbital-catalog-api-cache queries_and_scripts/catalog_queries project-context product-context
-rg -i "persistence|services|scheduled_tasks|startup|launchd|autorun" 02_Working_Files/Query_Methods queries_and_scripts/Generated_Queries local/orbital-catalog-api-cache queries_and_scripts/catalog_queries project-context product-context
-rg -i "processes|listening_ports|process_open_sockets|hash|file|registry" 02_Working_Files/Query_Methods queries_and_scripts/Generated_Queries local/orbital-catalog-api-cache queries_and_scripts/catalog_queries project-context product-context
+rg -i "powershell|encodedcommand|scriptblock|bitsadmin" 02_Working_Files/query-method-memory queries_and_scripts/Generated_Queries local/orbital-catalog-api-cache queries_and_scripts/catalog_queries project-context product-context
+rg -i "persistence|services|scheduled_tasks|startup|launchd|autorun" 02_Working_Files/query-method-memory queries_and_scripts/Generated_Queries local/orbital-catalog-api-cache queries_and_scripts/catalog_queries project-context product-context
+rg -i "processes|listening_ports|process_open_sockets|hash|file|registry" 02_Working_Files/query-method-memory queries_and_scripts/Generated_Queries local/orbital-catalog-api-cache queries_and_scripts/catalog_queries project-context product-context
 ```
 
-If `02_Working_Files/Query_Methods` does not exist yet, create it before saving records.
+If `02_Working_Files/query-method-memory` does not exist yet, create it before saving records.
 
 ## Save Or Update Workflow
 

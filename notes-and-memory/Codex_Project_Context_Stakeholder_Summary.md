@@ -51,7 +51,7 @@ The project has several distinct knowledge asset groups:
 | Durable context | Orbital product, query, script, catalog, API, target selector, and schema notes | `project-context/` |
 | Source material | Read-only catalog/query/script source copies and user-owned custom work | `queries_and_scripts/` |
 | Generated/adapted work | Drafts, generated SQL, product context, helper scripts, and active skills | `02_Working_Files/` |
-| Query-method memory | Reusable methods describing when and how to query, without endpoint result rows | `02_Working_Files/Query_Methods/` |
+| Query-method memory | Reusable methods describing when and how to query, without endpoint result rows | `02_Working_Files/query-method-memory/` |
 | Product context | Secure Client / Secure Endpoint endpoint artifact and query context | `product-context/` |
 | Notes and learning records | Decision logs, query memory summaries, and Codex network notes | `notes-and-memory/` |
 
@@ -102,7 +102,7 @@ These counters are scale indicators, not audited productivity metrics.
 |---|---:|---:|---|
 | Repository breadth | Files visible through `rg --files` | 161 | File inventory on 2026-06-24 |
 | Durable context | Project context files | 14 | `project-context` file count |
-| Query-method memory | Method/template records | 20 | `02_Working_Files/Query_Methods` file count excluding `.DS_Store` |
+| Query-method memory | Method/template records | 20 | `02_Working_Files/query-method-memory` file count excluding `.DS_Store` |
 | Generated query artifacts | SQL/JSON files | 34 | `queries_and_scripts/Generated_Queries` file count |
 | User-owned source queries | Custom query source files | 26 | `queries_and_scripts/custom_queries` count |
 | User-owned source scripts | Custom script source files | 12 | `queries_and_scripts/custom_scripts` count |
@@ -201,7 +201,7 @@ This report is based on inspection of:
 - `README.md`
 - `project-context/README.md`
 - `project-context/Orbital_Query_Catalog_Source_Map.md`
-- `02_Working_Files/Query_Methods/README.md`
+- `02_Working_Files/query-method-memory/README.md`
 - `product-context/Cisco_Secure_Client_Endpoint_Context.md`
 - `notes-and-memory/Orbital_Query_Memory_v2026-06-12.md`
 - `skills/README.md`
@@ -265,7 +265,7 @@ Orbital knowledge:
 
 1. Commit the updated root README if it is accepted as the new project overview.
 2. Refresh the query-method memory summary so it includes all current YAML records
-   under `02_Working_Files/Query_Methods/`.
+   under `02_Working_Files/query-method-memory/`.
 3. Add a lightweight promotion checklist for moving generated queries into
    `queries_and_scripts/custom_queries/` when they become personal reusable work.
 4. Add a lightweight report index in `notes-and-memory/README.md` so stakeholder summaries

@@ -18,7 +18,7 @@ This file captures reusable product context from user-provided narrative input a
 - `project-context/Orbital_Target_Node_Selectors.md`: target/device/endpoint/host wording versus API `nodes` selectors.
 - `project-context/Osquery_Schema_5_23_0.md`: upstream osquery table and column reference.
 - `product-context/Cisco_Secure_Client_Endpoint_Context.md`: Secure Endpoint, Secure Client, Orbital, and adjacent Cisco endpoint artifact context.
-- `02_Working_Files/Query_Methods/README.md`: query-method memory rules and storage boundaries.
+- `02_Working_Files/query-method-memory/README.md`: query-method memory rules and storage boundaries.
 - `queries_and_scripts/Generated_Queries/windows_tdnr_secure_client_module_status.sql`: generated Windows query for TDNR-relevant Cisco endpoint module installation and active-state evidence.
 - Local Codex skills for Orbital API access, catalog updates, live osquery execution, and query-method memory.
 
@@ -83,7 +83,7 @@ The current project state supports these capabilities:
 | Execute endpoint queries through the Orbital API | API DevNet context and live-query skill | Converts selected methods into endpoint evidence when target context is explicit. |
 | Explain results in analyst language | Product artifact context and method lessons | Helps answer "how should I interpret this result?" without requiring SQL expertise. |
 | Re-explain previous results | Result interpretation rules and source-context mapping | Allows later analysis of previously captured evidence without losing product meaning. |
-| Build memory from query methods | `02_Working_Files/Query_Methods` | Improves future query selection while avoiding storage of sensitive endpoint data. |
+| Build memory from query methods | `02_Working_Files/query-method-memory` | Improves future query selection while avoiding storage of sensitive endpoint data. |
 | Use screenshots, IOCs, or incident context as input | Natural-language intent mapping plus product artifact context | Turns unstructured investigation input into concrete Orbital steps. |
 
 ## TDNR-Relevant Secure Client Example

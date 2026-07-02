@@ -1,6 +1,6 @@
 # Working Files
 
-Legacy working area for active helpers, query-method memory, project skills, experiments, and investigation support files.
+Legacy working area for active helpers, `query-method-memory`, project skills, experiments, and investigation support files.
 
 Do not store query or script files here. Query and script files with any status should live under `../queries_and_scripts/`.
 

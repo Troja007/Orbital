@@ -27,7 +27,7 @@ For Codex or human review, read these files first:
   terminology and API `nodes` selector rules.
 - `project-context/Orbital_Source_Repository_Model.md`: source ownership model
   for catalog templates versus user-owned custom query/script repository files.
-- `02_Working_Files/Query_Methods/README.md`: reusable query-method memory.
+- `02_Working_Files/query-method-memory/README.md`: reusable query-method memory.
 - `product-context/Cisco_Secure_Client_Endpoint_Context.md`:
   Secure Client / Secure Endpoint investigation context.
 
@@ -69,7 +69,7 @@ For Codex or human review, read these files first:
   query into `queries_and_scripts/custom_queries/`.
 - `product-context/`: product-specific investigation context,
   currently focused on Cisco Secure Client and Cisco Secure Endpoint.
-- `02_Working_Files/Query_Methods/`: reusable query-method memory. These records
+- `02_Working_Files/query-method-memory/`: reusable query-method memory. These records
   store query design and lessons, not endpoint result rows.
 - `skills/`: installable Orbital Codex skills for use from GitHub.
 - `notes-and-memory/`: decision logs, learning notes, and query-memory summaries.
@@ -107,7 +107,7 @@ Both files are local-only and must not be staged or pushed.
 
 ## Query-Method Memory
 
-Query-method memory lives under `02_Working_Files/Query_Methods/`.
+Query-method memory lives under `02_Working_Files/query-method-memory/`.
 
 It is used to answer: "Which Orbital query should I use now?"
 

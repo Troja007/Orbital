@@ -66,7 +66,7 @@ When inside this Orbital workspace, read these files as needed:
 - `project-context/Orbital_Query_Catalog_Source_Map.md` when the query comes from a catalog item or should be compared with catalog/API/UI metadata.
 - `project-context/Orbital_Windows_Catalog_Result_Reading.md` and `queries_and_scripts/catalog_result_profiles/windows/` when explaining a Windows stock catalog query result by Catalog `ID`.
 - `notes-and-memory/Codex_Network_Access_Fix.md` if DNS or network calls fail inside Codex but work from the user's terminal.
-- `02_Working_Files/Query_Methods` through `orbital-query-method-memory` when the user asks for investigation guidance, SQL construction, table selection, catalog reuse, or repeated query patterns.
+- `02_Working_Files/query-method-memory` through `orbital-query-method-memory` when the user asks for investigation guidance, SQL construction, table selection, catalog reuse, or repeated query patterns.
 
 ## Query Preparation Workflow
 
@@ -99,7 +99,7 @@ If the output shows `CODEX_SANDBOX_NETWORK_DISABLED=1` or socket calls fail with
    - if the target cannot be written as the exact `nodes` array to submit, stop and ask for clarification
 3. Reject or clarify broad targeting such as `all`, `random`, large wildcards, or large network ranges unless the user explicitly approves the scope.
 4. Before writing new SQL, use `orbital-query-method-memory` when the task involves investigation logic, table selection, catalog reuse, or a repeated query pattern:
-   - search `02_Working_Files/Query_Methods` for prior methods
+   - search `02_Working_Files/query-method-memory` for prior methods
    - search Orbital Catalog/API context for matching catalog entries
    - reuse or adapt proven SQL patterns when they fit
 5. Build or inspect SQL.
