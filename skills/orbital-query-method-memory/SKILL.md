@@ -93,7 +93,6 @@ Use catalog source files as read-only references:
 - `queries_and_scripts/catalog_snapshot/*.json`
 - `queries_and_scripts/catalog_result_profiles/*.jsonl`
 - `queries_and_scripts/catalog_result_profiles/windows/*.md`
-- `01_Source_Files/Catalog_Templates`
 - `queries_and_scripts/catalog_queries`
 - `queries_and_scripts/catalog_scripts`
 
