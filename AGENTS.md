@@ -8,7 +8,7 @@ For Orbital query work, account for query type and targeting behavior. Custom qu
 
 For Orbital target selection terminology, use `project-context/Orbital_Target_Node_Selectors.md`. Customer-facing wording may say targets, devices, endpoints, or hosts, while the Query API uses `nodes` and the `Specifying Nodes` section. In API request bodies, target selectors belong in the `nodes` array. Preserve the distinction between endpoint selector IDs, Catalog `ID`, Orbital ID, Secure Endpoint computer GUID, Secure Client computer GUID, AnyConnect UDID, and `queryId`.
 
-For osquery table and column lookup, use `01_Source_Files/API_References/osquery_schema_5_23_0.json` as the upstream osquery 5.23.0 schema reference. Orbital is based on osquery but can include additional capabilities, disabled tables, or platform-specific differences; verify Orbital availability before treating an upstream osquery table as usable in Orbital.
+For osquery table and column lookup, use `product-context/osquery/osquery_schema_5_23_0.json` as the upstream osquery 5.23.0 schema reference. Orbital is based on osquery but can include additional capabilities, disabled tables, or platform-specific differences; verify Orbital availability before treating an upstream osquery table as usable in Orbital.
 
 For query catalog analysis, link three sources: upstream osquery schema for table/column structure, Orbital Catalog API for programmatic catalog data such as `/v0/stock`, and authenticated Orbital UI analysis for Cisco-managed query metadata and user-facing terms. Use `project-context/Orbital_Query_Catalog_Source_Map.md` as the cross-reference.
 

@@ -120,7 +120,7 @@ Orbital queries use SQL syntax and osquery tables to inspect endpoint state. Bef
 finalizing query work:
 
 - Validate table and column names against
-  `01_Source_Files/API_References/osquery_schema_5_23_0.json`.
+  `product-context/osquery/osquery_schema_5_23_0.json`.
 - Check Orbital-specific availability, catalog examples, and platform assumptions.
 - Decide whether the query should be a catalog query, live/custom query, or
   scheduled query.

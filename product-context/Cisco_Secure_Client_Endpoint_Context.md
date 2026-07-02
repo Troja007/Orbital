@@ -19,7 +19,7 @@ This file collects product context, expected endpoint artifacts, Orbital query p
 - Organization catalog scripts for `sfc.exe` start, stop, force update, and Secure Client NVM/Umbrella service start/stop.
 - Live-tested Orbital query method for locating the local `sfc.exe.log` file by discovering the active `sfc.exe` path first, then checking the same version directory.
 - Cisco Support TechNote `Required Server Addresses for Proper Secure Endpoint and Malware Analytics`, Document ID `118121`, updated `2026-03-10`: required cloud server addresses, ports, hostname-vs-IP firewall guidance, and TLS decryption caveat.
-- osquery 5.23.0 schema in `01_Source_Files/API_References/osquery_schema_5_23_0.json`.
+- osquery 5.23.0 schema in `product-context/osquery/osquery_schema_5_23_0.json`.
 
 ## Product Families
 

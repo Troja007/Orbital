@@ -27,8 +27,8 @@ project-context/Osquery_Schema_5_23_0.md
 Structured source files:
 
 ```text
-01_Source_Files/API_References/osquery_schema_5_23_0.json
-01_Source_Files/API_References/osquery_schema_5_23_0_table_index.json
+product-context/osquery/osquery_schema_5_23_0.json
+product-context/osquery/osquery_schema_5_23_0_table_index.json
 ```
 
 Use for:

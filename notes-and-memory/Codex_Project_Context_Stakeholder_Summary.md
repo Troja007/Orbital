@@ -173,7 +173,7 @@ Key operating rules from inspected project files:
 - Read `AGENTS.md` and relevant project context before changing query, script,
   API, catalog, or skill behavior.
 - Validate osquery table and column names against
-  `01_Source_Files/API_References/osquery_schema_5_23_0.json`.
+  `product-context/osquery/osquery_schema_5_23_0.json`.
 - Use `project-context/Orbital_Target_Node_Selectors.md` for target/device/
   endpoint/node terminology and API `nodes` selector behavior.
 - Preserve distinctions between Catalog `ID`, Orbital endpoint ID, Secure

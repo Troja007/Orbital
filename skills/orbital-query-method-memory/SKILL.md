@@ -78,7 +78,7 @@ Read these files as needed:
 - `project-context/Orbital_Queries.md` for live/custom query, scheduled query, prefix, dynamic/static, and `allowOS` behavior.
 - `project-context/Orbital_Target_Node_Selectors.md` for target/node selector terminology.
 - `project-context/Orbital_Windows_Catalog_Result_Reading.md` and `queries_and_scripts/catalog_result_profiles/windows/` when explaining what a Windows stock catalog query result means, including expected row-count behavior, returned columns, no-response handling, caveats, and safe incident-responder assumptions.
-- `project-context/Osquery_Schema_5_23_0.md` and `01_Source_Files/API_References/osquery_schema_5_23_0.json` for table and column validation.
+- `project-context/Osquery_Schema_5_23_0.md` and `product-context/osquery/osquery_schema_5_23_0.json` for table and column validation.
 - `project-context/Orbital_Source_Repository_Model.md` before deciding whether a query/script belongs to catalog source/template material or user-owned custom repository content.
 - `product-context/Cisco_Secure_Client_Endpoint_Context.md` when Secure Client, Secure Endpoint, NVM, EVM, endpoint drivers, modules, or product-specific Windows/macOS evidence matters.
 - `product-context/Orbital_AI_Investigation_Layer_Context.md` when query-memory output feeds a broader investigation or assistant workflow.

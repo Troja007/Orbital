@@ -10,8 +10,9 @@ Import type: Structured schema extraction from the osquery schema page.
 
 ## Imported Files
 
-- Full table and column schema: `01_Source_Files/API_References/osquery_schema_5_23_0.json`
-- Compact table index: `01_Source_Files/API_References/osquery_schema_5_23_0_table_index.json`
+- Full table and column schema: `product-context/osquery/osquery_schema_5_23_0.json`
+- Compact table index: `product-context/osquery/osquery_schema_5_23_0_table_index.json`
+- Source snapshot manifest: `product-context/osquery/README.md`
 
 ## Extracted Scope
 
@@ -27,6 +28,18 @@ Orbital queries are based on osquery. The osquery schema defines the database-st
 Orbital includes osquery capabilities and may also include Orbital-specific capabilities, restrictions, disabled tables, or platform-specific differences. Treat this schema as the upstream osquery reference, not as a complete guarantee of what Orbital exposes on every endpoint.
 
 For query catalog work, combine this schema with `Orbital_Query_Catalog_Source_Map.md`, `Orbital_API_DevNet.md`, and `Orbital_Catalog_UI_Terms.md`.
+
+## Refresh Policy
+
+Treat the JSON files as Git-tracked upstream source snapshots that may need updates over time.
+
+Refresh or review this context when:
+
+- A newer upstream osquery schema version becomes relevant.
+- The Orbital catalog snapshot changes and new catalog queries reference tables or columns not found in the current schema snapshot.
+- Orbital documentation or product behavior indicates enabled, disabled, modified, or Orbital-specific table support.
+
+Keep upstream schema version changes separate from Orbital catalog changes. A catalog refresh can introduce different usage of existing tables without requiring a new osquery schema version. A new osquery schema version can introduce tables that are not necessarily available in Orbital.
 
 ## Query Work Rules
 

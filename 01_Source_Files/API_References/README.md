@@ -1,10 +1,11 @@
 # API References
 
-Store Orbital catalog API references, endpoint notes, schema examples, authentication notes, and API response samples here.
+Store Orbital catalog API references, endpoint notes, authentication notes, and API response samples here.
 
 Do not store secrets or live credentials in this folder.
 
-Current imported API/schema references:
+Current imported API references:
 
-- `osquery_schema_5_23_0.json`: full structured osquery 5.23.0 table and column schema.
-- `osquery_schema_5_23_0_table_index.json`: compact osquery 5.23.0 table index.
+- `Orbital_Catalog_API/`: local-only raw Orbital catalog API cache. This folder is ignored by Git because organization catalog exports may contain tenant-specific data.
+
+The upstream osquery schema reference now lives under `product-context/osquery/`.
