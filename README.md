@@ -55,7 +55,7 @@ For Codex or human review, read these files first:
   store query design and lessons, not endpoint result rows.
 - `02_Working_Files/Skills/`: workspace copies of Orbital Codex skills.
 - `03_Outputs/`: finished deliverables intended for reuse or handoff.
-- `04_Notes/`: decision logs, learning notes, and query-memory summaries.
+- `notes-and-memory/`: decision logs, learning notes, and query-memory summaries.
 - `local/`, `.codex/`, `tmp/`, `.tmp/`, SQLite files, and real credential files:
   local runtime state only. Do not commit.
 

@@ -58,7 +58,7 @@ When inside this Orbital workspace, read these files as needed:
 - `project-context/Orbital_API_DevNet.md` for API endpoint and authentication context.
 - `project-context/Osquery_Schema_5_23_0.md` and `01_Source_Files/API_References/osquery_schema_5_23_0.json` for table and column validation.
 - `project-context/Orbital_Query_Catalog_Source_Map.md` when the query comes from a catalog item or should be compared with catalog/API/UI metadata.
-- `04_Notes/Codex_Network_Access_Fix.md` if DNS or network calls fail inside Codex but work from the user's terminal.
+- `notes-and-memory/Codex_Network_Access_Fix.md` if DNS or network calls fail inside Codex but work from the user's terminal.
 - `02_Working_Files/Query_Methods` through `orbital-query-method-memory` when the user asks for investigation guidance, SQL construction, table selection, catalog reuse, or repeated query patterns.
 
 ## Query Preparation Workflow

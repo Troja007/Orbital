@@ -16,7 +16,7 @@ Read these files as needed:
 - `project-context/Orbital_Catalog_API_Import.md` for the latest catalog import summary and raw response pointers.
 - `project-context/Orbital_Catalog.md` for catalog handling rules.
 - `project-context/Orbital_Query_Catalog_Source_Map.md` for API/UI/osquery cross-references.
-- `04_Notes/Codex_Network_Access_Fix.md` if DNS or API calls fail inside Codex but work from Terminal.
+- `notes-and-memory/Codex_Network_Access_Fix.md` if DNS or API calls fail inside Codex but work from Terminal.
 
 ## Network Check
 
@@ -137,4 +137,4 @@ When discussing API follow-up calls:
 - Do not commit or store bearer tokens.
 - In this lab project, a local credentials env file may exist under `02_Working_Files`; never print its values in chat or command output.
 - Do not publish tenant-specific organization catalog names to public GitHub unless the user explicitly confirms that lab visibility is acceptable.
-- Larger skill scope changes require explicit user confirmation before implementation; see `04_Notes/Decision_Log/2026-06-10_skill_separation.md`.
+- Larger skill scope changes require explicit user confirmation before implementation; see `notes-and-memory/decisions/2026-06-10_skill_separation.md`.

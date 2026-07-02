@@ -1,6 +1,6 @@
 # Orbital Query Memory
 
-Current version: `04_Notes/Orbital_Query_Memory_v2026-06-12.md`
+Current version: `notes-and-memory/Orbital_Query_Memory_v2026-06-12.md`
 
 Purpose: durable project memory for Orbital query methods and API/catalog context. This note must not store endpoint result rows, hostnames, usernames, IP addresses, GUIDs, customer identifiers, bearer tokens, client secrets, raw API responses, or raw investigation output.
 

@@ -62,7 +62,7 @@ In the top-level Codex project, this folder is used as `01_Source_Files/Orbital_
 | `01_Source_Files` | Original or exported source material. |
 | `02_Working_Files` | Drafts, adapted templates, experiments, and helper scripts. |
 | `03_Outputs` | Finished queries, scripts, reports, or reusable deliverables. |
-| `04_Notes` | Decision logs and learning notes. |
+| `notes-and-memory` | Decision logs and learning notes. |
 | `AGENTS.md` | Codex instructions for Orbital-specific work. |
 
 The parent Codex workspace includes additional context files and `AGENTS.md`. This folder remains the source area for Orbital queries and scripts.
