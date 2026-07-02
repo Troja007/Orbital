@@ -2,10 +2,15 @@
 
 Store original or exported source material here. Prefer read-only handling of these files during analysis.
 
-Use subfolders for Orbital query sources, script sources, catalog templates, and API references.
+Use subfolders for source snapshots and API references that are not already owned by the active project source tree.
 
-Within the Orbital repo source folder, `catalog_queries` and `catalog_scripts` are 1:1 copies from the Orbital product catalog. They are source snapshots/templates only and should not be edited in place. They exist so catalog examples can be reused without constantly refreshing the live catalog.
+Active Orbital query and script source files live under `queries_and_scripts/`:
 
-The Orbital repo source folder also contains `custom_queries` and `custom_scripts`. These are the user's personal query/script repository folders. They can include work created manually, with Codex, or with other tools. Treat them as user-owned source material and edit them only when the user explicitly asks to update personal custom work.
+- `queries_and_scripts/catalog_queries/`
+- `queries_and_scripts/catalog_scripts/`
+- `queries_and_scripts/custom_queries/`
+- `queries_and_scripts/custom_scripts/`
+
+Do not recreate duplicate `Catalog_queries`, `Catalog_scripts`, `custom_queries`, or `custom_scripts` folders under `01_Source_Files/`.
 
 When copying source files into this folder, record the original location, content date, and copy date in the relevant notes.
