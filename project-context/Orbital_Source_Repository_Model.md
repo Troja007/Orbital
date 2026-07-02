@@ -8,6 +8,7 @@ This project separates Cisco-managed catalog source material from user-owned cus
 | --- | --- | --- | --- | --- |
 | Catalog query templates | `queries_and_scripts/catalog_queries/` | Cisco-managed catalog source copy | Read-only | Stable source/template material for query design without repeatedly pulling from the live catalog. |
 | Catalog script templates | `queries_and_scripts/catalog_scripts/` | Cisco-managed catalog source copy | Read-only | Stable source/template material for response script design without repeatedly pulling from the live catalog. |
+| Catalog snapshot | `queries_and_scripts/catalog_snapshot/` | Cisco-managed stock catalog API snapshot | Refresh from Orbital API; sync to GitHub | Full offline stock catalog data used for query/script selection decisions. |
 | Custom queries | `queries_and_scripts/custom_queries/` | User-owned personal repository content | Editable only when intentionally updating personal GitHub work | Personal collection of custom Orbital SQL queries generated manually, with Codex, or with other tools. |
 | Custom scripts | `queries_and_scripts/custom_scripts/` | User-owned personal repository content | Editable only when intentionally updating personal GitHub work | Personal collection of custom Orbital Python scripts generated manually, with Codex, or with other tools. |
 
@@ -25,7 +26,9 @@ Finished reusable deliverables belong in `03_Outputs/` unless the user explicitl
 
 The catalog source folders preserve useful catalog entries locally so Codex and other tools can reuse them as templates without requiring constant catalog refreshes.
 
-Catalog refreshes can still be done through the Orbital API when freshness matters, but local catalog snapshots remain the stable source-of-template layer.
+`queries_and_scripts/catalog_snapshot/` stores the full offline Cisco-managed stock catalog JSON used for decision support. Refresh it from the Orbital API when freshness matters.
+
+Organization catalog exports do not belong in `queries_and_scripts/catalog_snapshot/` because they may contain tenant-specific content. Keep them local-only under `01_Source_Files/API_References/Orbital_Catalog_API/`.
 
 ## Cross-Reference Rule
 

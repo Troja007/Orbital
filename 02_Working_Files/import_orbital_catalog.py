@@ -24,6 +24,7 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "01_Source_Files" / "API_References" / "Orbital_Catalog_API"
+SNAPSHOT_DIR = ROOT / "queries_and_scripts" / "catalog_snapshot"
 CONTEXT_FILE = ROOT / "project-context" / "Orbital_Catalog_API_Import.md"
 
 SERVERS = {
@@ -46,6 +47,8 @@ ENDPOINTS = {
     "organization_catalog_scripts": "/catalogs/scripts",
     "stock_catalog_scripts": "/catalogs/cisco/scripts",
 }
+
+GITHUB_SYNCED_STOCK_FILES = {"stock_query_catalog", "stock_catalog_scripts"}
 
 
 def parse_args() -> argparse.Namespace:
@@ -263,7 +266,7 @@ def write_summary(region: str, base_url: str, fetched_at: str, results: dict[str
         "",
         f"Retrieved: {fetched_at}",
         "",
-        "Import type: Structured context generated from read-only Orbital API catalog calls. Raw API responses are stored under `01_Source_Files/API_References/Orbital_Catalog_API`.",
+        "Import type: Structured context generated from read-only Orbital API catalog calls. Raw API responses are stored under `01_Source_Files/API_References/Orbital_Catalog_API`. GitHub-synced Cisco-managed stock snapshots are stored under `queries_and_scripts/catalog_snapshot`.",
         "",
         "## API Source",
         "",
@@ -296,6 +299,12 @@ def write_summary(region: str, base_url: str, fetched_at: str, results: dict[str
     )
     for name in results:
         lines.append(f"- `{RAW_DIR.relative_to(ROOT) / f'{name}.json'}`")
+
+    lines.extend(["", "## GitHub-Synced Stock Snapshot", ""])
+    for name in sorted(GITHUB_SYNCED_STOCK_FILES):
+        lines.append(f"- `{SNAPSHOT_DIR.relative_to(ROOT) / f'{name}.json'}`")
+    lines.append("")
+    lines.append("Only Cisco-managed stock catalog snapshots are synced to GitHub. Organization catalog exports remain local-only because they may contain tenant-specific content.")
 
     lines.extend(["", "## Sample Organization Query Titles", ""])
     for title in sample_titles(results["organization_catalog_queries"]["payload"]):
@@ -332,6 +341,7 @@ def main() -> int:
     base_url = SERVERS[args.region]
     fetched_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     RAW_DIR.mkdir(parents=True, exist_ok=True)
+    SNAPSHOT_DIR.mkdir(parents=True, exist_ok=True)
 
     results: dict[str, dict[str, Any]] = {}
     failures: list[str] = []
@@ -343,12 +353,18 @@ def main() -> int:
             json.dumps(payload, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
+        if name in GITHUB_SYNCED_STOCK_FILES:
+            (SNAPSHOT_DIR / f"{name}.json").write_text(
+                json.dumps(payload, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
         if status < 200 or status >= 300:
             failures.append(f"{name} returned HTTP {status}")
 
     write_summary(args.region, base_url, fetched_at, results)
 
     print(f"Wrote raw catalog API files to {RAW_DIR.relative_to(ROOT)}")
+    print(f"Wrote stock catalog snapshots to {SNAPSHOT_DIR.relative_to(ROOT)}")
     print(f"Wrote project context to {CONTEXT_FILE.relative_to(ROOT)}")
     for name, result in results.items():
         print(f"{name}: HTTP {result['status']}")

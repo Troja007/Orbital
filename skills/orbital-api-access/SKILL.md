@@ -20,6 +20,7 @@ Read these files as needed:
 - `AGENTS.md` for project rules.
 - `project-context/Orbital_API_DevNet.md` for API endpoint and authentication context.
 - `project-context/Orbital_Catalog_API_Import.md` for the latest catalog import summary and raw response pointers.
+- `queries_and_scripts/catalog_snapshot/` for GitHub-synced offline Cisco-managed stock catalog snapshots used in query/script decision support.
 - `project-context/Orbital_Catalog.md` for catalog handling rules.
 - `project-context/Orbital_Query_Catalog_Source_Map.md` for API/UI/osquery cross-references.
 - `notes-and-memory/Codex_Network_Access_Fix.md` if DNS or API calls fail inside Codex but work from Terminal.
@@ -68,12 +69,15 @@ Use this workflow when the user asks to test Orbital API access, download the ca
 ```bash
 stat -f '%Sm %N' -t '%Y-%m-%d %H:%M:%S %Z' \
   01_Source_Files/API_References/Orbital_Catalog_API/*.json \
+  queries_and_scripts/catalog_snapshot/*.json \
   project-context/Orbital_Catalog_API_Import.md
 ```
 
-4. Summarize the latest counts from `project-context/Orbital_Catalog_API_Import.md`.
+4. Confirm that only Cisco-managed stock files are present under `queries_and_scripts/catalog_snapshot/`; organization catalog exports must remain local-only.
 
-5. If Terminal succeeded while the Codex thread still has network disabled, use the local refreshed raw files and context summary as the imported project context.
+5. Summarize the latest counts from `project-context/Orbital_Catalog_API_Import.md`.
+
+6. If Terminal succeeded while the Codex thread still has network disabled, use the local refreshed raw files and context summary as the imported project context.
 
 ## Authentication Check Workflow
 

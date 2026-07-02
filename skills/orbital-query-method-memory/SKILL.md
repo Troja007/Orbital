@@ -89,6 +89,7 @@ Do not use the old moved paths `00_Project_Context/` or `04_Notes/`. Their conte
 Use catalog source files as read-only references:
 
 - `01_Source_Files/API_References/Orbital_Catalog_API/*.json`
+- `queries_and_scripts/catalog_snapshot/*.json`
 - `01_Source_Files/Catalog_Templates`
 - `queries_and_scripts/catalog_queries`
 - `queries_and_scripts/catalog_scripts`

@@ -24,6 +24,13 @@ Import type: Structured context generated from read-only Orbital API catalog cal
 - `01_Source_Files/API_References/Orbital_Catalog_API/stock_query_catalog.json`
 - `01_Source_Files/API_References/Orbital_Catalog_API/stock_catalog_scripts.json`
 
+## GitHub-Synced Stock Snapshot
+
+- `queries_and_scripts/catalog_snapshot/stock_query_catalog.json`
+- `queries_and_scripts/catalog_snapshot/stock_catalog_scripts.json`
+
+Only Cisco-managed stock catalog snapshots are synced to GitHub. Organization catalog exports remain local-only because they may contain tenant-specific content.
+
 ## Sample Organization Query Titles
 
 - Redacted for the public GitHub copy because organization catalog names can be tenant-specific.

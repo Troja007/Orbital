@@ -43,6 +43,9 @@ For Codex or human review, read these files first:
   query source snapshots/templates. Do not edit in place.
 - `queries_and_scripts/catalog_scripts/`: Cisco-managed catalog
   script source snapshots/templates. Do not edit in place.
+- `queries_and_scripts/catalog_snapshot/`: full offline Cisco-managed stock
+  catalog JSON snapshot used for query/script decision support and periodic
+  refreshes.
 - `queries_and_scripts/custom_queries/`: user-owned custom query
   repository content. Edit only when intentionally updating personal custom work.
 - `queries_and_scripts/custom_scripts/`: user-owned custom script
