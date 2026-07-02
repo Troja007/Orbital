@@ -46,6 +46,9 @@ For Codex or human review, read these files first:
 - `queries_and_scripts/catalog_snapshot/`: full offline Cisco-managed stock
   catalog JSON snapshot used for query/script decision support and periodic
   refreshes.
+- `queries_and_scripts/catalog_result_profiles/`: GitHub-synced sanitized
+  catalog result profiles used to explain expected query outcomes, row-count
+  behavior, returned columns, caveats, and incident-responder assumptions.
 - `queries_and_scripts/custom_queries/`: user-owned custom query
   repository content. Edit only when intentionally updating personal custom work.
 - `queries_and_scripts/custom_scripts/`: user-owned custom script
@@ -189,6 +192,8 @@ Useful helper files in the project:
 
 - `check_orbital_api_auth.py`: validate Orbital API authentication.
 - `import_orbital_catalog.py`: import or refresh Orbital catalog data.
+- `generate_catalog_result_profiles.py`: regenerate sanitized GitHub-synced
+  catalog result profiles from local validation output.
 - `run_orbital_catalog_import.sh`: wrapper for catalog import.
 - `run_windows_catalog_query_validation.py`: validate Windows catalog query
   assumptions.
@@ -209,7 +214,8 @@ Current reusable work is strongest around:
 - Orbital health and endpoint OS/computer-name inventory.
 - Network evidence such as DNS cache, hosts file entries, current sockets, and
   Cisco/cloud connectivity troubleshooting.
-- Orbital catalog validation and multi-SQL catalog/API request structure.
+- Orbital catalog validation, result explanation profiles, and multi-SQL
+  catalog/API request structure.
 
 ## SQL Result Helpers
 

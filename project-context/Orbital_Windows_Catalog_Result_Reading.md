@@ -2,6 +2,10 @@
 
 Validated from a controlled Windows stock catalog execution against one Windows endpoint on 2026-06-15/2026-06-16. This file records interpretation guidance, not endpoint evidence.
 
+GitHub-synced sanitized per-query result profiles generated from this validation are stored under `queries_and_scripts/catalog_result_profiles/`. Use those profiles when a future agent or analyst needs to explain what an Orbital catalog query result means for a specific Catalog `ID`.
+
+Raw operational validation files remain local-only under `local/orbital_catalog_windows_validation/` and must not be pushed because they can contain target selectors, Job IDs, raw API fragments, or other operational identifiers.
+
 ## Execution Summary
 
 - Scope: active Windows-related stock catalog queries from the imported Orbital Catalog API file.

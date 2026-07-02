@@ -12,6 +12,8 @@ For osquery table and column lookup, use `01_Source_Files/API_References/osquery
 
 For query catalog analysis, link three sources: upstream osquery schema for table/column structure, Orbital Catalog API for programmatic catalog data such as `/v0/stock`, and authenticated Orbital UI analysis for Cisco-managed query metadata and user-facing terms. Use `project-context/Orbital_Query_Catalog_Source_Map.md` as the cross-reference.
 
+For explaining Orbital catalog query results, use `queries_and_scripts/catalog_result_profiles/` as GitHub-synced sanitized result-profile context. These profiles describe expected result shape, row-count behavior, returned columns, caveats, and incident-responder reading guidance per Catalog `ID`. They must not contain endpoint result rows, hostnames, target selectors, Job IDs, raw API responses, tenant data, credentials, IP addresses, GUIDs, usernames, or customer-identifying values. Raw validation run files stay local-only under `local/`.
+
 Orbital scripts run in an independent Python environment on endpoints and can be used as response actions. Treat scripts as endpoint automation: keep changes safe, idempotent where possible, explicit about output, and aware of platform differences.
 
 For Orbital script work, account for endpoint execution behavior. Devices run only one script at a time. Ad hoc scripts sent to a busy node are ignored with a busy message; scheduled scripts are queued. If scripting is disabled, running scripts finish, but no new scripts can run and pending scheduled scripts are canceled. Scripts can be linked to existing queries and then act only on devices matching the linked query criteria.

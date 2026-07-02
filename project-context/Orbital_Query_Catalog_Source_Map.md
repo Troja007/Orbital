@@ -2,7 +2,7 @@
 
 Retrieved/updated: 2026-06-02
 
-Purpose: Link the three main information sources used to understand Orbital queries: upstream osquery schema, Orbital Catalog API, and authenticated Orbital Catalog UI.
+Purpose: Link the main information sources used to understand Orbital queries: upstream osquery schema, Orbital Catalog API, authenticated Orbital Catalog UI, and sanitized catalog result profiles.
 
 ## Relationship Summary
 
@@ -11,6 +11,8 @@ Orbital queries are based on osquery. osquery provides the SQL table model: tabl
 Orbital adds product-specific behavior around that base model. This includes Cisco-managed catalog queries, custom organization queries, product UI metadata, catalog IDs, API access, and possible Orbital-specific capabilities or restrictions.
 
 The Orbital UI shows Cisco-managed catalog queries with additional product information that is not part of the upstream osquery schema.
+
+Sanitized catalog result profiles show how catalog query results should be read after execution. They add expected result shape, row-count behavior, returned columns, validation caveats, and incident-responder interpretation guidance without storing endpoint evidence.
 
 ## Source Roles
 
@@ -111,20 +113,45 @@ Do not use alone for:
 - Full catalog export
 - Upstream osquery table/column validation
 
+### Catalog Result Profiles
+
+Source folder:
+
+```text
+queries_and_scripts/catalog_result_profiles/
+```
+
+Use for:
+
+- Explaining what a catalog query result means after execution
+- Understanding observed row-count behavior from a controlled validation run
+- Seeing returned labels and column shapes for completed catalog entries
+- Separating no-hit results, inventory/posture output, event-log caveats, high-volume output, and query/endpoint caveats
+- Giving incident responders safe assumptions and limits per Catalog `ID`
+
+Do not use alone for:
+
+- Proving fleet-wide endpoint state
+- Replacing live result review
+- Replacing catalog API/UI metadata
+- Storing or reconstructing endpoint evidence
+
 ## Field Mapping
 
-| Concept | osquery schema | Orbital Catalog API | Orbital Catalog UI |
-|---|---|---|---|
-| Table name | Yes | Present indirectly inside query SQL/content | Present inside query content |
-| Column name | Yes | Present indirectly inside query SQL/content | Present inside query content |
-| Query SQL | No | Yes, for catalog query payloads | Yes, in query content drawer |
-| Catalog item ID | No | Yes, operation/schema dependent | Yes, shown as `ID` |
-| Human-readable name | No | Yes, operation/schema dependent | Yes, shown as `Name` |
-| Type: Query/Script | No | Yes | Yes, shown as `Type` |
-| OS/platform metadata | Table dependent | Yes, operation/schema dependent | Yes, shown as `OS` |
-| Category | No | Yes, operation/schema dependent | Yes, shown as `Category` |
-| MITRE mapping | No | Yes, operation/schema dependent | Yes, shown as `MITRE | ATT&CK` |
-| Created/updated metadata | No | Yes, operation/schema dependent | Yes, shown in table/detail drawer |
+| Concept | osquery schema | Orbital Catalog API | Orbital Catalog UI | Catalog result profiles |
+|---|---|---|---|---|
+| Table name | Yes | Present indirectly inside query SQL/content | Present inside query content | No |
+| Column name | Yes | Present indirectly inside query SQL/content | Present inside query content | Returned column shape when observed |
+| Query SQL | No | Yes, for catalog query payloads | Yes, in query content drawer | No |
+| Catalog item ID | No | Yes, operation/schema dependent | Yes, shown as `ID` | Yes, primary lookup key |
+| Human-readable name | No | Yes, operation/schema dependent | Yes, shown as `Name` | Yes |
+| Type: Query/Script | No | Yes | Yes, shown as `Type` | Query profiles only |
+| OS/platform metadata | Table dependent | Yes, operation/schema dependent | Yes, shown as `OS` | Yes, copied from catalog metadata |
+| Category | No | Yes, operation/schema dependent | Yes, shown as `Category` | Yes, copied from catalog metadata |
+| MITRE mapping | No | Yes, operation/schema dependent | Yes, shown as `MITRE | ATT&CK` | Yes, copied from catalog metadata |
+| Created/updated metadata | No | Yes, operation/schema dependent | Yes, shown in table/detail drawer | Catalog update date when present |
+| Result row counts | No | Execution dependent | Execution dependent | Sanitized validation row-count behavior |
+| Result interpretation | No | No | Limited | Yes |
 
 ## Practical Workflow For Query Review
 
@@ -134,7 +161,8 @@ Do not use alone for:
 4. Validate referenced tables and columns against `osquery_schema_5_23_0.json`.
 5. Check whether Orbital-specific availability, disabled tables, `allowos`, or platform filters apply.
 6. Preserve Catalog metadata such as OS, category, MITRE mapping, owner/updater, and update date.
-7. If adapting the query, copy it into `02_Working_Files/Queries` before editing.
+7. If explaining an executed catalog result, check `queries_and_scripts/catalog_result_profiles/` by Catalog `ID`.
+8. If adapting the query, copy it into `02_Working_Files/Queries` before editing.
 
 ## Example From UI Analysis
 
@@ -184,3 +212,4 @@ For Orbital query work, do not treat one source as complete by itself.
 - Use osquery schema for SQL table/column structure.
 - Use the Orbital Catalog API for programmatic catalog access.
 - Use Orbital UI analysis for product terminology and Cisco-managed query metadata.
+- Use sanitized catalog result profiles for result-shape and incident-responder interpretation guidance.
