@@ -2,6 +2,11 @@
 
 This folder contains project skills that can be installed into Codex from GitHub.
 
+For a new Codex workspace, first clone or open the full repository and read
+`INSTALL.md`, `README.md`, and `AGENTS.md`. The skills alone are not the full
+project. They rely on the repository content for context, memory, catalog
+snapshots, catalog result profiles, and helper scripts.
+
 Install all project skills:
 
 ```bash

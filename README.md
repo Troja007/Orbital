@@ -29,6 +29,8 @@ Do not sync raw endpoint evidence. The reusable outcome is the method: what ques
 
 For Codex or human review, read these files first:
 
+- `INSTALL.md`: how to install the full project from GitHub in a new Codex
+  workspace. Use this before installing skills.
 - `AGENTS.md`: project-specific rules and terminology.
 - `project-context/README.md`: index of durable Orbital context files.
 - `project-context/Orbital_Query_Catalog_Source_Map.md`: how to combine
@@ -300,3 +302,17 @@ Before syncing to GitHub:
 - Commit reusable method/context/source changes only after checking privacy rules.
 - Sync global Codex skills only when workspace skill folders with `SKILL.md`
   differ from their global copies.
+
+## Install In A New Codex Workspace
+
+Use `INSTALL.md` for the full onboarding flow.
+
+The correct model is:
+
+1. Clone or open this GitHub repository as the active Codex workspace.
+2. Install the project skills from `skills/`.
+
+Installing only the skills is insufficient because the skills depend on the
+GitHub-synced repository content for project context, product context,
+query-method memory, catalog snapshots, catalog result profiles, helper scripts,
+and decision records.
