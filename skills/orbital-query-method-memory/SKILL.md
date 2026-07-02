@@ -96,7 +96,6 @@ Use catalog source files as read-only references:
 - `01_Source_Files/Catalog_Templates`
 - `queries_and_scripts/catalog_queries`
 - `queries_and_scripts/catalog_scripts`
-- `01_Source_Files/Queries`
 
 Use generated and working query files as implementation context, not as source-of-truth memory:
 
