@@ -13,7 +13,7 @@ Use `orbital-api-access` for catalog import, catalog freshness checks, authentic
 
 ## Default User-Facing Style
 
-Use all available context and memory internally, but keep the visible answer short by default. When query-method memory influences a query, summarize only the selected method, relevant caveat, and whether memory/context should be updated. Provide long method comparisons, source traces, catalog lists, or full SQL explanations only when needed for approval, troubleshooting, safety, or when the user asks.
+Use all available context and memory internally, but keep the visible answer short and traceable by default. When query-method memory influences a query, summarize only the selected method, why it was chosen, relevant caveat, and whether memory/context should be updated. Provide long method comparisons, source traces, catalog lists, or full SQL explanations only when needed for approval, troubleshooting, safety, or when the user asks.
 
 ## Project Change Log
 

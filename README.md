@@ -176,14 +176,16 @@ For host-targeted API investigations, this project prefers scheduled one-shot
 queries with a short expiry so Orbital returns a Job ID for follow-up through
 `/v0/jobs/{id}` and `/v0/jobs/{id}/results`.
 
-Default query interaction should stay compact. Codex should still use the full
-project capability stack internally: project/product context, query-method
-memory, catalog snapshots, catalog result profiles, osquery schema validation,
-target-safety checks, and relevant skills. The visible answer should normally
-include only the target, query purpose, Job ID/status, compact result summary,
-key caveats, and whether memory/context should be updated. Full SQL, full row
-tables, raw helper output, long reasoning, and detailed source traces should be
-shown only when needed for approval, troubleshooting, safety, or when requested.
+Default query interaction should stay compact but traceable. Codex should still
+use the full project capability stack internally: project/product context,
+query-method memory, catalog snapshots, catalog result profiles, osquery schema
+validation, target-safety checks, and relevant skills. The visible answer should
+show what happened: target selector, query purpose, execution mode, SQL summary
+or exact SQL when it affects approval/safety, Job ID/status, answered endpoint
+count, row count, compact result summary, key caveats, and whether
+memory/context should be updated. Full row tables, raw helper output, long
+reasoning, and detailed source traces should be shown only when needed for
+approval, troubleshooting, safety, or when requested.
 
 ## Orbital Script Work
 

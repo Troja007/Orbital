@@ -13,18 +13,21 @@ Use `orbital-api-access` for API connectivity tests, authentication troubleshoot
 
 ## Default User-Facing Style
 
-Keep query responses short by default while still performing the full internal workflow. Use project context, query-method memory, catalog snapshots, catalog result profiles, osquery schema validation, target-safety checks, and relevant skills even when the user does not explicitly ask for them.
+Keep query responses short but traceable by default while still performing the full internal workflow. Use project context, query-method memory, catalog snapshots, catalog result profiles, osquery schema validation, target-safety checks, and relevant skills even when the user does not explicitly ask for them.
 
 Default query responses should include only:
 
 - exact target selector list
 - query purpose
+- execution mode: scheduled or live
+- SQL summary, or exact SQL when it affects approval, safety, or troubleshooting
 - `orbital_queryID` / Job ID and status when available
+- answered endpoint count and row count
 - compact answer or result summary
 - key caveat or safety note
 - whether reusable memory/context should be updated
 
-Do not include full SQL, full row tables, raw helper JSON, long reasoning, or detailed source traces unless they are needed for approval, troubleshooting, safety, or the user asks for detail. Still show the exact SQL and target selector list before execution when required for safety or approval.
+Do not include full row tables, raw helper JSON, long reasoning, or detailed source traces unless they are needed for approval, troubleshooting, safety, or the user asks for detail. Still show the exact SQL and target selector list before execution when required for safety or approval.
 
 ## Project Change Log
 
@@ -131,15 +134,17 @@ If the output shows `CODEX_SANDBOX_NETWORK_DISABLED=1` or socket calls fail with
 10. Only proceed when the target selector list is explicit and approved enough for execution.
 11. Request network permission before calling the Orbital API when the tool is available. If the current session lacks that permission path, report the sandbox limitation clearly.
 12. Run `scripts/run_live_query.py`. For `host:` or `hostname:` targets, the helper defaults to scheduled mode: `POST /query`, `expiry = now + 120 seconds`, and `interval = 0`.
-13. After completion, always report:
+13. After completion, always report a compact trace:
    - `orbital_queryID` / Job ID from the response `ID` field
    - task name/task ID when used for a multi-query task
    - whether the helper stored the run in `local/orbital_query_runs/live_query_runs.jsonl`
    - how many endpoints answered
    - row count
+   - execution mode and API path when useful
+   - a SQL summary, or the exact SQL when needed for approval, safety, or troubleshooting
    - target metadata/timestamp if useful
-   - the result rows as a Markdown table whose columns match the SQL query result shape
-   - only the result columns relevant to the user request
+   - a short result summary
+   - only the result columns relevant to the user request when rows must be shown
 13a. If the query is a catalog-derived Windows stock query and the Catalog `ID` is known, check the matching per-Catalog-ID Markdown file under `queries_and_scripts/catalog_result_profiles/windows/` before explaining the result. Use it to distinguish no-hit results, inventory/posture rows, event-log caveats, high-volume output, no-response handling, and known validation caveats. Use `queries_and_scripts/catalog_result_profiles/windows_stock_catalog_result_profiles.jsonl` for automated lookup when the filename is not known.
 14. Explain that scheduled host runs store the query in the cloud and can be checked later through:
    - `GET /v0/jobs/{{orbital_queryID}}`
