@@ -37,8 +37,8 @@ For Codex or human review, read these files first:
   notes, catalog notes, target selector notes, and osquery schema summaries.
 - `01_Source_Files/`: original or exported source material. Treat this area as
   read-only unless explicitly updating source material.
-- `01_Source_Files/API_References/`: osquery schema references and API reference
-  material.
+- `01_Source_Files/API_References/`: API reference material and ignored local
+  raw Orbital catalog API cache.
 - `queries_and_scripts/catalog_queries/`: Cisco-managed catalog
   query source snapshots/templates. Do not edit in place.
 - `queries_and_scripts/catalog_scripts/`: Cisco-managed catalog
