@@ -65,13 +65,13 @@ If the user asks to change the response before validation, revise the response a
 Read these files as needed:
 
 - `AGENTS.md` for project rules.
-- `00_Project_Context/Orbital_Catalog.md` for catalog handling rules.
-- `00_Project_Context/Orbital_Catalog_API_Import.md` for current catalog import status and raw catalog file locations.
-- `00_Project_Context/Orbital_Query_Catalog_Source_Map.md` for how to combine catalog API, catalog UI, and osquery schema sources.
-- `00_Project_Context/Orbital_Catalog_UI_Terms.md` for user-facing catalog terminology.
-- `00_Project_Context/Orbital_Queries.md` for live/custom query, scheduled query, prefix, dynamic/static, and `allowOS` behavior.
-- `00_Project_Context/Orbital_Target_Node_Selectors.md` for target/node selector terminology.
-- `00_Project_Context/Osquery_Schema_5_23_0.md` and `01_Source_Files/API_References/osquery_schema_5_23_0.json` for table and column validation.
+- `project-context/Orbital_Catalog.md` for catalog handling rules.
+- `project-context/Orbital_Catalog_API_Import.md` for current catalog import status and raw catalog file locations.
+- `project-context/Orbital_Query_Catalog_Source_Map.md` for how to combine catalog API, catalog UI, and osquery schema sources.
+- `project-context/Orbital_Catalog_UI_Terms.md` for user-facing catalog terminology.
+- `project-context/Orbital_Queries.md` for live/custom query, scheduled query, prefix, dynamic/static, and `allowOS` behavior.
+- `project-context/Orbital_Target_Node_Selectors.md` for target/node selector terminology.
+- `project-context/Osquery_Schema_5_23_0.md` and `01_Source_Files/API_References/osquery_schema_5_23_0.json` for table and column validation.
 
 Use catalog source files as read-only references:
 

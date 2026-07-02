@@ -58,7 +58,7 @@ In the top-level Codex project, this folder is used as `01_Source_Files/Orbital_
 
 | Folder | Purpose |
 | --- | --- |
-| `00_Project_Context` | Product notes, API context, assumptions, and source indexes. |
+| `project-context` | Product notes, API context, assumptions, and source indexes. |
 | `01_Source_Files` | Original or exported source material. |
 | `02_Working_Files` | Drafts, adapted templates, experiments, and helper scripts. |
 | `03_Outputs` | Finished queries, scripts, reports, or reusable deliverables. |

@@ -36,4 +36,4 @@ Import type: Structured context generated from read-only Orbital API catalog cal
 
 - Treat imported API response files as source context, not editable catalog templates.
 - Do not commit or store bearer tokens. Refresh this import by rerunning `02_Working_Files/import_orbital_catalog.py` with a runtime token.
-- Use the operation-specific Cisco DevNet pages listed in `00_Project_Context/Orbital_API_DevNet.md` before implementing create, update, delete, live query, or live script calls.
+- Use the operation-specific Cisco DevNet pages listed in `project-context/Orbital_API_DevNet.md` before implementing create, update, delete, live query, or live script calls.

@@ -25,6 +25,13 @@ If the query target is not well-defined, stop before any API call and ask for cl
 
 If the user says "target", "device", "endpoint", "host", "node", "ID", or "GUID" ambiguously, ask for clarification before running the query. Do not guess between Catalog `ID`, Orbital endpoint ID, Secure Endpoint GUID, Secure Client GUID, AnyConnect UDID, `queryId`, or `orbital_queryID`.
 
+Ambiguous scope words must also be clarified before execution. Do not infer between these meanings:
+
+- "any endpoint", "any online endpoint", or "one endpoint" can mean `random:1` or can be casual wording for all endpoints. Ask which one unless the user explicitly says "random", "one", or supplies `random:<n>`.
+- "every endpoint", "all endpoints", "all hosts", or "the whole fleet" means broad targeting such as `all`; show the target and require explicit confirmation before execution unless the same message clearly authorizes broad execution.
+- "online endpoints" is not itself a precise Orbital selector. Ask whether the user wants a selector such as `all`, `random:<n>`, `os:<platform>`, or a known host/IP selector.
+- If the user corrects a prior target interpretation, update future behavior and do not repeat the old interpretation.
+
 Important ID distinction:
 
 - `orbital_queryID`: the `ID` returned by `POST /v0/query/run`. It identifies the cloud-stored query/job and is used with `GET /v0/jobs/{{orbital_queryID}}` and `GET /v0/jobs/{{orbital_queryID}}/results`.
@@ -46,11 +53,11 @@ Operational run ledger:
 When inside this Orbital workspace, read these files as needed:
 
 - `AGENTS.md` for project rules.
-- `00_Project_Context/Orbital_Target_Node_Selectors.md` for target/node selector syntax.
-- `00_Project_Context/Orbital_Queries.md` for live query, scheduled query, prefix, dynamic/static, and `allowOS` behavior.
-- `00_Project_Context/Orbital_API_DevNet.md` for API endpoint and authentication context.
-- `00_Project_Context/Osquery_Schema_5_23_0.md` and `01_Source_Files/API_References/osquery_schema_5_23_0.json` for table and column validation.
-- `00_Project_Context/Orbital_Query_Catalog_Source_Map.md` when the query comes from a catalog item or should be compared with catalog/API/UI metadata.
+- `project-context/Orbital_Target_Node_Selectors.md` for target/node selector syntax.
+- `project-context/Orbital_Queries.md` for live query, scheduled query, prefix, dynamic/static, and `allowOS` behavior.
+- `project-context/Orbital_API_DevNet.md` for API endpoint and authentication context.
+- `project-context/Osquery_Schema_5_23_0.md` and `01_Source_Files/API_References/osquery_schema_5_23_0.json` for table and column validation.
+- `project-context/Orbital_Query_Catalog_Source_Map.md` when the query comes from a catalog item or should be compared with catalog/API/UI metadata.
 - `04_Notes/Codex_Network_Access_Fix.md` if DNS or network calls fail inside Codex but work from the user's terminal.
 - `02_Working_Files/Query_Methods` through `orbital-query-method-memory` when the user asks for investigation guidance, SQL construction, table selection, catalog reuse, or repeated query patterns.
 
@@ -79,6 +86,7 @@ If the output shows `CODEX_SANDBOX_NETWORK_DISABLED=1` or socket calls fail with
 1. Identify the intended target set and convert it to API `nodes` selectors.
 2. Validate that the target is well-defined before any API call:
    - each target must have an explicit selector prefix and value, except only deliberately approved `all`
+   - ambiguous scope wording such as "any", "every", "online", "hosts", or "endpoints" must be mapped to an exact selector list or clarified before execution
    - ambiguous identifiers such as a bare hostname, bare GUID, bare ID, or vague phrase like "all Windows hosts" require clarification or explicit conversion to a selector
    - broad targeting such as `all`, `random`, large wildcards, large network ranges, or OS-only targeting requires explicit user approval before execution
    - if the target cannot be written as the exact `nodes` array to submit, stop and ask for clarification

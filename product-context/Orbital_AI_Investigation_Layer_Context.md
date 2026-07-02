@@ -9,14 +9,14 @@ This file captures reusable product context from user-provided narrative input a
 ## Source Basis
 
 - User-provided LinkedIn post text received in this project chat on 2026-06-24. Original post publication date was not provided.
-- `00_Project_Context/Orbital_Product_Overview.md`: high-level Orbital product context.
-- `00_Project_Context/Orbital_API_DevNet.md`: API entry point, query/script operations, authentication and server-region notes.
-- `00_Project_Context/Orbital_Catalog_API_Import.md`: catalog import behavior and API response file pointers.
-- `00_Project_Context/Orbital_Catalog.md`: catalog concepts and local catalog source mapping.
-- `00_Project_Context/Orbital_Catalog_UI_Terms.md`: user-facing catalog terminology, especially `Name` and `ID`.
-- `00_Project_Context/Orbital_Query_Catalog_Source_Map.md`: relationship between osquery schema, Orbital Catalog API, and authenticated Orbital UI analysis.
-- `00_Project_Context/Orbital_Target_Node_Selectors.md`: target/device/endpoint/host wording versus API `nodes` selectors.
-- `00_Project_Context/Osquery_Schema_5_23_0.md`: upstream osquery table and column reference.
+- `project-context/Orbital_Product_Overview.md`: high-level Orbital product context.
+- `project-context/Orbital_API_DevNet.md`: API entry point, query/script operations, authentication and server-region notes.
+- `project-context/Orbital_Catalog_API_Import.md`: catalog import behavior and API response file pointers.
+- `project-context/Orbital_Catalog.md`: catalog concepts and local catalog source mapping.
+- `project-context/Orbital_Catalog_UI_Terms.md`: user-facing catalog terminology, especially `Name` and `ID`.
+- `project-context/Orbital_Query_Catalog_Source_Map.md`: relationship between osquery schema, Orbital Catalog API, and authenticated Orbital UI analysis.
+- `project-context/Orbital_Target_Node_Selectors.md`: target/device/endpoint/host wording versus API `nodes` selectors.
+- `project-context/Osquery_Schema_5_23_0.md`: upstream osquery table and column reference.
 - `product-context/Cisco_Secure_Client_Endpoint_Context.md`: Secure Endpoint, Secure Client, Orbital, and adjacent Cisco endpoint artifact context.
 - `02_Working_Files/Query_Methods/README.md`: query-method memory rules and storage boundaries.
 - `02_Working_Files/Generated_Queries/windows_tdnr_secure_client_module_status.sql`: generated Windows query for TDNR-relevant Cisco endpoint module installation and active-state evidence.

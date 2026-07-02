@@ -53,11 +53,11 @@ Operational run ledger:
 When inside this Orbital workspace, read these files as needed:
 
 - `AGENTS.md` for project rules.
-- `00_Project_Context/Orbital_Target_Node_Selectors.md` for target/node selector syntax.
-- `00_Project_Context/Orbital_Queries.md` for live query, scheduled query, prefix, dynamic/static, and `allowOS` behavior.
-- `00_Project_Context/Orbital_API_DevNet.md` for API endpoint and authentication context.
-- `00_Project_Context/Osquery_Schema_5_23_0.md` and `01_Source_Files/API_References/osquery_schema_5_23_0.json` for table and column validation.
-- `00_Project_Context/Orbital_Query_Catalog_Source_Map.md` when the query comes from a catalog item or should be compared with catalog/API/UI metadata.
+- `project-context/Orbital_Target_Node_Selectors.md` for target/node selector syntax.
+- `project-context/Orbital_Queries.md` for live query, scheduled query, prefix, dynamic/static, and `allowOS` behavior.
+- `project-context/Orbital_API_DevNet.md` for API endpoint and authentication context.
+- `project-context/Osquery_Schema_5_23_0.md` and `01_Source_Files/API_References/osquery_schema_5_23_0.json` for table and column validation.
+- `project-context/Orbital_Query_Catalog_Source_Map.md` when the query comes from a catalog item or should be compared with catalog/API/UI metadata.
 - `04_Notes/Codex_Network_Access_Fix.md` if DNS or network calls fail inside Codex but work from the user's terminal.
 - `02_Working_Files/Query_Methods` through `orbital-query-method-memory` when the user asks for investigation guidance, SQL construction, table selection, catalog reuse, or repeated query patterns.
 

@@ -1,58 +1,137 @@
-# Orbital
-SQL queries for Orbital
+# Orbital Project Workspace
 
-This is a summary of SQL queries and scripts, which can be used with Orbital.
-- It includes customized SQL queries to tweak result output. Learn more about SQL under: https://www.w3schools.com/sql/
-- it includes some custom scripts i collected and generated over time.
+This repository is a working knowledge base and source workspace for Cisco Orbital
+queries, scripts, catalog/API research, and reusable Codex skills.
 
-## Transform result data
-- datetime(table_column_name, "unixepoch", "UTC")
-- round((table_column_name / 1024 / 1024) ,0) AS "diplayed_column_name"
-- select substr (table_column_name,42,10)
-- case table_column_name when 'bs.json' then 'CM config exists' when 'cm_config.json' then 'CM config exists'
-- order by "Cloud Management Config" ASC
-- where hostnames not in ("localhost", "::1", "fe00::0", "ff00::0", "ff02::1", "ff02::2")
-- JSON_EXTRACT(json(data), '$.EventData.LocalPort') AS "source-port",
-- SPLIT(message, ',', 1) AS protocol,
+The project is not only a collection of SQL snippets. It now contains:
 
-## Uninstall Secure Client with scripts
-- do a query to search for installed files
-- execute the predefined script: Execute Powershell cmdlet:
--- add the following string to uninstall e.g. Secure Client: wmic product where "name like 'Cisco Secure Client%'" call uninstall
+- Orbital product, query, script, catalog, API, and target-selector context.
+- Source copies of Cisco-managed catalog queries/scripts and user-owned custom work.
+- Reusable query-method memory that explains when to use which query.
+- Generated/adapted SQL queries for Secure Endpoint, Secure Client, Orbital health,
+  networking, catalog validation, and endpoint inventory.
+- Local helper scripts for Orbital API authentication, catalog import, query
+  execution, and catalog validation.
+- Codex skill working copies for Orbital API access, query-method memory, live or
+  scheduled osquery execution, and catalog update work.
 
-  ![image](https://github.com/user-attachments/assets/dffa6baa-818b-483d-b185-c59ced880086)
+## Start Here
 
-## Codex Project
+For Codex or human review, read these files first:
 
-This repository is structured as a Codex-ready workspace for Cisco Orbital query, script, catalog, and API work.
+- `AGENTS.md`: project-specific rules and terminology.
+- `project-context/README.md`: index of durable Orbital context files.
+- `project-context/Orbital_Query_Catalog_Source_Map.md`: how to combine
+  osquery schema, Orbital Catalog API, and authenticated UI context.
+- `project-context/Orbital_Target_Node_Selectors.md`: target/device/endpoint
+  terminology and API `nodes` selector rules.
+- `02_Working_Files/Query_Methods/README.md`: reusable query-method memory.
+- `product-context/Cisco_Secure_Client_Endpoint_Context.md`:
+  Secure Client / Secure Endpoint investigation context.
 
-Codex should use:
+## Directory Map
 
-- `AGENTS.md` for project-specific instructions
-- `00_Project_Context` for Orbital product, query, script, catalog, and API notes
-- `01_Source_Files/Orbital_Repo_Source` for source query and script material
-- `02_Working_Files` for drafts, adapted templates, experiments, and helper scripts
-- `03_Outputs` for finished reusable queries, scripts, and reports
-- `04_Notes` for decision logs and learning notes
+- `project-context/`: durable project context, source maps, terminology, API
+  notes, catalog notes, target selector notes, and osquery schema summaries.
+- `01_Source_Files/`: original or exported source material. Treat this area as
+  read-only unless explicitly updating source material.
+- `01_Source_Files/API_References/`: osquery schema references and API reference
+  material.
+- `01_Source_Files/Orbital_Repo_Source/Catalog_queries/`: Cisco-managed catalog
+  query source copies. Do not edit in place.
+- `01_Source_Files/Orbital_Repo_Source/Catalog_scripts/`: Cisco-managed catalog
+  script source copies. Do not edit in place.
+- `01_Source_Files/Orbital_Repo_Source/custom_queries/`: user-owned custom query
+  source material. Edit only when intentionally updating that GitHub-tracked work.
+- `01_Source_Files/Orbital_Repo_Source/custom_scripts/`: user-owned custom script
+  source material. Edit only when intentionally updating that GitHub-tracked work.
+- `02_Working_Files/`: drafts, adapted templates, generated queries, active
+  helpers, project skills, and investigation work.
+- `02_Working_Files/Generated_Queries/`: generated or adapted SQL/JSON query
+  artifacts. Check comments and linked method records before running.
+- `product-context/`: product-specific investigation context,
+  currently focused on Cisco Secure Client and Cisco Secure Endpoint.
+- `02_Working_Files/Query_Methods/`: reusable query-method memory. These records
+  store query design and lessons, not endpoint result rows.
+- `02_Working_Files/Skills/`: workspace copies of Orbital Codex skills.
+- `03_Outputs/`: finished deliverables intended for reuse or handoff.
+- `04_Notes/`: decision logs, learning notes, and query-memory summaries.
+- `local/`, `.codex/`, `tmp/`, `.tmp/`, SQLite files, and real credential files:
+  local runtime state only. Do not commit.
 
-### Recommended Codex Workflow
+## Query-Method Memory
 
-1. Clone or pull this repository locally.
-2. Open the repository folder in Codex or VS Code.
-3. Start with `AGENTS.md` and `00_Project_Context/README.md`.
-4. Copy source examples into `02_Working_Files` before adapting them.
-5. Keep finished or reusable outputs under `03_Outputs`.
+Query-method memory lives under `02_Working_Files/Query_Methods/`.
 
-### Handling Rules for Codex
+It is used to answer: "Which Orbital query should I use now?"
 
-- Treat `01_Source_Files/Orbital_Repo_Source/Catalog_queries` and `01_Source_Files/Orbital_Repo_Source/Catalog_scripts` as read-only catalog source material.
-- Do not modify `01_Source_Files/Orbital_Repo_Source/custom_queries` or `01_Source_Files/Orbital_Repo_Source/custom_scripts` unless the GitHub-tracked source work should intentionally change.
-- For Orbital SQL queries, verify osquery table names, column names, platform assumptions, expected result shape, query type, targeting behavior, and whether `allowos` or an operating system filter is required.
-- Use broad target prefixes such as `all` carefully because broad live queries can affect endpoint performance.
-- For Orbital scripts, keep changes safe, explicit, idempotent where possible, and aware of platform differences.
-- Do not store bearer tokens, API credentials, customer-specific secrets, local Codex runtime state, or generated tenant-specific API snapshots in this repository.
+Method records may store:
 
-### Local Credentials
+- Investigation intent and sanitized input patterns.
+- Query goal, when to use it, and when not to use it.
+- Tables, columns, joins, SQL patterns, and platform assumptions.
+- Orbital Catalog `Name` and `ID` context.
+- Targeting guidance, query type, `allowOS`, and broad-targeting cautions.
+- Validation status and lessons learned.
+
+Method records must not store endpoint result rows, hostnames, usernames, IP
+addresses, GUIDs, tenant names, bearer tokens, client secrets, raw API responses,
+or raw investigation output.
+
+## Orbital Query Work
+
+Orbital queries use SQL syntax and osquery tables to inspect endpoint state. Before
+finalizing query work:
+
+- Validate table and column names against
+  `01_Source_Files/API_References/osquery_schema_5_23_0.json`.
+- Check Orbital-specific availability, catalog examples, and platform assumptions.
+- Decide whether the query should be a catalog query, live/custom query, or
+  scheduled query.
+- Use explicit target selectors in the API `nodes` array.
+- Use broad selectors such as `all` only with caution and explicit scope.
+- Use `allowOS` or OS selector guidance for platform-specific queries.
+- Preserve the distinction between Catalog `ID`, Orbital endpoint ID, Secure
+  Endpoint GUID, Secure Client GUID, AnyConnect UDID, `queryId:<id>`, and
+  `orbital_queryID` / Job ID.
+
+For host-targeted API investigations, this project prefers scheduled one-shot
+queries with a short expiry so Orbital returns a Job ID for follow-up through
+`/v0/jobs/{id}` and `/v0/jobs/{id}/results`.
+
+## Orbital Script Work
+
+Orbital scripts run in an independent Python runtime on endpoints. Keep scripts
+safe, explicit, and platform-aware.
+
+Key script constraints:
+
+- Python 3.10 or later in the Orbital endpoint runtime.
+- 64 KB script size limit.
+- 10 minute execution timeout.
+- 16 MB stdout cap and 16 MB stderr cap.
+- Customer exit codes should be `0` through `199`; `200` and higher are reserved
+  by Orbital.
+- Devices run only one script at a time.
+- Ad hoc scripts sent to a busy node can be ignored; scheduled scripts are queued.
+
+## Orbital API And Catalog Data
+
+Use `project-context/Orbital_API_DevNet.md` as the project API entry point.
+Verify individual API operation pages before implementing request bodies, response
+handling, server region, or authentication.
+
+Catalog context comes from three source types:
+
+- Upstream osquery schema for table and column structure.
+- Orbital Catalog API data, including `/v0/stock`.
+- Authenticated Orbital UI context for labels, filters, route behavior, and
+  user-facing terminology.
+
+Use `project-context/Orbital_Query_Catalog_Source_Map.md` when comparing these
+sources. Preserve catalog `Name` and `ID` exactly.
+
+## Local Credentials
 
 Use a local ignored credentials file when needed:
 
@@ -60,4 +139,86 @@ Use a local ignored credentials file when needed:
 cp 02_Working_Files/orbital_credentials.env.example 02_Working_Files/orbital_credentials.env
 ```
 
-Then edit `02_Working_Files/orbital_credentials.env` locally. The real `.env` file is ignored by Git.
+Then edit `02_Working_Files/orbital_credentials.env` locally.
+
+The real `.env` file is ignored by Git. Never commit bearer tokens, client IDs,
+client secrets, raw API responses with tenant data, or local runtime state.
+
+The example supports:
+
+- `ORBITAL_REGION=eu|na|us|apjc`
+- `ORBITAL_API_TOKEN`
+- `ORBITAL_CLIENT_ID`
+- `ORBITAL_CLIENT_SECRET`
+
+## Local Helpers
+
+Useful helper files in `02_Working_Files/`:
+
+- `check_orbital_api_auth.py`: validate Orbital API authentication.
+- `import_orbital_catalog.py`: import or refresh Orbital catalog data.
+- `run_orbital_catalog_import.sh`: wrapper for catalog import.
+- `run_windows_catalog_query_validation.py`: validate Windows catalog query
+  assumptions.
+- `Skills/orbital-run-osquery-live-query/scripts/run_live_query.py`: run
+  host-targeted scheduled queries or explicit live queries and record operational
+  Job ID metadata locally.
+
+Operational run metadata is local-only and should stay under `local/`.
+
+## Current Investigation Focus
+
+Current reusable work is strongest around:
+
+- Cisco Secure Endpoint and Cisco Secure Client inventory.
+- Secure Endpoint Host Based Firewall event analysis.
+- Secure Endpoint Exploit Prevention protected-process checks.
+- Secure Client module detection, including NVM/EVM/Cloud Management context.
+- Orbital health and endpoint OS/computer-name inventory.
+- Network evidence such as DNS cache, hosts file entries, current sockets, and
+  Cisco/cloud connectivity troubleshooting.
+- Orbital catalog validation and multi-SQL catalog/API request structure.
+
+## SQL Result Helpers
+
+Common SQL snippets used in Orbital query output shaping:
+
+```sql
+datetime(table_column_name, 'unixepoch', 'UTC')
+round((table_column_name / 1024 / 1024), 0) AS displayed_column_name
+select substr(table_column_name, 42, 10)
+case table_column_name when 'bs.json' then 'CM config exists' when 'cm_config.json' then 'CM config exists' end
+order by "Cloud Management Config" ASC
+where hostnames not in ('localhost', '::1', 'fe00::0', 'ff00::0', 'ff02::1', 'ff02::2')
+JSON_EXTRACT(json(data), '$.EventData.LocalPort') AS source_port
+SPLIT(message, ',', 1) AS protocol
+```
+
+## Secure Client Uninstall Note
+
+One historical workflow in this repository is uninstalling Cisco Secure Client
+with Orbital scripts:
+
+1. Query installed files or installed products first.
+2. Execute the predefined script pattern for a PowerShell cmdlet.
+3. Example uninstall command:
+
+```powershell
+wmic product where "name like 'Cisco Secure Client%'" call uninstall
+```
+
+Prefer current product-specific guidance and validate the installed product names
+before using this workflow.
+
+![Secure Client uninstall script example](https://github.com/user-attachments/assets/dffa6baa-818b-483d-b185-c59ced880086)
+
+## Git And Sync Notes
+
+Before syncing to GitHub:
+
+- Review `git status --short`.
+- Exclude real credentials, local runtime state, `.DS_Store`, local SQLite files,
+  raw tenant snapshots, and generated endpoint result data.
+- Commit reusable method/context/source changes only after checking privacy rules.
+- Sync global Codex skills only when workspace skill folders with `SKILL.md`
+  differ from their global copies.

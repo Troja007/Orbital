@@ -12,10 +12,10 @@ Use this skill for Cisco Orbital API connectivity and catalog context work. Keep
 Read these files as needed:
 
 - `AGENTS.md` for project rules.
-- `00_Project_Context/Orbital_API_DevNet.md` for API endpoint and authentication context.
-- `00_Project_Context/Orbital_Catalog_API_Import.md` for the latest catalog import summary and raw response pointers.
-- `00_Project_Context/Orbital_Catalog.md` for catalog handling rules.
-- `00_Project_Context/Orbital_Query_Catalog_Source_Map.md` for API/UI/osquery cross-references.
+- `project-context/Orbital_API_DevNet.md` for API endpoint and authentication context.
+- `project-context/Orbital_Catalog_API_Import.md` for the latest catalog import summary and raw response pointers.
+- `project-context/Orbital_Catalog.md` for catalog handling rules.
+- `project-context/Orbital_Query_Catalog_Source_Map.md` for API/UI/osquery cross-references.
 - `04_Notes/Codex_Network_Access_Fix.md` if DNS or API calls fail inside Codex but work from Terminal.
 
 ## Network Check
@@ -62,10 +62,10 @@ Use this workflow when the user asks to test Orbital API access, download the ca
 ```bash
 stat -f '%Sm %N' -t '%Y-%m-%d %H:%M:%S %Z' \
   01_Source_Files/API_References/Orbital_Catalog_API/*.json \
-  00_Project_Context/Orbital_Catalog_API_Import.md
+  project-context/Orbital_Catalog_API_Import.md
 ```
 
-4. Summarize the latest counts from `00_Project_Context/Orbital_Catalog_API_Import.md`.
+4. Summarize the latest counts from `project-context/Orbital_Catalog_API_Import.md`.
 
 5. If Terminal succeeded while the Codex thread still has network disabled, use the local refreshed raw files and context summary as the imported project context.
 
@@ -122,7 +122,7 @@ Supported inputs:
 - `SECUREX_CLIENT_ID` plus `SECUREX_CLIENT_SECRET`
 - `ORBITAL_REGION`, defaulting to `eu`; supported values: `eu`, `us`, `na`, `apjc`
 
-For North America, this project uses `us`/`na` against `https://orbital.amp.cisco.com/v0` for catalog calls. `https://enterprise.orbital.amp.cisco.com/v0` did not resolve during local testing on 2026-06-02; see `00_Project_Context/Orbital_API_DevNet.md`.
+For North America, this project uses `us`/`na` against `https://orbital.amp.cisco.com/v0` for catalog calls. `https://enterprise.orbital.amp.cisco.com/v0` did not resolve during local testing on 2026-06-02; see `project-context/Orbital_API_DevNet.md`.
 
 ## Query ID Terminology
 

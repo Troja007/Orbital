@@ -40,18 +40,38 @@ Do not store:
 - Hostnames, usernames, IP addresses, MAC addresses, Orbital IDs, Secure Endpoint GUIDs, Secure Client GUIDs, AnyConnect UDIDs, customer names, tenant identifiers, bearer tokens, client secrets, raw API responses, or raw investigation output.
 - Any copied query result that could identify a customer, endpoint, user, or organization.
 
+## User Validation Gate
+
+Before creating or updating memory from a query, investigation, result interpretation, or newly proposed method, show the user the response first and wait for explicit validation.
+
+Required order:
+
+1. Produce the user-facing answer, result summary, SQL recommendation, or proposed method record.
+2. Ask the user to validate that the response is correct, useful, and should be learned.
+3. Do not write to `02_Working_Files/Query_Methods/`, regenerate reports, or sync global memory until the user explicitly confirms.
+4. After confirmation, save only reusable method knowledge and sanitized input patterns. Never save endpoint results or sensitive values.
+
+Acceptable confirmation examples:
+
+- "confirmed"
+- "yes, update memory"
+- "save this method"
+- "validated"
+
+If the user asks to change the response before validation, revise the response and ask again. If the user does not confirm, leave memory unchanged.
+
 ## Project Context Checks
 
 Read these files as needed:
 
 - `AGENTS.md` for project rules.
-- `00_Project_Context/Orbital_Catalog.md` for catalog handling rules.
-- `00_Project_Context/Orbital_Catalog_API_Import.md` for current catalog import status and raw catalog file locations.
-- `00_Project_Context/Orbital_Query_Catalog_Source_Map.md` for how to combine catalog API, catalog UI, and osquery schema sources.
-- `00_Project_Context/Orbital_Catalog_UI_Terms.md` for user-facing catalog terminology.
-- `00_Project_Context/Orbital_Queries.md` for live/custom query, scheduled query, prefix, dynamic/static, and `allowOS` behavior.
-- `00_Project_Context/Orbital_Target_Node_Selectors.md` for target/node selector terminology.
-- `00_Project_Context/Osquery_Schema_5_23_0.md` and `01_Source_Files/API_References/osquery_schema_5_23_0.json` for table and column validation.
+- `project-context/Orbital_Catalog.md` for catalog handling rules.
+- `project-context/Orbital_Catalog_API_Import.md` for current catalog import status and raw catalog file locations.
+- `project-context/Orbital_Query_Catalog_Source_Map.md` for how to combine catalog API, catalog UI, and osquery schema sources.
+- `project-context/Orbital_Catalog_UI_Terms.md` for user-facing catalog terminology.
+- `project-context/Orbital_Queries.md` for live/custom query, scheduled query, prefix, dynamic/static, and `allowOS` behavior.
+- `project-context/Orbital_Target_Node_Selectors.md` for target/node selector terminology.
+- `project-context/Osquery_Schema_5_23_0.md` and `01_Source_Files/API_References/osquery_schema_5_23_0.json` for table and column validation.
 
 Use catalog source files as read-only references:
 
@@ -97,8 +117,9 @@ If a generated search index is needed later, place it under `local/orbital_query
 9. Decide which query to use by comparing method records on: investigation fit, platform fit, freshness/current-state limits, endpoint cost, broad-targeting risk, catalog category, MITRE TTP relevance, and validation status.
 10. Recommend one or more query methods, including when to use each query, when not to use it, query type, platform assumptions, target selector guidance, and broad-targeting cautions.
 11. If execution is requested, hand off to `orbital-run-osquery-live-query` after targets and SQL are explicit.
-12. After execution, extract the tables used by the SQL and enrich the method record with Orbital Catalog context for those tables. Store catalog `Name`, `ID`, OS/platform, categories, MITRE tactics, techniques, subtechniques, and update date when available.
-13. After a useful investigation or query design, ask whether to save or update the method memory record. Save only the method, sanitized input pattern, and reusable context, never returned endpoint data.
+12. After execution, show the user-facing response/result summary first and ask the user to validate it.
+13. Only after explicit user validation, extract the tables used by the SQL and enrich the method record with Orbital Catalog context for those tables. Store catalog `Name`, `ID`, OS/platform, categories, MITRE tactics, techniques, subtechniques, and update date when available.
+14. After a useful investigation or query design, ask whether to save or update the method memory record. Save only the method, sanitized input pattern, and reusable context, never returned endpoint data.
 
 ## Natural-Language Input Memory
 
@@ -166,7 +187,8 @@ For broad live queries, the preferred chain is:
 1. `orbital-query-method-memory`: search memory and catalog context, design SQL, identify tables and platform assumptions.
 2. `orbital-api-access`: refresh or verify catalog/API context if needed.
 3. `orbital-run-osquery-live-query`: execute against explicit targets.
-4. `orbital-query-method-memory`: store reusable method context and catalog enrichment, never endpoint results.
+4. Show the user-facing response/result summary and wait for explicit user validation.
+5. `orbital-query-method-memory`: after validation, store reusable method context and catalog enrichment, never endpoint results.
 
 ## Cross-Skill Usage For Live Queries
 
@@ -175,11 +197,12 @@ When a user asks to run a live query and the SQL is not already fully specified:
 1. Use this skill to search prior methods and catalog context first.
 2. Return the recommended SQL pattern, required columns, platform assumptions, and target cautions.
 3. Then hand off to `orbital-run-osquery-live-query` for the actual API execution.
-4. After the query completes, use only the method, SQL pattern, table names, catalog context, validation notes, and lessons learned for memory updates. Do not store hostnames, endpoint IDs, rows, or result values.
+4. After the query completes, show the user-facing response/result summary and ask the user to validate it.
+5. Only after explicit user validation, use the method, SQL pattern, table names, catalog context, validation notes, and lessons learned for memory updates. Do not store hostnames, endpoint IDs, rows, or result values.
 
 ## Post-Execution Catalog Enrichment
 
-When a query is executed or finalized:
+When a query is executed or finalized and the user has validated the response:
 
 1. Identify the tables used in `FROM`, `JOIN`, and subquery clauses.
 2. Search local method memory and Orbital Catalog sources for each table name.
@@ -248,14 +271,15 @@ If `02_Working_Files/Query_Methods` does not exist yet, create it before saving 
 
 Before saving a new method record:
 
-1. Check for an existing related method record to update instead of creating a duplicate.
-2. Remove endpoint-specific values from examples. Replace them with placeholders such as `<hostname>`, `<ipv4>`, `<sha256>`, `<path>`, or `<process_name>`.
-3. Add sanitized natural-language examples that preserve the user's intent and likely future phrasing.
-4. Link catalog `Name` and `ID` if catalog context influenced the method.
-5. Include why this method is useful, when to use it, and when it is not enough.
-6. Include query type guidance and whether live query or scheduled query is more appropriate.
-7. Include index-ready Orbital Catalog categories and MITRE TTP summaries so reports can show them in the Method Index.
-8. Keep SQL examples generic and bounded. Avoid `SELECT *` unless the reason is documented.
+1. Confirm the user has validated the response/result summary or proposed method and explicitly approved the memory update.
+2. Check for an existing related method record to update instead of creating a duplicate.
+3. Remove endpoint-specific values from examples. Replace them with placeholders such as `<hostname>`, `<ipv4>`, `<sha256>`, `<path>`, or `<process_name>`.
+4. Add sanitized natural-language examples that preserve the user's intent and likely future phrasing.
+5. Link catalog `Name` and `ID` if catalog context influenced the method.
+6. Include why this method is useful, when to use it, and when it is not enough.
+7. Include query type guidance and whether live query or scheduled query is more appropriate.
+8. Include index-ready Orbital Catalog categories and MITRE TTP summaries so reports can show them in the Method Index.
+9. Keep SQL examples generic and bounded. Avoid `SELECT *` unless the reason is documented.
 
 When updating an existing method record, preserve useful prior lessons and add a dated note rather than overwriting historical reasoning.
 

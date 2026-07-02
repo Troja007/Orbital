@@ -19,7 +19,7 @@ The Orbital UI shows Cisco-managed catalog queries with additional product infor
 Source context file:
 
 ```text
-00_Project_Context/Osquery_Schema_5_23_0.md
+project-context/Osquery_Schema_5_23_0.md
 ```
 
 Structured source files:
@@ -52,7 +52,7 @@ Do not use alone for:
 Source context file:
 
 ```text
-00_Project_Context/Orbital_API_DevNet.md
+project-context/Orbital_API_DevNet.md
 ```
 
 Primary API reference:
@@ -87,7 +87,7 @@ Do not use alone for:
 Source context file:
 
 ```text
-00_Project_Context/Orbital_Catalog_UI_Terms.md
+project-context/Orbital_Catalog_UI_Terms.md
 ```
 
 Authenticated UI example:

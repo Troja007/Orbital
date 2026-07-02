@@ -21,6 +21,11 @@ Current project context files:
 - `Osquery_Schema_5_23_0.md`: osquery 5.23.0 schema import summary and pointers to structured table/column JSON files.
 - `Orbital_Query_Catalog_Source_Map.md`: Cross-reference linking osquery schema, Orbital Catalog API, and authenticated UI terminology for query work.
 
+Related working product context:
+
+- `../product-context/Cisco_Secure_Client_Endpoint_Context.md`: Cisco Secure Endpoint, Cisco Secure Client, Orbital, and adjacent Cisco endpoint artifact context for Orbital/osquery investigations.
+- `../product-context/Orbital_AI_Investigation_Layer_Context.md`: Natural-language investigation-layer context connecting analyst intent, Orbital catalog/API usage, query-method memory, and result explanation.
+
 Recommended metadata for referenced sources:
 
 - Source name

@@ -6,11 +6,11 @@ Orbital queries use SQL syntax and osquery tables to inspect endpoint informatio
 
 For Orbital query work, account for query type and targeting behavior. Custom queries, also called live queries or probes, run immediately and return immediate results. Scheduled queries run over a defined time window and frequency. Query prefixes control target devices and can be special, dynamic, or static. Use the `all` prefix with caution because broad targeting can affect endpoint performance. Check whether `allowos` or an operating system filter is required for platform-specific queries.
 
-For Orbital target selection terminology, use `00_Project_Context/Orbital_Target_Node_Selectors.md`. Customer-facing wording may say targets, devices, endpoints, or hosts, while the Query API uses `nodes` and the `Specifying Nodes` section. In API request bodies, target selectors belong in the `nodes` array. Preserve the distinction between endpoint selector IDs, Catalog `ID`, Orbital ID, Secure Endpoint computer GUID, Secure Client computer GUID, AnyConnect UDID, and `queryId`.
+For Orbital target selection terminology, use `project-context/Orbital_Target_Node_Selectors.md`. Customer-facing wording may say targets, devices, endpoints, or hosts, while the Query API uses `nodes` and the `Specifying Nodes` section. In API request bodies, target selectors belong in the `nodes` array. Preserve the distinction between endpoint selector IDs, Catalog `ID`, Orbital ID, Secure Endpoint computer GUID, Secure Client computer GUID, AnyConnect UDID, and `queryId`.
 
 For osquery table and column lookup, use `01_Source_Files/API_References/osquery_schema_5_23_0.json` as the upstream osquery 5.23.0 schema reference. Orbital is based on osquery but can include additional capabilities, disabled tables, or platform-specific differences; verify Orbital availability before treating an upstream osquery table as usable in Orbital.
 
-For query catalog analysis, link three sources: upstream osquery schema for table/column structure, Orbital Catalog API for programmatic catalog data such as `/v0/stock`, and authenticated Orbital UI analysis for Cisco-managed query metadata and user-facing terms. Use `00_Project_Context/Orbital_Query_Catalog_Source_Map.md` as the cross-reference.
+For query catalog analysis, link three sources: upstream osquery schema for table/column structure, Orbital Catalog API for programmatic catalog data such as `/v0/stock`, and authenticated Orbital UI analysis for Cisco-managed query metadata and user-facing terms. Use `project-context/Orbital_Query_Catalog_Source_Map.md` as the cross-reference.
 
 Orbital scripts run in an independent Python environment on endpoints and can be used as response actions. Treat scripts as endpoint automation: keep changes safe, idempotent where possible, explicit about output, and aware of platform differences.
 
@@ -18,7 +18,7 @@ For Orbital script work, account for endpoint execution behavior. Devices run on
 
 For Python script work, account for the Orbital endpoint runtime: Python 3.10 or later, independent from other endpoint Python installations, 64 KB script size limit, 10 minute execution timeout, 16 MB stdout cap, and 16 MB stderr cap. Use customer exit codes in the range `0` to `199`; codes `200` and higher are reserved by Orbital.
 
-For Orbital API work, use `00_Project_Context/Orbital_API_DevNet.md` as the project API entry point. Verify individual API operation pages before implementing request bodies, response handling, server region, or authentication. Never store bearer tokens or API credentials in the project files.
+For Orbital API work, use `project-context/Orbital_API_DevNet.md` as the project API entry point. Verify individual API operation pages before implementing request bodies, response handling, server region, or authentication. Never store bearer tokens or API credentials in the project files.
 
 When adding new project context, check whether cross-references need to be created or updated. Generate or update a cross-reference when the new context changes terminology, API fields, identifiers, source priority, folder ownership, catalog mapping, target selection, query behavior, script behavior, or links between UI, API, catalog, osquery, and local source files.
 
@@ -30,7 +30,7 @@ Use existing Orbital catalog templates where available before creating new queri
 
 The Orbital Catalog is available through both the authenticated product UI and the Orbital API. Use UI context for user-facing labels, filters, table columns, detail drawers, and route behavior. Use API context for automation, schemas, and programmatic catalog access. When comparing the two, map both `Name` and `ID`.
 
-For Orbital Catalog UI terminology, use `00_Project_Context/Orbital_Catalog_UI_Terms.md`. Treat `ID` as the product/catalog reference key for a query or script. Preserve catalog IDs exactly, including prefixes such as `org:`, and record both `Name` and `ID` when documenting catalog entries.
+For Orbital Catalog UI terminology, use `project-context/Orbital_Catalog_UI_Terms.md`. Treat `ID` as the product/catalog reference key for a query or script. Preserve catalog IDs exactly, including prefixes such as `org:`, and record both `Name` and `ID` when documenting catalog entries.
 
 The folders `01_Source_Files/Orbital_Repo_Source/Catalog_queries` and `01_Source_Files/Orbital_Repo_Source/Catalog_scripts` are 1:1 copies from the Orbital product catalog. Treat them as read-only source material. Do not edit these files directly; copy catalog material into `02_Working_Files` before adapting it.
 
