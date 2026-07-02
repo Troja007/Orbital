@@ -101,7 +101,9 @@ Use generated and working query files as implementation context, not as source-o
 - `02_Working_Files/Generated_Queries`
 - `02_Working_Files/Queries`
 
-Do not edit catalog source folders directly. If a catalog query is adapted, copy the adapted method into `02_Working_Files/Query_Methods`, not back into source.
+Do not edit catalog source folders directly. If a catalog query is adapted, save only reusable method knowledge into query-method memory after user validation, not the generated SQL artifact.
+
+Do not create or commit generated query files by default. Keep generated SQL in chat, pass it directly to an execution helper, or use a local-only scratch path. Store a query under `queries_and_scripts/custom_queries/` only when the user explicitly asks to save that exact query as a custom query.
 
 ## Memory Locations
 

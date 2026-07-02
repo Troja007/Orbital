@@ -8,8 +8,8 @@ The project is not only a collection of SQL snippets. It now contains:
 - Orbital product, query, script, catalog, API, and target-selector context.
 - Source copies of Cisco-managed catalog queries/scripts and user-owned custom work.
 - Reusable query-method memory that explains when to use which query.
-- Generated/adapted SQL queries for Secure Endpoint, Secure Client, Orbital health,
-  networking, catalog validation, and endpoint inventory.
+- Reusable query-method memory for Secure Endpoint, Secure Client, Orbital
+  health, networking, catalog validation, and endpoint inventory.
 - Local helper scripts for Orbital API authentication, catalog import, query
   execution, and catalog validation.
 - Codex skill working copies for Orbital API access, query-method memory, live or
@@ -48,13 +48,16 @@ For Codex or human review, read these files first:
   incident-responder assumptions. The `windows/` subfolder contains one
   analyst-facing Markdown file per Windows stock Catalog ID.
 - `queries_and_scripts/custom_queries/`: user-owned custom query
-  repository content. Edit only when intentionally updating personal custom work.
+  repository content. Store a query here only when the user explicitly asks to
+  save that query as a custom query.
 - `queries_and_scripts/custom_scripts/`: user-owned custom script
   repository content. Edit only when intentionally updating personal custom work.
-- `02_Working_Files/`: drafts, adapted templates, generated queries, active
-  helpers, project skills, and investigation work.
-- `02_Working_Files/Generated_Queries/`: generated or adapted SQL/JSON query
-  artifacts. Check comments and linked method records before running.
+- `02_Working_Files/`: legacy working area for drafts, adapted templates,
+  generated query artifacts, active helpers, project skills, and investigation
+  work. This folder is being evaluated for removal.
+- Generated query artifacts are temporary by default. Do not add new generated
+  SQL/JSON files to GitHub unless the user explicitly asks to promote a specific
+  query into `queries_and_scripts/custom_queries/`.
 - `product-context/`: product-specific investigation context,
   currently focused on Cisco Secure Client and Cisco Secure Endpoint.
 - `02_Working_Files/Query_Methods/`: reusable query-method memory. These records
@@ -128,6 +131,10 @@ finalizing query work:
 - Preserve the distinction between Catalog `ID`, Orbital endpoint ID, Secure
   Endpoint GUID, Secure Client GUID, AnyConnect UDID, `queryId:<id>`, and
   `orbital_queryID` / Job ID.
+- Do not persist generated SQL by default. Keep generated queries in chat, pass
+  them directly to helper scripts, or use local-only scratch files. Store a query
+  in `queries_and_scripts/custom_queries/` only when explicitly asked to save it
+  as a custom query.
 
 For host-targeted API investigations, this project prefers scheduled one-shot
 queries with a short expiry so Orbital returns a Job ID for follow-up through

@@ -28,3 +28,7 @@ installation_id
 
 # API snapshots can contain tenant-specific catalog data. Regenerate locally.
 local/orbital-catalog-api-cache/
+
+# Generated query scratch output is temporary by default.
+02_Working_Files/Generated_Queries/
+local/generated-queries/

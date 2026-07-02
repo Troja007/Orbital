@@ -36,9 +36,9 @@ The Orbital Catalog is available through both the authenticated product UI and t
 
 For Orbital Catalog UI terminology, use `project-context/Orbital_Catalog_UI_Terms.md`. Treat `ID` as the product/catalog reference key for a query or script. Preserve catalog IDs exactly, including prefixes such as `org:`, and record both `Name` and `ID` when documenting catalog entries.
 
-The folders `queries_and_scripts/catalog_queries` and `queries_and_scripts/catalog_scripts` are 1:1 copies from the Orbital product catalog. Treat them as read-only source material. Do not edit these files directly; copy catalog material into `02_Working_Files` before adapting it.
+The folders `queries_and_scripts/catalog_queries` and `queries_and_scripts/catalog_scripts` are 1:1 copies from the Orbital product catalog. Treat them as read-only source material. Do not edit these files directly; copy or reference catalog material in a temporary/local working area before adapting it.
 
-The folders `queries_and_scripts/custom_queries` and `queries_and_scripts/custom_scripts` contain the user's personal Orbital work maintained through VS Code and GitHub. Treat them as user-owned source material. Do not modify them unless the user explicitly asks to update the GitHub-tracked work.
+The folders `queries_and_scripts/custom_queries` and `queries_and_scripts/custom_scripts` contain the user's personal Orbital work maintained through VS Code and GitHub. Treat them as user-owned source material. Do not modify them unless the user explicitly asks to update the GitHub-tracked work. Do not store generated, temporary, validation, lab-specific, host-specific, or investigation-specific queries there unless the user explicitly asks to store that exact query as a custom query. By default, generated SQL should stay in chat, an execution helper input, or a local-only scratch path.
 
 For source ownership and folder separation, use `project-context/Orbital_Source_Repository_Model.md`. Keep Cisco-managed catalog query/script templates separated from user-owned custom query/script repository content. Catalog folders are stable source snapshots/templates to avoid constant live catalog refreshes; custom folders are the user's personal reusable repository for work created manually, with Codex, or with other tools.
 

@@ -73,6 +73,7 @@ For a known-ID rename, use the fast path: fetch the existing entry with `GET /v0
 4. Check existing organization catalog queries for duplicate titles.
 5. Upload only when the user explicitly asked to create/update the catalog entry.
 6. Store local operational metadata under `local/orbital_catalog_updates/`; do not store bearer tokens.
+7. Do not store generated catalog payloads or SQL in GitHub-tracked folders unless the user explicitly asks to save the query as custom repository content.
 
 ## Helper
 
@@ -80,7 +81,7 @@ Use the bundled helper:
 
 ```bash
 python3 skills/orbital-update-catalog/scripts/update_catalog_query.py \
-  --input-json 02_Working_Files/Generated_Queries/example_catalog_query.json \
+  --input-json local/generated-queries/example_catalog_query.json \
   --region us \
   --preview
 ```
@@ -89,7 +90,7 @@ Create the catalog entry:
 
 ```bash
 python3 skills/orbital-update-catalog/scripts/update_catalog_query.py \
-  --input-json 02_Working_Files/Generated_Queries/example_catalog_query.json \
+  --input-json local/generated-queries/example_catalog_query.json \
   --region us \
   --create
 ```
