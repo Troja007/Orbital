@@ -7,5 +7,5 @@ Purpose: durable project memory for Orbital query methods and API/catalog contex
 Use the versioned report for the current summary. The source of truth for reusable query methods is:
 
 ```text
-02_Working_Files/query-method-memory/
+tools-and-memory/query-method-memory/
 ```

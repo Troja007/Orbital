@@ -27,7 +27,7 @@ For Codex or human review, read these files first:
   terminology and API `nodes` selector rules.
 - `project-context/Orbital_Source_Repository_Model.md`: source ownership model
   for catalog templates versus user-owned custom query/script repository files.
-- `02_Working_Files/query-method-memory/README.md`: reusable query-method memory.
+- `tools-and-memory/query-method-memory/README.md`: reusable query-method memory.
 - `product-context/Cisco_Secure_Client_Endpoint_Context.md`:
   Secure Client / Secure Endpoint investigation context.
 
@@ -61,7 +61,7 @@ For Codex or human review, read these files first:
   save that query as a custom query.
 - `queries_and_scripts/custom_scripts/`: user-owned custom script
   repository content. Edit only when intentionally updating personal custom work.
-- `02_Working_Files/`: legacy working area for active helpers, project skills,
+- `tools-and-memory/`: legacy working area for active helpers, project skills,
   query-method memory, and investigation support files. Query and script files
   should live under `queries_and_scripts/`.
 - Generated query artifacts are temporary by default. Do not add new generated
@@ -69,7 +69,7 @@ For Codex or human review, read these files first:
   query into `queries_and_scripts/custom_queries/`.
 - `product-context/`: product-specific investigation context,
   currently focused on Cisco Secure Client and Cisco Secure Endpoint.
-- `02_Working_Files/query-method-memory/`: reusable query-method memory. These records
+- `tools-and-memory/query-method-memory/`: reusable query-method memory. These records
   store query design and lessons, not endpoint result rows.
 - `skills/`: installable Orbital Codex skills for use from GitHub.
 - `notes-and-memory/`: decision logs, learning notes, and query-memory summaries.
@@ -107,7 +107,7 @@ Both files are local-only and must not be staged or pushed.
 
 ## Query-Method Memory
 
-Query-method memory lives under `02_Working_Files/query-method-memory/`.
+Query-method memory lives under `tools-and-memory/query-method-memory/`.
 
 It is used to answer: "Which Orbital query should I use now?"
 
@@ -186,10 +186,10 @@ sources. Preserve catalog `Name` and `ID` exactly.
 Use a local ignored credentials file when needed:
 
 ```bash
-cp 02_Working_Files/orbital_credentials.env.example 02_Working_Files/orbital_credentials.env
+cp tools-and-memory/orbital_credentials.env.example tools-and-memory/orbital_credentials.env
 ```
 
-Then edit `02_Working_Files/orbital_credentials.env` locally.
+Then edit `tools-and-memory/orbital_credentials.env` locally.
 
 The real `.env` file is ignored by Git. Never commit bearer tokens, client IDs,
 client secrets, raw API responses with tenant data, or local runtime state.

@@ -50,8 +50,8 @@ The project has several distinct knowledge asset groups:
 | Project overview | Human/Codex orientation for repository layout and workflows | `README.md` |
 | Durable context | Orbital product, query, script, catalog, API, target selector, and schema notes | `project-context/` |
 | Source material | Read-only catalog/query/script source copies and user-owned custom work | `queries_and_scripts/` |
-| Generated/adapted work | Drafts, generated SQL, product context, helper scripts, and active skills | `02_Working_Files/` |
-| Query-method memory | Reusable methods describing when and how to query, without endpoint result rows | `02_Working_Files/query-method-memory/` |
+| Generated/adapted work | Drafts, generated SQL, product context, helper scripts, and active skills | `tools-and-memory/` |
+| Query-method memory | Reusable methods describing when and how to query, without endpoint result rows | `tools-and-memory/query-method-memory/` |
 | Product context | Secure Client / Secure Endpoint endpoint artifact and query context | `product-context/` |
 | Notes and learning records | Decision logs, query memory summaries, and Codex network notes | `notes-and-memory/` |
 
@@ -63,7 +63,7 @@ Important source distinctions:
 - `queries_and_scripts/custom_queries` and
   `queries_and_scripts/custom_scripts` are user-owned source
   material and should only be modified when intentionally updating that work.
-- Adapted or generated query work belongs under `02_Working_Files` before it is
+- Adapted or generated query work belongs under `tools-and-memory` before it is
   promoted to a custom query/script repository file or reusable method.
 
 ## How Codex Is Used
@@ -102,7 +102,7 @@ These counters are scale indicators, not audited productivity metrics.
 |---|---:|---:|---|
 | Repository breadth | Files visible through `rg --files` | 161 | File inventory on 2026-06-24 |
 | Durable context | Project context files | 14 | `project-context` file count |
-| Query-method memory | Method/template records | 20 | `02_Working_Files/query-method-memory` file count excluding `.DS_Store` |
+| Query-method memory | Method/template records | 20 | `tools-and-memory/query-method-memory` file count excluding `.DS_Store` |
 | Generated query artifacts | SQL/JSON files | 34 | `queries_and_scripts/Generated_Queries` file count |
 | User-owned source queries | Custom query source files | 26 | `queries_and_scripts/custom_queries` count |
 | User-owned source scripts | Custom script source files | 12 | `queries_and_scripts/custom_scripts` count |
@@ -201,7 +201,7 @@ This report is based on inspection of:
 - `README.md`
 - `project-context/README.md`
 - `project-context/Orbital_Query_Catalog_Source_Map.md`
-- `02_Working_Files/query-method-memory/README.md`
+- `tools-and-memory/query-method-memory/README.md`
 - `product-context/Cisco_Secure_Client_Endpoint_Context.md`
 - `notes-and-memory/Orbital_Query_Memory_v2026-06-12.md`
 - `skills/README.md`
@@ -265,7 +265,7 @@ Orbital knowledge:
 
 1. Commit the updated root README if it is accepted as the new project overview.
 2. Refresh the query-method memory summary so it includes all current YAML records
-   under `02_Working_Files/query-method-memory/`.
+   under `tools-and-memory/query-method-memory/`.
 3. Add a lightweight promotion checklist for moving generated queries into
    `queries_and_scripts/custom_queries/` when they become personal reusable work.
 4. Add a lightweight report index in `notes-and-memory/README.md` so stakeholder summaries

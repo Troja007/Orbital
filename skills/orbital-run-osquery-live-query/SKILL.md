@@ -24,7 +24,7 @@ Before executing anything, confirm these inputs are defined:
 - Well-defined target selector: at least one explicit Orbital target selector, for example `host:EXAMPLE-HOST`, `ipv4:10.0.0.1`, `netmask:192.168.1.168/24`, `orb:<id>`, or `queryId:<id>`.
 - SQL: either user-provided SQL or enough user intent to build SQL.
 - Query purpose: a short label/name for the query.
-- Region/credentials: project credentials through env vars or `02_Working_Files/orbital_credentials.env`.
+- Region/credentials: project credentials through env vars or `tools-and-memory/orbital_credentials.env`.
 - Network-enabled Codex runtime: before API calls, verify the current Codex shell is not running with `CODEX_SANDBOX_NETWORK_DISABLED=1`.
 
 If the query target is not well-defined, stop before any API call and ask for clarification. Do not execute the query, run a preview, or infer a broader target while target scope is unclear.
@@ -66,7 +66,7 @@ When inside this Orbital workspace, read these files as needed:
 - `project-context/Orbital_Query_Catalog_Source_Map.md` when the query comes from a catalog item or should be compared with catalog/API/UI metadata.
 - `project-context/Orbital_Windows_Catalog_Result_Reading.md` and `queries_and_scripts/catalog_result_profiles/windows/` when explaining a Windows stock catalog query result by Catalog `ID`.
 - `notes-and-memory/Codex_Network_Access_Fix.md` if DNS or network calls fail inside Codex but work from the user's terminal.
-- `02_Working_Files/query-method-memory` through `orbital-query-method-memory` when the user asks for investigation guidance, SQL construction, table selection, catalog reuse, or repeated query patterns.
+- `tools-and-memory/query-method-memory` through `orbital-query-method-memory` when the user asks for investigation guidance, SQL construction, table selection, catalog reuse, or repeated query patterns.
 
 ## Query Preparation Workflow
 
@@ -99,7 +99,7 @@ If the output shows `CODEX_SANDBOX_NETWORK_DISABLED=1` or socket calls fail with
    - if the target cannot be written as the exact `nodes` array to submit, stop and ask for clarification
 3. Reject or clarify broad targeting such as `all`, `random`, large wildcards, or large network ranges unless the user explicitly approves the scope.
 4. Before writing new SQL, use `orbital-query-method-memory` when the task involves investigation logic, table selection, catalog reuse, or a repeated query pattern:
-   - search `02_Working_Files/query-method-memory` for prior methods
+   - search `tools-and-memory/query-method-memory` for prior methods
    - search Orbital Catalog/API context for matching catalog entries
    - reuse or adapt proven SQL patterns when they fit
 5. Build or inspect SQL.
@@ -140,7 +140,7 @@ If the output shows `CODEX_SANDBOX_NETWORK_DISABLED=1` or socket calls fail with
 
 ## Query Helper Script
 
-Run the helper from the Orbital project root. It reads credentials from environment variables and, by default, from `02_Working_Files/orbital_credentials.env` if that file exists. Never print or store tokens.
+Run the helper from the Orbital project root. It reads credentials from environment variables and, by default, from `tools-and-memory/orbital_credentials.env` if that file exists. Never print or store tokens.
 
 ```bash
 python3 /Users/tschranz/.codex/skills/orbital-run-osquery-live-query/scripts/run_live_query.py \
@@ -289,7 +289,7 @@ For non-empty results, present the user-facing result as a Markdown table:
 - Never run live queries while the target is ambiguous, incomplete, or not expressible as the exact `nodes` array.
 - Never silently broaden a target from one host to `all`, `random`, wildcard, or network range.
 - Never store bearer tokens or client secrets in the skill, project context, or GitHub.
-- In this lab project, a local credentials env file may exist under `02_Working_Files`; never print its values in chat or command output.
+- In this lab project, a local credentials env file may exist under `tools-and-memory`; never print its values in chat or command output.
 - Keep API/catalog access workflow in `orbital-api-access`; larger skill scope changes require explicit user confirmation.
 - Use `orbital-query-method-memory` to speed up and improve query design, but never store returned endpoint data there.
 - Avoid `SELECT *` for broad or expensive tables unless the user explicitly asks for full rows.

@@ -238,7 +238,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--start-sequence", type=int, default=1)
     parser.add_argument("--stop-on-no-response", action="store_true", default=True)
-    parser.add_argument("--env-file", default="02_Working_Files/orbital_credentials.env")
+    parser.add_argument("--env-file", default="tools-and-memory/orbital_credentials.env")
     return parser.parse_args()
 
 

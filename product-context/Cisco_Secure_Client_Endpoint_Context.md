@@ -742,9 +742,9 @@ Purpose: read Cisco Secure Endpoint endpoint telemetry written into Windows Even
 
 | Event Viewer path | osquery `windows_eventlog.channel` | Event ID | Meaning | Primary query method |
 | --- | --- | --- | --- | --- |
-| `Applications and Services Logs > CiscoSecureEndpoint > Cloud` | `CiscoSecureEndpoint/Cloud` | `401` | Secure Endpoint Cloud detection telemetry. Detection payloads include `EVENT_DETECTION` and a nested `EventData.JsonEvent` JSON string. | `02_Working_Files/query-method-memory/suspicious_processes/windows_secure_endpoint_cloud_detection_events.yaml` |
-| `Applications and Services Logs > CiscoSecureEndpoint > Events` | `CiscoSecureEndpoint/Events` | `1800` | Secure Endpoint Host Based Firewall allow event. | `02_Working_Files/query-method-memory/network/windows_secure_endpoint_firewall_events_and_communication.yaml` |
-| `Applications and Services Logs > CiscoSecureEndpoint > Events` | `CiscoSecureEndpoint/Events` | `1801` | Secure Endpoint Host Based Firewall block event. | `02_Working_Files/query-method-memory/network/windows_secure_endpoint_firewall_events_and_communication.yaml` |
+| `Applications and Services Logs > CiscoSecureEndpoint > Cloud` | `CiscoSecureEndpoint/Cloud` | `401` | Secure Endpoint Cloud detection telemetry. Detection payloads include `EVENT_DETECTION` and a nested `EventData.JsonEvent` JSON string. | `tools-and-memory/query-method-memory/suspicious_processes/windows_secure_endpoint_cloud_detection_events.yaml` |
+| `Applications and Services Logs > CiscoSecureEndpoint > Events` | `CiscoSecureEndpoint/Events` | `1800` | Secure Endpoint Host Based Firewall allow event. | `tools-and-memory/query-method-memory/network/windows_secure_endpoint_firewall_events_and_communication.yaml` |
+| `Applications and Services Logs > CiscoSecureEndpoint > Events` | `CiscoSecureEndpoint/Events` | `1801` | Secure Endpoint Host Based Firewall block event. | `tools-and-memory/query-method-memory/network/windows_secure_endpoint_firewall_events_and_communication.yaml` |
 
 Use exact channel equality in Orbital queries. Broad multi-channel `windows_eventlog` searches can be slow or fail to return during the scheduled window.
 

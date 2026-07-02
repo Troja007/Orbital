@@ -54,7 +54,7 @@ Use this workflow when the user asks to test Orbital API access, download the ca
 1. Prefer the project helper:
 
 ```bash
-02_Working_Files/run_orbital_catalog_import.sh
+tools-and-memory/run_orbital_catalog_import.sh
 ```
 
 2. Expected successful status lines:
@@ -88,7 +88,7 @@ Use this workflow when the user asks whether Orbital API authentication works or
 2. Run the project helper:
 
 ```bash
-python3 02_Working_Files/check_orbital_api_auth.py
+python3 tools-and-memory/check_orbital_api_auth.py
 ```
 
 3. A working bearer token should return HTTP `200` and response message `OK`.
@@ -123,7 +123,7 @@ Practical summary:
 
 ## Credential Inputs
 
-The import helper reads credentials from environment variables and, by default, from `02_Working_Files/orbital_credentials.env` if that file exists. Never print credentials or bearer tokens.
+The import helper reads credentials from environment variables and, by default, from `tools-and-memory/orbital_credentials.env` if that file exists. Never print credentials or bearer tokens.
 
 Supported inputs:
 
@@ -145,6 +145,6 @@ When discussing API follow-up calls:
 
 - Treat imported API response files as source context, not editable catalog templates.
 - Do not commit or store bearer tokens.
-- In this lab project, a local credentials env file may exist under `02_Working_Files`; never print its values in chat or command output.
+- In this lab project, a local credentials env file may exist under `tools-and-memory`; never print its values in chat or command output.
 - Do not publish tenant-specific organization catalog names to public GitHub unless the user explicitly confirms that lab visibility is acceptable.
 - Larger skill scope changes require explicit user confirmation before implementation; see `notes-and-memory/decisions/2026-06-10_skill_separation.md`.

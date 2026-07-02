@@ -136,7 +136,7 @@ p.write_text(json.dumps(body, indent=2))
 PY
 ```
 
-The helper reads credentials from environment variables or `02_Working_Files/orbital_credentials.env`:
+The helper reads credentials from environment variables or `tools-and-memory/orbital_credentials.env`:
 
 - `ORBITAL_API_TOKEN`, `ORBITAL_TOKEN`, `SECUREX_TOKEN`, `CISCO_SECUREX_TOKEN`, or `CISCO_TOKEN`
 - or `ORBITAL_CLIENT_ID` plus `ORBITAL_CLIENT_SECRET`

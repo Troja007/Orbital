@@ -22,15 +22,15 @@ The profiles are interpretation artifacts. They help explain what an Orbital cat
 4. Run the project generator from the repository root:
 
 ```bash
-python3 02_Working_Files/generate_catalog_result_profiles.py
+python3 tools-and-memory/generate_catalog_result_profiles.py
 ```
 
 5. Validate generated output:
 
 ```bash
-PYTHONPYCACHEPREFIX=/tmp/orbital_pycache python3 -m py_compile 02_Working_Files/generate_catalog_result_profiles.py
+PYTHONPYCACHEPREFIX=/tmp/orbital_pycache python3 -m py_compile tools-and-memory/generate_catalog_result_profiles.py
 find queries_and_scripts/catalog_result_profiles/windows -type f -name '*.md' | wc -l
-rg -n "host:|orbital_queryID|/v0/jobs/|Bearer|ORBITAL_API_TOKEN|client_secret" queries_and_scripts/catalog_result_profiles 02_Working_Files/generate_catalog_result_profiles.py || true
+rg -n "host:|orbital_queryID|/v0/jobs/|Bearer|ORBITAL_API_TOKEN|client_secret" queries_and_scripts/catalog_result_profiles tools-and-memory/generate_catalog_result_profiles.py || true
 ```
 
 Expected current baseline:

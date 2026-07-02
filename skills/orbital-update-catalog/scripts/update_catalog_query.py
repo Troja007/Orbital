@@ -21,7 +21,7 @@ from urllib.request import Request, urlopen
 
 
 ROOT = Path(__file__).resolve().parents[4]
-DEFAULT_ENV_FILE = ROOT / "02_Working_Files" / "orbital_credentials.env"
+DEFAULT_ENV_FILE = ROOT / "tools-and-memory" / "orbital_credentials.env"
 LEDGER = ROOT / "local" / "orbital_catalog_updates" / "catalog_update_runs.jsonl"
 
 SERVERS = {

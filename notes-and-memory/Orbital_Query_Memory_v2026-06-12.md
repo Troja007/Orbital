@@ -7,7 +7,7 @@ Purpose: summarize reusable Orbital/osquery query-method memory. This report sto
 Source of truth:
 
 ```text
-02_Working_Files/query-method-memory/
+tools-and-memory/query-method-memory/
 ```
 
 ## Method Index
@@ -30,7 +30,7 @@ Source of truth:
 
 Report sync notes:
 
-- The index now reflects all YAML method records currently stored under `02_Working_Files/query-method-memory/`.
+- The index now reflects all YAML method records currently stored under `tools-and-memory/query-method-memory/`.
 - Added the missing Secure Endpoint Host Based Firewall event/communication method.
 - Added the missing Secure Endpoint presence pre-check method.
 - Updated stale statuses for the `sfc.exe` method and the multiple-SQL catalog/API method.
@@ -42,7 +42,7 @@ Report sync notes:
 Record:
 
 ```text
-02_Working_Files/query-method-memory/software/macos_secure_client_nvm_package_receipt.yaml
+tools-and-memory/query-method-memory/software/macos_secure_client_nvm_package_receipt.yaml
 ```
 
 Goal: determine whether Cisco Secure Client Network Visibility Module appears installed on macOS by package receipt.

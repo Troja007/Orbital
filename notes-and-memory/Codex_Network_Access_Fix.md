@@ -21,7 +21,7 @@ network_access = true
 After applying this setting outside the current restricted session, start a new Codex thread or restart the current workspace session and rerun:
 
 ```zsh
-02_Working_Files/run_orbital_catalog_import.sh
+tools-and-memory/run_orbital_catalog_import.sh
 ```
 
 Expected successful output:

@@ -9,13 +9,13 @@ Purpose: summarize reusable Orbital/osquery query-method memory. This report sto
 Reusable method records live under:
 
 ```text
-02_Working_Files/query-method-memory/
+tools-and-memory/query-method-memory/
 ```
 
 Template:
 
 ```text
-02_Working_Files/query-method-memory/_template.yaml
+tools-and-memory/query-method-memory/_template.yaml
 ```
 
 ## Method Index
@@ -37,7 +37,7 @@ Note: rows marked `Related context` use MITRE/category mappings from Orbital sto
 Record:
 
 ```text
-02_Working_Files/query-method-memory/network/hosts_file_entries.yaml
+tools-and-memory/query-method-memory/network/hosts_file_entries.yaml
 ```
 
 Goal: find non-default hosts-file mappings on endpoints that respond to Orbital.
@@ -77,7 +77,7 @@ Reusable lessons:
 Record:
 
 ```text
-02_Working_Files/query-method-memory/orbital_health/computer_name_inventory.yaml
+tools-and-memory/query-method-memory/orbital_health/computer_name_inventory.yaml
 ```
 
 Goal: list computer names for endpoints that respond to an Orbital live query.
@@ -115,7 +115,7 @@ Reusable lessons:
 Record:
 
 ```text
-02_Working_Files/query-method-memory/orbital_health/operating_system_inventory.yaml
+tools-and-memory/query-method-memory/orbital_health/operating_system_inventory.yaml
 ```
 
 Goal: list operating system details for endpoints that respond to Orbital live queries.
@@ -168,7 +168,7 @@ Reusable lessons:
 Record:
 
 ```text
-02_Working_Files/query-method-memory/suspicious_processes/running_process_sha256_from_catalog.yaml
+tools-and-memory/query-method-memory/suspicious_processes/running_process_sha256_from_catalog.yaml
 ```
 
 Goal: identify currently running processes and calculate SHA256 hashes for their executable paths.
@@ -228,7 +228,7 @@ Reusable lessons:
 Record:
 
 ```text
-02_Working_Files/query-method-memory/suspicious_processes/windows_sfc_running_process.yaml
+tools-and-memory/query-method-memory/suspicious_processes/windows_sfc_running_process.yaml
 ```
 
 Goal: identify currently running `sfc.exe` processes on Windows endpoints and show process execution context.

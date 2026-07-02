@@ -324,7 +324,7 @@ def write_summary(region: str, base_url: str, fetched_at: str, results: dict[str
             "## Handling Notes",
             "",
             "- Treat imported API response files as source context, not editable catalog templates.",
-            "- Do not commit or store bearer tokens. Refresh this import by rerunning `02_Working_Files/import_orbital_catalog.py` with a runtime token.",
+            "- Do not commit or store bearer tokens. Refresh this import by rerunning `tools-and-memory/import_orbital_catalog.py` with a runtime token.",
             "- Use the operation-specific Cisco DevNet pages listed in `project-context/Orbital_API_DevNet.md` before implementing create, update, delete, live query, or live script calls.",
         ]
     )

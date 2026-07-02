@@ -3,7 +3,7 @@
 .env.*
 *.env
 !*.env.example
-02_Working_Files/*credentials*.env
+tools-and-memory/*credentials*.env
 
 # Local Codex/app runtime state
 .codex/

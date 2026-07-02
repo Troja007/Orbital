@@ -49,7 +49,7 @@ Treat `catalog_queries` and `catalog_scripts` as read-only source references. Do
 
 Treat `custom_queries` and `custom_scripts` as user-owned source material maintained through VS Code and GitHub. Do not modify these files unless explicitly asked to update the GitHub-tracked work.
 
-When adapting catalog content, copy the relevant file into `02_Working_Files` first.
+When adapting catalog content, copy the relevant file into `tools-and-memory` first.
 
 ## Notes
 

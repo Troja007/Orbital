@@ -36,7 +36,7 @@ REDACT_KEYS = {"jwt", "token", "access_token", "refresh_token", "authorization"}
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Check Orbital API auth with GET /ok.")
-    parser.add_argument("--env-file", default="02_Working_Files/orbital_credentials.env")
+    parser.add_argument("--env-file", default="tools-and-memory/orbital_credentials.env")
     parser.add_argument("--region", default="")
     parser.add_argument("--timeout", type=int, default=30)
     return parser.parse_args()

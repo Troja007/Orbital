@@ -154,7 +154,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--label", default="", help="Orbital osQuery label.")
     parser.add_argument("--name", default="", help="Query display name.")
     parser.add_argument("--sql-file", default="", help="File containing SQL. Defaults to stdin.")
-    parser.add_argument("--env-file", default="02_Working_Files/orbital_credentials.env")
+    parser.add_argument("--env-file", default="tools-and-memory/orbital_credentials.env")
     parser.add_argument("--region", default="", help="Override ORBITAL_REGION.")
     parser.add_argument("--expiry-minutes", default="2")
     parser.add_argument(

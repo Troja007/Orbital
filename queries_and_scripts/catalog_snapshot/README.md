@@ -23,4 +23,4 @@ Offline copy of Cisco-managed Orbital stock catalog data used for query and scri
 - Retrieved: 2026-06-10T17:39:04+00:00
 - Region: `us`
 - Source summary: `project-context/Orbital_Catalog_API_Import.md`
-- Local refresh helper: `02_Working_Files/import_orbital_catalog.py`
+- Local refresh helper: `tools-and-memory/import_orbital_catalog.py`

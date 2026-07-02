@@ -23,7 +23,7 @@ Catalog folders:
 - `queries_and_scripts/catalog_queries` is a 1:1 copy from the Orbital product catalog.
 - `queries_and_scripts/catalog_scripts` is a 1:1 copy from the Orbital product catalog.
 
-Do not edit these catalog folders directly. Use them as source files and copy items into `02_Working_Files` before making changes.
+Do not edit these catalog folders directly. Use them as source files and copy items into `tools-and-memory` before making changes.
 
 Personal work folders:
 
