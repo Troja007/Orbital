@@ -20,6 +20,9 @@ MITRE tactics:
 - `TA0005`: Defense Evasion
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1553.004`: Install Root Certificate
 
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.

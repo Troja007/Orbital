@@ -29,6 +29,9 @@ MITRE techniques:
 - `T1098`: Account Manipulation
 - `T1136`: Create Account
 
+MITRE subtechniques:
+- None recorded.
+
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.
 
 ## Expected Result Shape

@@ -14,8 +14,8 @@ This file is GitHub-safe project context. It does not include endpoint result ro
 
 ## Row Count Buckets
 
-- `zero`: 193
-- `low_1_10`: 118
+- `zero`: 192
+- `low_1_10`: 119
 - `medium_11_100`: 38
 - `high_101_1000`: 26
 - `very_high_over_1000`: 9
@@ -40,6 +40,7 @@ This file is GitHub-safe project context. It does not include endpoint result ro
 | `wmiprvse_incorrect_default_location` | Wmiprvse.exe Incorrect Default Location | `completed` | 0 | `zero` | `` | Endpoint answered with no matching rows. For this catalog check, treat it as no evidence for the exact suspicious/vulnerable condition in the queried data scope. |
 | `chrome_extensions_monitoring` | Chrome Browser Extensions Monitoring | `completed` | 10 | `low_1_10` | `` | Endpoint answered with rows. Review each row as potential evidence for the catalog condition, then validate against context, timestamps, paths, users, signatures, and related follow-up queries. |
 | `orbital_installation_directory_monitoring` | Orbital Installation Directory Monitoring | `completed` | 0 | `zero` | `` | Endpoint answered with no rows. Treat as no matching inventory/configuration/artifact data for this query shape on the tested endpoint. |
+| `arp_cache_inspection` | ARP Cache Inspection | `completed` | 8 | `low_1_10` | `` | Endpoint answered with rows. Interpret rows according to the catalog description: often inventory, posture, configuration, or forensic context rather than malicious evidence by itself. |
 | `windows_yara_pe_dynamic_load` | YARA Scan: PE Contains Few Imports and Dynamic Loading Functions | `completed` | 0 | `zero` | `` | Endpoint answered with no matching rows. For this catalog check, treat it as no evidence for the exact suspicious/vulnerable condition in the queried data scope. |
 | `windows_intel_me_info` | Windows Intel ME/CSE Version | `completed` | 0 | `zero` | `` | Endpoint answered with no rows. Treat as no matching inventory/configuration/artifact data for this query shape on the tested endpoint. |
 | `windows_wlan_events_monitoring` | Windows WLAN Events Monitoring | `completed` | 0 | `zero` | `` | Endpoint answered with no matching event rows in the available log scope. This is a no-hit for the exact event condition, not proof the behavior never happened. |
@@ -294,7 +295,6 @@ This file is GitHub-safe project context. It does not include endpoint result ro
 | `cpu_info_monitoring` | Information Search on Central Processing Unit | `completed` | 2 | `low_1_10` | `` | Endpoint answered with rows. Review each row as potential evidence for the catalog condition, then validate against context, timestamps, paths, users, signatures, and related follow-up queries. |
 | `sdclt_bypass_registry_isolatedcommand_key` | Exe File Registry Key IsolatedCommand Monitoring | `completed` | 2 | `low_1_10` | `` | Endpoint answered with rows. Review each row as potential evidence for the catalog condition, then validate against context, timestamps, paths, users, signatures, and related follow-up queries. |
 | `windows_registry_shell_folders_startup_location` | Windows Registry Suspicious Startup Location | `completed` | 1 | `low_1_10` | `` | Endpoint answered with rows. Review each row as potential evidence for the catalog condition, then validate against context, timestamps, paths, users, signatures, and related follow-up queries. |
-| `arp_cache_inspection` | ARP Cache Inspection | `completed` | 0 | `zero` | `` | Endpoint answered with no rows. Treat as no matching inventory/configuration/artifact data for this query shape on the tested endpoint. |
 | `user_account_settings_monitoring` | User Account Settings Monitoring | `completed` | 16 | `medium_11_100` | `` | Endpoint answered with rows. Review each row as potential evidence for the catalog condition, then validate against context, timestamps, paths, users, signatures, and related follow-up queries. |
 | `system_network_state_monitoring` | System Network State Monitoring | `completed` | 1 | `low_1_10` | `` | Endpoint answered with rows. Interpret rows according to the catalog description: often inventory, posture, configuration, or forensic context rather than malicious evidence by itself. |
 | `hidden_scheduled_tasks_monitoring` | Hidden Scheduled Tasks Monitoring | `completed` | 9 | `low_1_10` | `` | Endpoint answered with rows. Interpret rows according to the catalog description: often inventory, posture, configuration, or forensic context rather than malicious evidence by itself. |

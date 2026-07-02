@@ -22,6 +22,9 @@ MITRE tactics:
 - `TA0008`: Lateral Movement
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1569.002`: Service Execution
 
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.

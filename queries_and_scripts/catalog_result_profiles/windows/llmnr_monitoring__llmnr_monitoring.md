@@ -23,6 +23,9 @@ MITRE tactics:
 - `TA0009`: Collection
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1557.001`: LLMNR/NBT-NS Poisoning and SMB Relay
 
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.

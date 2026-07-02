@@ -23,6 +23,9 @@ MITRE tactics:
 - `TA0003`: Persistence
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1543.003`: Windows Service
 - `T1569.002`: Service Execution
 

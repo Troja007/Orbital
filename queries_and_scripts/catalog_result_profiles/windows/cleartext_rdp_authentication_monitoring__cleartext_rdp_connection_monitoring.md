@@ -25,8 +25,10 @@ MITRE tactics:
 - `TA0008`: Lateral Movement
 
 MITRE techniques:
-- `T1021.001`: Remote Desktop Protocol
 - `T1078`: Valid Accounts
+
+MITRE subtechniques:
+- `T1021.001`: Remote Desktop Protocol
 
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.
 

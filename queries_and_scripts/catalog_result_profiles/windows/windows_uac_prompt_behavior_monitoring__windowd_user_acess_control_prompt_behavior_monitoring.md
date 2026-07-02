@@ -23,6 +23,9 @@ MITRE tactics:
 - `TA0005`: Defense Evasion
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1548.002`: Bypass User Account Control
 - `T1574.010`: Services File Permissions Weakness
 

@@ -22,6 +22,9 @@ MITRE tactics:
 - `TA0002`: Execution
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1059.001`: PowerShell
 - `T1069.002`: Domain Groups
 - `T1087.002`: Domain Account

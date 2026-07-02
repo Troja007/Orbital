@@ -25,6 +25,9 @@ MITRE techniques:
 - `T1114`: Email Collection
 - `T1219`: Remote Access Software
 
+MITRE subtechniques:
+- None recorded.
+
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.
 
 ## Expected Result Shape

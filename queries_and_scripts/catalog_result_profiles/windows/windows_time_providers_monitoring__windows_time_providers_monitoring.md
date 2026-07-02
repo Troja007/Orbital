@@ -22,6 +22,9 @@ MITRE tactics:
 - `TA0003`: Persistence
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1547.003`: Time Providers
 
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.

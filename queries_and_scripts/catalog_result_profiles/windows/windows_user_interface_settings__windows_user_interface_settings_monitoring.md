@@ -22,6 +22,9 @@ MITRE tactics:
 - `TA0005`: Defense Evasion
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1564.001`: Hidden Files and Directories
 
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.

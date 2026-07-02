@@ -28,6 +28,9 @@ MITRE techniques:
 - `T1091`: Replication Through Removable Media
 - `T1092`: Communication Through Removable Media
 
+MITRE subtechniques:
+- None recorded.
+
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.
 
 ## Expected Result Shape

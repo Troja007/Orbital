@@ -20,6 +20,9 @@ MITRE tactics:
 - `TA0005`: Defense Evasion
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1055.001`: Dynamic-link Library Injection
 - `T1574.001`: DLL
 

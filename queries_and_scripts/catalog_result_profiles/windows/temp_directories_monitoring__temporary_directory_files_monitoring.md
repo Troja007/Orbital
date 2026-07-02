@@ -24,6 +24,9 @@ MITRE tactics:
 - `TA0005`: Defense Evasion
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1574.010`: Services File Permissions Weakness
 
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.

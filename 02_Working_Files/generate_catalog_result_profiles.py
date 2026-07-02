@@ -13,6 +13,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_INPUT = ROOT / "local/orbital_catalog_windows_validation/windows_catalog_execution_results.jsonl"
 PROFILE_UPDATES_INPUT = ROOT / "local/orbital_catalog_windows_validation/profile_updates.jsonl"
+CATALOG_SNAPSHOT_INPUT = ROOT / "queries_and_scripts/catalog_snapshot/stock_query_catalog.json"
 OUTPUT_DIR = ROOT / "queries_and_scripts/catalog_result_profiles"
 
 
@@ -169,6 +170,67 @@ def iter_jsonl_records(input_path: Path) -> list[dict[str, Any]]:
     return records
 
 
+def load_catalog_snapshot(input_path: Path = CATALOG_SNAPSHOT_INPUT) -> dict[str, Any]:
+    if not input_path.exists():
+        return {"queries_by_id": {}, "tactics": {}, "techniques": {}, "subtechniques": {}}
+
+    data = json.loads(input_path.read_text())
+    queries = data.get("queries", []) if isinstance(data, dict) else []
+
+    def definition_map(values: Any) -> dict[str, str]:
+        output: dict[str, str] = {}
+        if not isinstance(values, list):
+            return output
+        for item in values:
+            if not isinstance(item, dict):
+                continue
+            mitre_id = item.get("mitreid") or item.get("id")
+            title = item.get("title")
+            if mitre_id and title:
+                output[str(mitre_id)] = str(title)
+        return output
+
+    return {
+        "queries_by_id": {item.get("id"): item for item in queries if isinstance(item, dict) and item.get("id")},
+        "tactics": definition_map(data.get("tactics")) if isinstance(data, dict) else {},
+        "techniques": definition_map(data.get("techniques")) if isinstance(data, dict) else {},
+        "subtechniques": definition_map(data.get("subtechniques")) if isinstance(data, dict) else {},
+    }
+
+
+def map_from_ids(ids: Any, definitions: dict[str, str]) -> dict[str, str]:
+    if not ids:
+        return {}
+    return {str(item): definitions.get(str(item), "") for item in ids}
+
+
+def mitre_maps(catalog: dict[str, Any], snapshot_item: dict[str, Any], snapshot: dict[str, Any]) -> tuple[dict[str, str], dict[str, str], dict[str, str]]:
+    tactics = catalog.get("tactics") or snapshot_item.get("tactics") or map_from_ids(
+        catalog.get("tactics_mitre_ids") or snapshot_item.get("tactics_mitre_ids"),
+        snapshot["tactics"],
+    )
+
+    raw_techniques = catalog.get("techniques") or snapshot_item.get("techniques") or {}
+    if not raw_techniques:
+        raw_techniques = map_from_ids(
+            catalog.get("techniques_mitre_ids") or snapshot_item.get("techniques_mitre_ids"),
+            snapshot["techniques"] | snapshot["subtechniques"],
+        )
+
+    explicit_subtechniques = map_from_ids(
+        catalog.get("subtechnique_mitre_ids") or snapshot_item.get("subtechnique_mitre_ids"),
+        snapshot["subtechniques"],
+    )
+
+    techniques: dict[str, str] = {}
+    subtechniques: dict[str, str] = dict(explicit_subtechniques)
+    for mitre_id, title in raw_techniques.items():
+        target = subtechniques if "." in str(mitre_id) else techniques
+        target[str(mitre_id)] = str(title)
+
+    return dict(tactics), techniques, subtechniques
+
+
 def load_best_records(input_path: Path) -> list[dict[str, Any]]:
     best_by_catalog_id: dict[str, dict[str, Any]] = {}
     records = iter_jsonl_records(input_path) + iter_jsonl_records(PROFILE_UPDATES_INPUT)
@@ -209,13 +271,17 @@ def load_best_records(input_path: Path) -> list[dict[str, Any]]:
 
 
 def build_profiles(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    snapshot = load_catalog_snapshot()
+    queries_by_id = snapshot["queries_by_id"]
     profiles: list[dict[str, Any]] = []
     for record in records:
         catalog = record.get("catalog", {})
+        snapshot_item = queries_by_id.get(catalog.get("catalog_id"), {})
         result_summary = record.get("result_summary") or {}
         status = record.get("status")
         caveat = error_class(record)
         row_count = result_summary.get("row_count")
+        tactics, techniques, subtechniques = mitre_maps(catalog, snapshot_item, snapshot)
 
         profiles.append(
             {
@@ -227,8 +293,9 @@ def build_profiles(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "osquery_count": catalog.get("osquery_count"),
                 "parameters": catalog.get("parameters") or [],
                 "warnings": catalog.get("warnings") or [],
-                "mitre_tactics": catalog.get("tactics") or {},
-                "mitre_techniques": catalog.get("techniques") or {},
+                "mitre_tactics": tactics,
+                "mitre_techniques": techniques,
+                "mitre_subtechniques": subtechniques,
                 "catalog_updated": catalog.get("updated"),
                 "validation": {
                     "source": "sanitized_from_local_windows_catalog_validation",
@@ -465,6 +532,9 @@ def write_per_catalog_markdown(profiles: list[dict[str, Any]], output_dir: Path)
             "",
             "MITRE techniques:",
             *format_map(profile["mitre_techniques"]),
+            "",
+            "MITRE subtechniques:",
+            *format_map(profile["mitre_subtechniques"]),
             "",
             "This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.",
             "",

@@ -23,6 +23,8 @@ MITRE tactics:
 
 MITRE techniques:
 - `T1546`: Event Triggered Execution
+
+MITRE subtechniques:
 - `T1547.001`: Registry Run Keys / Startup Folder
 
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.

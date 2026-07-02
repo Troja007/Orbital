@@ -22,6 +22,8 @@ MITRE tactics:
 
 MITRE techniques:
 - `T1112`: Modify Registry
+
+MITRE subtechniques:
 - `T1562.001`: Disable or Modify Tools
 
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.

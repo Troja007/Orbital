@@ -21,6 +21,9 @@ MITRE tactics:
 - `TA0005`: Defense Evasion
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1562.001`: Disable or Modify Tools
 - `T1562.002`: Disable Windows Event Logging
 

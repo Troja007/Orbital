@@ -21,6 +21,9 @@ MITRE tactics:
 - `TA0003`: Persistence
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1053.005`: Scheduled Task
 - `T1543.003`: Windows Service
 - `T1547.001`: Registry Run Keys / Startup Folder

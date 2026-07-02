@@ -22,6 +22,9 @@ MITRE tactics:
 - `TA0003`: Persistence
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1546.007`: Netsh Helper DLL
 
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.

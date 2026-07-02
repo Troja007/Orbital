@@ -22,6 +22,9 @@ MITRE tactics:
 - `TA0004`: Privilege Escalation
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1037.001`: Logon Script (Windows)
 - `T1546.001`: Change Default File Association
 

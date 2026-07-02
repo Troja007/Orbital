@@ -26,6 +26,9 @@ MITRE techniques:
 - `T1210`: Exploitation of Remote Services
 - `T1212`: Exploitation for Credential Access
 
+MITRE subtechniques:
+- None recorded.
+
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.
 
 ## Expected Result Shape

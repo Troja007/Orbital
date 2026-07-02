@@ -23,6 +23,9 @@ MITRE techniques:
 - `T1008`: Fallback Channels
 - `T1102`: Web Service
 
+MITRE subtechniques:
+- None recorded.
+
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.
 
 ## Expected Result Shape

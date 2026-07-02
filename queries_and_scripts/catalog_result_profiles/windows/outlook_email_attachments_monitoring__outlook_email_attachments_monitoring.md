@@ -22,6 +22,9 @@ MITRE tactics:
 - `TA0001`: Initial Access
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1566.001`: Spearphishing Attachment
 
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.

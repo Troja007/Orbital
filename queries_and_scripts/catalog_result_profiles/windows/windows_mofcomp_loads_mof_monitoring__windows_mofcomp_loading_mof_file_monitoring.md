@@ -22,6 +22,9 @@ MITRE tactics:
 - `TA0004`: Privilege Escalation
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1546.003`: Windows Management Instrumentation Event Subscription
 
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.

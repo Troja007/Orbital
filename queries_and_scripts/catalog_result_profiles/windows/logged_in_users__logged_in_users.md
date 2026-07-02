@@ -21,6 +21,9 @@ MITRE tactics:
 - `TA0007`: Discovery
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1087.001`: Local Account
 
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.

@@ -21,6 +21,9 @@ MITRE tactics:
 - `TA0006`: Credential Access
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1003.002`: Security Account Manager
 - `T1552.001`: Credentials In Files
 

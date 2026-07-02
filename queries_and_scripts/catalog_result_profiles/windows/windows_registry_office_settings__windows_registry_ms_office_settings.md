@@ -22,6 +22,9 @@ MITRE tactics:
 MITRE techniques:
 - `T1204`: User Execution
 
+MITRE subtechniques:
+- None recorded.
+
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.
 
 ## Expected Result Shape

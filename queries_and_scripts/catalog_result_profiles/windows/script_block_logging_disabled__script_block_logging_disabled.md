@@ -21,6 +21,9 @@ MITRE tactics:
 - `TA0005`: Defense Evasion
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1059.001`: PowerShell
 - `T1562.001`: Disable or Modify Tools
 

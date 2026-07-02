@@ -25,8 +25,10 @@ MITRE tactics:
 
 MITRE techniques:
 - `T1039`: Data from Network Shared Drive
-- `T1070.005`: Network Share Connection Removal
 - `T1135`: Network Share Discovery
+
+MITRE subtechniques:
+- `T1070.005`: Network Share Connection Removal
 
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.
 

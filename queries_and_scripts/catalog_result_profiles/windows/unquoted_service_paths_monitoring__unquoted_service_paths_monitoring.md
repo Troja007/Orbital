@@ -23,6 +23,9 @@ MITRE tactics:
 - `TA0004`: Privilege Escalation
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1543.003`: Windows Service
 - `T1574.009`: Path Interception by Unquoted Path
 

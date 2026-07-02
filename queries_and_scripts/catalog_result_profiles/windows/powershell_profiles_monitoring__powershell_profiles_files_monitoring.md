@@ -21,6 +21,9 @@ MITRE tactics:
 - `TA0004`: Privilege Escalation
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1059.001`: PowerShell
 
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.

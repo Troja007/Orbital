@@ -25,9 +25,11 @@ MITRE tactics:
 - `TA0010`: Exfiltration
 
 MITRE techniques:
+- `T1133`: External Remote Services
+
+MITRE subtechniques:
 - `T1021.001`: Remote Desktop Protocol
 - `T1048.002`: Exfiltration Over Asymmetric Encrypted Non-C2 Protocol
-- `T1133`: External Remote Services
 
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.
 

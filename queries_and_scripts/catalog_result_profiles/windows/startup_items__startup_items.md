@@ -20,6 +20,9 @@ MITRE tactics:
 - `TA0003`: Persistence
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1547.001`: Registry Run Keys / Startup Folder
 - `T1547.015`: Login Items
 

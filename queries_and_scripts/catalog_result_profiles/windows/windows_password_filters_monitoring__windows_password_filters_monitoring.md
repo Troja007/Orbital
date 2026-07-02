@@ -22,6 +22,9 @@ MITRE tactics:
 - `TA0006`: Credential Access
 
 MITRE techniques:
+- None recorded.
+
+MITRE subtechniques:
 - `T1556.002`: Password Filter DLL
 
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.

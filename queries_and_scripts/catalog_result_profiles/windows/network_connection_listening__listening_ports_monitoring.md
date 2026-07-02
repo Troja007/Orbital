@@ -23,6 +23,9 @@ MITRE techniques:
 - `T1040`: Network Sniffing
 - `T1119`: Automated Collection
 
+MITRE subtechniques:
+- None recorded.
+
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.
 
 ## Expected Result Shape

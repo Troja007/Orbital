@@ -6,7 +6,7 @@
 - Catalog name: `ARP Cache Inspection`
 - Platform: windows, linux, darwin
 - Profile type: sanitized catalog result profile
-- Source run: 2026-06-15/2026-06-16
+- Source run: 2026-07-02
 - Catalog updated: 2023-11-14T17:51:59.150055646Z
 
 ## What This Query Answers
@@ -22,39 +22,42 @@ MITRE tactics:
 MITRE techniques:
 - None recorded.
 
+MITRE subtechniques:
+- None recorded.
+
 This profile does not prove maliciousness by itself. It explains how to read this catalog query's result shape and caveats.
 
 ## Expected Result Shape
 
 - Endpoint answered in validation: yes
 - Validation status: `completed`
-- Observed row count: 0
-- Row-count bucket: `zero`
+- Observed row count: 8
+- Row-count bucket: `low_1_10`
 - Returned labels:
-- None recorded.
+- `arp_cache_inspection`
 
 Observed columns:
 
 | Label | Columns |
 | --- | --- |
-| None returned in validation | None observed |
+| `arp_cache_inspection` | `address`, `mac`, `count` |
 
 Label row counts:
-- None recorded.
+- `arp_cache_inspection`: 8
 
 ## How To Read The Result
 
 Observed validation result:
 
-The endpoint answered and returned zero rows. This is a completed no-hit result for the exact query scope, not a query failure.
+The endpoint answered and returned 8 rows in the validation run.
 
 If rows are returned:
 
-If a future execution returns rows, treat them as evidence matching this catalog query's condition or inventory shape. Review timestamps, paths, users, signatures, process context, and related follow-up queries before making an incident conclusion.
+Endpoint answered with rows. Interpret rows according to the catalog description: often inventory, posture, configuration, or forensic context rather than malicious evidence by itself.
 
 If zero rows are returned:
 
-Endpoint answered with no rows. Treat as no matching inventory/configuration/artifact data for this query shape on the tested endpoint.
+If a future execution returns zero rows after the endpoint answered, read it as no matching rows for the exact query scope. Do not treat zero rows as proof that the related behavior never happened.
 
 If the endpoint does not respond:
 
@@ -65,7 +68,6 @@ If a future execution has no endpoint response, do not interpret it as zero rows
 Safe assumptions and limits:
 - Validation used one explicit Windows endpoint; do not generalize row counts to other endpoints or fleets.
 - Row counts describe this validation run only; they are useful for expected result shape and interpretation, not baseline truth.
-- Zero rows means no matching rows returned after the endpoint answered; it is not the same as query failure.
 
 Unsafe assumptions:
 - Do not assume returned rows are malicious without context.
@@ -119,4 +121,10 @@ This profile intentionally does not store:
 
 Representative sanitized sample rows, when available. These examples preserve result shape only and are not endpoint evidence.
 
-No sanitized sample result data was recorded for this profile.
+Label: `arp_cache_inspection`
+
+| `address` | `mac` | `count` |
+| --- | --- | --- |
+| <redacted:ipv4-private> | <redacted:mac-unicast> | 1 |
+| <redacted:ipv4-multicast> | <redacted:mac-multicast> | 1 |
+| <redacted:ipv4-broadcast> | <redacted:mac-broadcast> | 1 |
