@@ -115,6 +115,19 @@ Do not store credentials, endpoint results, tenant data, raw API responses,
 hostnames, IP addresses, GUIDs, or customer-identifying values in either log.
 Both files are local-only and must not be staged or pushed.
 
+After writing a local log entry, check whether it contains a reusable lesson.
+If yes, promote the sanitized lesson into the GitHub-synced project memory:
+
+- `notes-and-memory/decisions/` for durable decisions.
+- `tools-and-memory/query-method-memory/` for reusable query methods.
+- `project-context/` or `product-context/` for durable context.
+- `queries_and_scripts/catalog_result_profiles/` for catalog result
+  interpretation.
+- `skills/` for reusable workflow behavior.
+
+Local logs explain what happened in this workspace. GitHub-synced memory
+explains what future imported workspaces should learn from it.
+
 ## Query-Method Memory
 
 Query-method memory lives under `tools-and-memory/query-method-memory/`.

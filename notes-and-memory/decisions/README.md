@@ -17,6 +17,8 @@ Update this decision log when a durable choice changes:
 
 Do not add routine GitHub sync activity here. Store operational sync notes in `local/sync-activity-log.md`.
 
+Local logs are not sufficient for reusable project memory. After a local project or sync log entry is written, check whether the entry contains a reusable lesson. If yes, promote the sanitized lesson into the appropriate GitHub-synced artifact: this decision log, query-method memory, project context, product context, catalog result profiles, or skills.
+
 Recommended entry format:
 
 - Date
@@ -37,3 +39,4 @@ Recommended entry format:
 | 2026-07-02 | Use `query-method-memory` as the reusable method knowledge store. | `2026-07-02_query_method_memory_boundary.md` |
 | 2026-07-02 | Store the offline stock catalog snapshot and catalog result profiles in GitHub as sanitized reusable context. | `2026-07-02_catalog_snapshot_and_result_profiles.md` |
 | 2026-07-02 | Store upstream osquery schema snapshots under product context as refreshable source snapshots. | `2026-07-02_osquery_schema_source_snapshots.md` |
+| 2026-07-02 | Promote reusable lessons from local logs into GitHub-synced project memory. | `2026-07-02_log_to_memory_promotion.md` |
