@@ -219,25 +219,33 @@ Catalog context comes from three source types:
 Use `project-context/Orbital_Query_Catalog_Source_Map.md` when comparing these
 sources. Preserve catalog `Name` and `ID` exactly.
 
-## Local Credentials
+## Credentials
 
-Use a local ignored credentials file when needed:
+Use the global Codex credential mapping by default. Orbital helpers read the
+active mapping from:
 
-```bash
-cp tools-and-memory/orbital_credentials.env.example tools-and-memory/orbital_credentials.env
+```text
+~/.codex/state/cisco-security-api-access/current_org_mapping.json
 ```
 
-Then edit `tools-and-memory/orbital_credentials.env` locally.
+The mapping points to a global credential env file through `source_env_file`.
+That global file is the preferred source for Orbital bearer tokens or OAuth
+client credentials. Use `ORBITAL_ENV_FILE=/absolute/path/to/credential.env` or a
+helper `--env-file` argument only as an explicit override.
 
-The real `.env` file is ignored by Git. Never commit bearer tokens, client IDs,
-client secrets, raw API responses with tenant data, or local runtime state.
+`tools-and-memory/orbital_credentials.env` is legacy fallback only. Avoid using
+it for normal workflows.
 
-The example supports:
+Never commit bearer tokens, client IDs, client secrets, raw API responses with
+tenant data, or local runtime state.
 
-- `ORBITAL_REGION=eu|na|us|apjc`
-- `ORBITAL_API_TOKEN`
-- `ORBITAL_CLIENT_ID`
-- `ORBITAL_CLIENT_SECRET`
+Supported credential fields include:
+
+- `ORBITAL_REGION=eu|na|us|apjc` or `SECURE_ENDPOINT_REGION`
+- `ORBITAL_API_TOKEN`, `SECURE_ENDPOINT_BEARER_TOKEN`, `AMP_BEARER_TOKEN`, or `BEARER_TOKEN`
+- `ORBITAL_CLIENT_ID` plus `ORBITAL_CLIENT_SECRET`
+- `SECURE_ENDPOINT_V3_OAUTH_CLIENT_ID` plus `SECURE_ENDPOINT_V3_OAUTH_CLIENT_SECRET`
+- `ORBITAL_TOKEN_URL` or `SECURE_ENDPOINT_V3_VISIBILITY_TOKEN_URL`
 
 ## Local Helpers
 

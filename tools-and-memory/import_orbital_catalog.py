@@ -58,8 +58,27 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--region",
         choices=sorted(SERVERS),
-        default=os.environ.get("ORBITAL_REGION", "eu").lower(),
-        help="Orbital API region. Defaults to ORBITAL_REGION or eu.",
+        default="",
+        help="Orbital API region. Defaults to ORBITAL_REGION, Codex ORG Mapping region, SECURE_ENDPOINT_REGION, or eu.",
+    )
+    parser.add_argument(
+        "--env-file",
+        default=os.environ.get("ORBITAL_ENV_FILE", ""),
+        help="Explicit credential env file. Defaults to the source_env_file from Codex ORG Mapping state.",
+    )
+    parser.add_argument(
+        "--org-mapping-state-file",
+        default=os.environ.get(
+            "ORBITAL_ORG_MAPPING_STATE_FILE",
+            str(
+                Path.home()
+                / ".codex"
+                / "state"
+                / "cisco-security-api-access"
+                / "current_org_mapping.json"
+            ),
+        ),
+        help="Codex ORG Mapping state JSON used to find the default credential env file.",
     )
     parser.add_argument(
         "--token-env",
@@ -100,6 +119,46 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def load_codex_org_mapping(path: str) -> dict[str, Any]:
+    mapping_path = Path(path).expanduser()
+    if not mapping_path.exists():
+        return {}
+    loaded = json.loads(mapping_path.read_text(encoding="utf-8"))
+    if not isinstance(loaded, dict):
+        raise RuntimeError(f"ORG Mapping state file must contain a JSON object: {path}")
+    mapping = loaded.get("mapping") if isinstance(loaded.get("mapping"), dict) else loaded
+    return mapping if isinstance(mapping, dict) else {}
+
+
+def load_env_file(path: str) -> None:
+    if not path:
+        return
+    env_path = Path(path).expanduser()
+    if not env_path.exists():
+        return
+    for line in env_path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+def resolve_env_file(args: argparse.Namespace, mapping: dict[str, Any]) -> tuple[str, str]:
+    if args.env_file:
+        return str(Path(args.env_file).expanduser()), "explicit_env_file"
+    source_env_file = str(mapping.get("source_env_file") or "").strip()
+    if source_env_file:
+        return str(Path(source_env_file).expanduser()), "codex_org_mapping_source_env_file"
+    legacy_env = Path("tools-and-memory/orbital_credentials.env")
+    if legacy_env.exists():
+        return str(legacy_env), "legacy_project_orbital_env_file"
+    return "", "environment_only"
+
+
 def read_1password_ref(secret_ref: str) -> str:
     try:
         result = subprocess.run(
@@ -128,8 +187,13 @@ def read_env(names: list[str]) -> str:
 
 def fetch_access_token(region: str, client_id: str, client_secret: str, timeout: int) -> str:
     credentials = f"{client_id}:{client_secret}".encode("utf-8")
+    token_url = (
+        os.environ.get("ORBITAL_TOKEN_URL")
+        or os.environ.get("SECURE_ENDPOINT_V3_VISIBILITY_TOKEN_URL")
+        or TOKEN_SERVERS[region]
+    )
     request = Request(
-        TOKEN_SERVERS[region],
+        token_url,
         data=b"grant_type=client_credentials",
         headers={
             "authorization": f"Basic {base64.b64encode(credentials).decode('ascii')}",
@@ -161,6 +225,9 @@ def resolve_token(args: argparse.Namespace) -> str:
         "SECUREX_TOKEN",
         "CISCO_SECUREX_TOKEN",
         "CISCO_TOKEN",
+        "SECURE_ENDPOINT_BEARER_TOKEN",
+        "AMP_BEARER_TOKEN",
+        "BEARER_TOKEN",
     ]
     token = read_env(env_names)
     if token:
@@ -169,9 +236,21 @@ def resolve_token(args: argparse.Namespace) -> str:
     if args.token_op_ref:
         return read_1password_ref(args.token_op_ref)
 
-    client_id = read_env([args.client_id_env, "ORBITAL_CLIENT_ID", "SECUREX_CLIENT_ID"])
+    client_id = read_env(
+        [
+            args.client_id_env,
+            "ORBITAL_CLIENT_ID",
+            "SECUREX_CLIENT_ID",
+            "SECURE_ENDPOINT_V3_OAUTH_CLIENT_ID",
+        ]
+    )
     client_secret = read_env(
-        [args.client_secret_env, "ORBITAL_CLIENT_SECRET", "SECUREX_CLIENT_SECRET"]
+        [
+            args.client_secret_env,
+            "ORBITAL_CLIENT_SECRET",
+            "SECUREX_CLIENT_SECRET",
+            "SECURE_ENDPOINT_V3_OAUTH_CLIENT_SECRET",
+        ]
     )
     if args.client_id_op_ref:
         client_id = read_1password_ref(args.client_id_op_ref)
@@ -252,14 +331,6 @@ def item_title(item: Any) -> str:
     return ""
 
 
-def sample_titles(payload: Any, limit: int = 10) -> list[str]:
-    data = payload.get("data") if isinstance(payload, dict) else None
-    if not isinstance(data, list):
-        return []
-    titles = [title for item in data if (title := item_title(item))]
-    return titles[:limit]
-
-
 def write_summary(region: str, base_url: str, fetched_at: str, results: dict[str, dict[str, Any]]) -> None:
     lines = [
         "# Orbital Catalog API Import",
@@ -306,17 +377,15 @@ def write_summary(region: str, base_url: str, fetched_at: str, results: dict[str
     lines.append("")
     lines.append("Only Cisco-managed stock catalog snapshots are synced to GitHub. Organization catalog exports remain local-only because they may contain tenant-specific content.")
 
-    lines.extend(["", "## Sample Organization Query Titles", ""])
-    for title in sample_titles(results["organization_catalog_queries"]["payload"]):
-        lines.append(f"- {title}")
-    if not sample_titles(results["organization_catalog_queries"]["payload"]):
-        lines.append("- No organization catalog query titles found in the response.")
-
-    lines.extend(["", "## Sample Organization Script Titles", ""])
-    for title in sample_titles(results["organization_catalog_scripts"]["payload"]):
-        lines.append(f"- {title}")
-    if not sample_titles(results["organization_catalog_scripts"]["payload"]):
-        lines.append("- No organization catalog script titles found in the response.")
+    lines.extend(
+        [
+            "",
+            "## Organization Catalog Privacy",
+            "",
+            "- Organization catalog query and script responses remain local-only because titles and content can be tenant-specific.",
+            "- This GitHub-synced summary records only endpoint status; it does not include organization catalog titles or content.",
+        ]
+    )
 
     lines.extend(
         [
@@ -334,6 +403,18 @@ def write_summary(region: str, base_url: str, fetched_at: str, results: dict[str
 
 def main() -> int:
     args = parse_args()
+    mapping = load_codex_org_mapping(args.org_mapping_state_file)
+    env_file, credential_source = resolve_env_file(args, mapping)
+    load_env_file(env_file)
+    args.region = (
+        args.region
+        or os.environ.get("ORBITAL_REGION")
+        or str(mapping.get("region") or "")
+        or os.environ.get("SECURE_ENDPOINT_REGION")
+        or "eu"
+    ).strip().lower()
+    if args.region not in SERVERS:
+        raise RuntimeError(f"Unsupported region: {args.region}")
     token = resolve_token(args)
     if token.lower().startswith("bearer "):
         token = token.split(None, 1)[1]
@@ -353,7 +434,7 @@ def main() -> int:
             json.dumps(payload, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
-        if name in GITHUB_SYNCED_STOCK_FILES:
+        if name in GITHUB_SYNCED_STOCK_FILES and 200 <= status < 300:
             (SNAPSHOT_DIR / f"{name}.json").write_text(
                 json.dumps(payload, indent=2, sort_keys=True) + "\n",
                 encoding="utf-8",
@@ -368,6 +449,7 @@ def main() -> int:
     print(f"Wrote project context to {CONTEXT_FILE.relative_to(ROOT)}")
     for name, result in results.items():
         print(f"{name}: HTTP {result['status']}")
+    print(f"credential_source: {credential_source}")
 
     if failures:
         print("Failures: " + "; ".join(failures), file=sys.stderr)

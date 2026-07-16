@@ -87,7 +87,7 @@ Use this workflow when the user asks whether Orbital API authentication works or
 
 1. Prefer `GET /v0/ok` because it is a small read-only authentication and service check.
 
-2. Run the project helper:
+2. Run the project helper. By default it uses the active Codex ORG Mapping `source_env_file`, matching the live-query helper credential path. Use `--env-file` only as an explicit override.
 
 ```bash
 python3 tools-and-memory/check_orbital_api_auth.py
@@ -125,13 +125,16 @@ Practical summary:
 
 ## Credential Inputs
 
-The import helper reads credentials from environment variables and, by default, from `tools-and-memory/orbital_credentials.env` if that file exists. Never print credentials or bearer tokens.
+The import/auth helpers read credentials from environment variables and, by default, from the active Codex ORG Mapping `source_env_file`. A local `tools-and-memory/orbital_credentials.env` is legacy fallback only. Never print credentials or bearer tokens.
 
 Supported inputs:
 
 - `ORBITAL_API_TOKEN`, `ORBITAL_TOKEN`, `SECUREX_TOKEN`, `CISCO_SECUREX_TOKEN`, or `CISCO_TOKEN`
+- `SECURE_ENDPOINT_BEARER_TOKEN`, `AMP_BEARER_TOKEN`, or `BEARER_TOKEN`
 - `ORBITAL_CLIENT_ID` plus `ORBITAL_CLIENT_SECRET`
 - `SECUREX_CLIENT_ID` plus `SECUREX_CLIENT_SECRET`
+- `SECURE_ENDPOINT_V3_OAUTH_CLIENT_ID` plus `SECURE_ENDPOINT_V3_OAUTH_CLIENT_SECRET`
+- `ORBITAL_TOKEN_URL` or `SECURE_ENDPOINT_V3_VISIBILITY_TOKEN_URL` for token endpoint override
 - `ORBITAL_REGION`, defaulting to `eu`; supported values: `eu`, `us`, `na`, `apjc`
 
 For North America, this project uses `us`/`na` against `https://orbital.amp.cisco.com/v0` for catalog calls. `https://enterprise.orbital.amp.cisco.com/v0` did not resolve during local testing on 2026-06-02; see `project-context/Orbital_API_DevNet.md`.
@@ -140,13 +143,13 @@ For North America, this project uses `us`/`na` against `https://orbital.amp.cisc
 
 When discussing API follow-up calls:
 
-- `orbital_queryID` means the `ID` returned by `POST /v0/query/run`. Use it with `GET /v0/jobs/{{orbital_queryID}}` and `GET /v0/jobs/{{orbital_queryID}}/results`.
-- `queryId:<id>` is a `nodes` target selector used by live-query requests to reuse an existing query definition. It is not the same as `orbital_queryID`.
+- `orbital_queryID` means the Job ID returned by an Orbital query submission, especially `POST /v0/query` scheduled queries or `POST /v0/query/run` live queries when the API exposes a Job ID. Use it with `GET /v0/jobs/{{orbital_queryID}}` and `GET /v0/jobs/{{orbital_queryID}}/results`.
+- `queryId:<id>` is a `nodes` target selector used by query requests to reuse an existing query definition. It is not the same as `orbital_queryID`.
 
 ## Handling Rules
 
 - Treat imported API response files as source context, not editable catalog templates.
 - Do not commit or store bearer tokens.
-- In this lab project, a local credentials env file may exist under `tools-and-memory`; never print its values in chat or command output.
+- In this lab project, a local credentials env file may exist under `tools-and-memory`; treat it as legacy fallback only and never print its values in chat or command output.
 - Do not publish tenant-specific organization catalog names to public GitHub unless the user explicitly confirms that lab visibility is acceptable.
 - Larger skill scope changes require explicit user confirmation before implementation; see `notes-and-memory/decisions/2026-06-10_skill_separation.md`.

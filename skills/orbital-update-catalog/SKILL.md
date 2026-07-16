@@ -138,10 +138,13 @@ p.write_text(json.dumps(body, indent=2))
 PY
 ```
 
-The helper reads credentials from environment variables or `tools-and-memory/orbital_credentials.env`:
+The helper reads credentials from environment variables and, by default, from the active Codex ORG Mapping `source_env_file`. A local `tools-and-memory/orbital_credentials.env` is legacy fallback only:
 
 - `ORBITAL_API_TOKEN`, `ORBITAL_TOKEN`, `SECUREX_TOKEN`, `CISCO_SECUREX_TOKEN`, or `CISCO_TOKEN`
+- `SECURE_ENDPOINT_BEARER_TOKEN`, `AMP_BEARER_TOKEN`, or `BEARER_TOKEN`
 - or `ORBITAL_CLIENT_ID` plus `ORBITAL_CLIENT_SECRET`
+- or `SECURE_ENDPOINT_V3_OAUTH_CLIENT_ID` plus `SECURE_ENDPOINT_V3_OAUTH_CLIENT_SECRET`
+- `ORBITAL_TOKEN_URL` or `SECURE_ENDPOINT_V3_VISIBILITY_TOKEN_URL` for token endpoint override
 - `ORBITAL_REGION`, defaulting to `eu` if not supplied
 
 ## Duplicate Handling

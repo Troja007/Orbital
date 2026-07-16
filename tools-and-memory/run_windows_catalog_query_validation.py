@@ -238,15 +238,40 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--start-sequence", type=int, default=1)
     parser.add_argument("--stop-on-no-response", action="store_true", default=True)
-    parser.add_argument("--env-file", default="tools-and-memory/orbital_credentials.env")
+    parser.add_argument(
+        "--env-file",
+        default=os.environ.get("ORBITAL_ENV_FILE", ""),
+        help="Explicit credential env file. Defaults to the source_env_file from Codex ORG Mapping state.",
+    )
+    parser.add_argument(
+        "--org-mapping-state-file",
+        default=os.environ.get(
+            "ORBITAL_ORG_MAPPING_STATE_FILE",
+            str(
+                Path.home()
+                / ".codex"
+                / "state"
+                / "cisco-security-api-access"
+                / "current_org_mapping.json"
+            ),
+        ),
+        help="Codex ORG Mapping state JSON used to find the default credential env file.",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
     os.chdir(ROOT)
-    helper.load_env_file(args.env_file)
-    region = (args.region or os.environ.get("ORBITAL_REGION") or "eu").strip().lower()
+    mapping = helper.load_codex_org_mapping(args.org_mapping_state_file)
+    helper.resolve_credential_context(args, mapping)
+    region = (
+        args.region
+        or os.environ.get("ORBITAL_REGION")
+        or str(mapping.get("region") or "")
+        or os.environ.get("SECURE_ENDPOINT_REGION")
+        or "eu"
+    ).strip().lower()
     token = ""
     catalog = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
     queue = active_windows_queries(catalog)

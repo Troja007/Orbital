@@ -21,7 +21,6 @@ from urllib.request import Request, urlopen
 
 
 ROOT = Path(__file__).resolve().parents[4]
-DEFAULT_ENV_FILE = ROOT / "tools-and-memory" / "orbital_credentials.env"
 LEDGER = ROOT / "local" / "orbital_catalog_updates" / "catalog_update_runs.jsonl"
 
 SERVERS = {
@@ -51,7 +50,25 @@ def parse_args() -> argparse.Namespace:
         description="Preview or create an Orbital organization catalog query."
     )
     parser.add_argument("--input-json", default="", help="Catalog query JSON body.")
-    parser.add_argument("--env-file", default=str(DEFAULT_ENV_FILE))
+    parser.add_argument(
+        "--env-file",
+        default=os.environ.get("ORBITAL_ENV_FILE", ""),
+        help="Explicit credential env file. Defaults to the source_env_file from Codex ORG Mapping state.",
+    )
+    parser.add_argument(
+        "--org-mapping-state-file",
+        default=os.environ.get(
+            "ORBITAL_ORG_MAPPING_STATE_FILE",
+            str(
+                Path.home()
+                / ".codex"
+                / "state"
+                / "cisco-security-api-access"
+                / "current_org_mapping.json"
+            ),
+        ),
+        help="Codex ORG Mapping state JSON used to find the default credential env file.",
+    )
     parser.add_argument("--region", default="")
     parser.add_argument("--timeout", type=int, default=30)
     mode = parser.add_mutually_exclusive_group()
@@ -107,8 +124,33 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def load_codex_org_mapping(path: str) -> dict[str, Any]:
+    mapping_path = Path(path).expanduser()
+    if not mapping_path.exists():
+        return {}
+    loaded = json.loads(mapping_path.read_text(encoding="utf-8"))
+    if not isinstance(loaded, dict):
+        raise RuntimeError(f"ORG Mapping state file must contain a JSON object: {path}")
+    mapping = loaded.get("mapping") if isinstance(loaded.get("mapping"), dict) else loaded
+    return mapping if isinstance(mapping, dict) else {}
+
+
+def resolve_env_file(args: argparse.Namespace, mapping: dict[str, Any]) -> tuple[str, str]:
+    if args.env_file:
+        return str(Path(args.env_file).expanduser()), "explicit_env_file"
+    source_env_file = str(mapping.get("source_env_file") or "").strip()
+    if source_env_file:
+        return str(Path(source_env_file).expanduser()), "codex_org_mapping_source_env_file"
+    legacy_env = ROOT / "tools-and-memory" / "orbital_credentials.env"
+    if legacy_env.exists():
+        return str(legacy_env), "legacy_project_orbital_env_file"
+    return "", "environment_only"
+
+
 def load_env_file(path: str) -> None:
-    env_path = Path(path)
+    if not path:
+        return
+    env_path = Path(path).expanduser()
     if not env_path.exists():
         return
     for line in env_path.read_text(encoding="utf-8").splitlines():
@@ -138,21 +180,41 @@ def fetch_access_token(region: str, timeout: int) -> str:
             "SECUREX_TOKEN",
             "CISCO_SECUREX_TOKEN",
             "CISCO_TOKEN",
+            "SECURE_ENDPOINT_BEARER_TOKEN",
+            "AMP_BEARER_TOKEN",
+            "BEARER_TOKEN",
         ]
     )
     if existing:
         return existing
 
-    client_id = first_env(["ORBITAL_CLIENT_ID", "SECUREX_CLIENT_ID"])
-    client_secret = first_env(["ORBITAL_CLIENT_SECRET", "SECUREX_CLIENT_SECRET"])
+    client_id = first_env(
+        [
+            "ORBITAL_CLIENT_ID",
+            "SECUREX_CLIENT_ID",
+            "SECURE_ENDPOINT_V3_OAUTH_CLIENT_ID",
+        ]
+    )
+    client_secret = first_env(
+        [
+            "ORBITAL_CLIENT_SECRET",
+            "SECUREX_CLIENT_SECRET",
+            "SECURE_ENDPOINT_V3_OAUTH_CLIENT_SECRET",
+        ]
+    )
     if not (client_id and client_secret):
         raise RuntimeError("No Orbital token or client credentials found.")
 
     credentials = base64.b64encode(f"{client_id}:{client_secret}".encode("utf-8")).decode(
         "ascii"
     )
+    token_url = (
+        os.environ.get("ORBITAL_TOKEN_URL")
+        or os.environ.get("SECURE_ENDPOINT_V3_VISIBILITY_TOKEN_URL")
+        or TOKEN_SERVERS[region]
+    )
     request = Request(
-        TOKEN_SERVERS[region],
+        token_url,
         data=b"grant_type=client_credentials",
         headers={
             "authorization": f"Basic {credentials}",
@@ -390,8 +452,16 @@ def main() -> int:
     if not args.preview and not args.create and not args.delete_catalog_id and not args.rename_catalog_id:
         args.preview = True
 
-    load_env_file(args.env_file)
-    region = (args.region or os.environ.get("ORBITAL_REGION") or "eu").strip().lower()
+    mapping = load_codex_org_mapping(args.org_mapping_state_file)
+    env_file, credential_source = resolve_env_file(args, mapping)
+    load_env_file(env_file)
+    region = (
+        args.region
+        or os.environ.get("ORBITAL_REGION")
+        or str(mapping.get("region") or "")
+        or os.environ.get("SECURE_ENDPOINT_REGION")
+        or "eu"
+    ).strip().lower()
     if region not in SERVERS:
         raise RuntimeError(f"Unsupported region: {region}")
 
