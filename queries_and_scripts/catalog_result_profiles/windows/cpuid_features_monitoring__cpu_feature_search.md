@@ -105,9 +105,9 @@ The `cpuid_features_monitoring` catalog query (CPU Feature Search) returned resu
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

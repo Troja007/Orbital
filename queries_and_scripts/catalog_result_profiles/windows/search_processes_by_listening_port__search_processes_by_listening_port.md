@@ -107,9 +107,9 @@ The `search_processes_by_listening_port` catalog query (Search Processes by List
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

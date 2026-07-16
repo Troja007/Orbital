@@ -105,9 +105,9 @@ The `powershell_sandbox_detection` catalog query (Powershell Sandbox Detection) 
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

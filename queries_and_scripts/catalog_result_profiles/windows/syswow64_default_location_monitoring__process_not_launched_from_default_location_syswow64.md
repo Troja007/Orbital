@@ -106,9 +106,9 @@ The `syswow64_default_location_monitoring` catalog query (Process Not Launched F
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

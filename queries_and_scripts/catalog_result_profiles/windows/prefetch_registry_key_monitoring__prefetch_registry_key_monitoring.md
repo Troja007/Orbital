@@ -104,9 +104,9 @@ The `prefetch_registry_key_monitoring` catalog query (Prefetch Registry Key Moni
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

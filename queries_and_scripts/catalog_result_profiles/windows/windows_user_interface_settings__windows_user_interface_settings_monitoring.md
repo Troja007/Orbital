@@ -107,9 +107,9 @@ The `windows_user_interface_settings` catalog query (Windows User Interface Sett
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

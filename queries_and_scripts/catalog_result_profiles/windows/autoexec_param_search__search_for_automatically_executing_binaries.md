@@ -109,9 +109,9 @@ The `autoexec_param_search` catalog query (Search For Automatically Executing Bi
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

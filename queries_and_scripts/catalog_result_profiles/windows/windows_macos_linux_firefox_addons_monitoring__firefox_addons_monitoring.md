@@ -104,9 +104,9 @@ The `windows_macos_linux_firefox_addons_monitoring` catalog query (Firefox Addon
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

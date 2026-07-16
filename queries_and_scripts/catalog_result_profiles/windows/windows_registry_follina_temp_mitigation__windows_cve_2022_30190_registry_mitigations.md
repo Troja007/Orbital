@@ -104,9 +104,9 @@ The `windows_registry_follina_temp_mitigation` catalog query (Windows CVE-2022-3
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

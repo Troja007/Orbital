@@ -106,9 +106,9 @@ The `windows_eventlogs_bits_transfer_job` catalog query (Windows Event Logs BITS
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

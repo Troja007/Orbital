@@ -106,9 +106,9 @@ The `windows_powershell_events_get_process` catalog query (Windows PowerShell Ev
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

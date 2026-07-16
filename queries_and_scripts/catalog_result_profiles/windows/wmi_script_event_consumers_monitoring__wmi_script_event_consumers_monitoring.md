@@ -106,9 +106,9 @@ The `wmi_script_event_consumers_monitoring` catalog query (WMI Script Event Cons
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

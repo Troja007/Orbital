@@ -107,9 +107,9 @@ The `windows_ntfs_acl_permissions_cve_2021_36934` catalog query (CVE-2021-36934:
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

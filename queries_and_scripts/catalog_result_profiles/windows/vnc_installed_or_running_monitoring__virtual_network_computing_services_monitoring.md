@@ -108,9 +108,9 @@ The `vnc_installed_or_running_monitoring` catalog query (Virtual Network Computi
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

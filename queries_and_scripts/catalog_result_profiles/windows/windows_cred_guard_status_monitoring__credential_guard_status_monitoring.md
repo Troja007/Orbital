@@ -105,9 +105,9 @@ The `windows_cred_guard_status_monitoring` catalog query (Credential Guard Statu
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

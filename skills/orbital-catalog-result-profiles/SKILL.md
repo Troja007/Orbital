@@ -29,8 +29,8 @@ python3 tools-and-memory/generate_catalog_result_profiles.py
 
 ```bash
 PYTHONPYCACHEPREFIX=/tmp/orbital_pycache python3 -m py_compile tools-and-memory/generate_catalog_result_profiles.py
+python3 tools-and-memory/generate_catalog_result_profiles.py --validate-only
 find queries_and_scripts/catalog_result_profiles/windows -type f -name '*.md' | wc -l
-rg -n "host:|orbital_queryID|/v0/jobs/|Bearer|ORBITAL_API_TOKEN|client_secret" queries_and_scripts/catalog_result_profiles tools-and-memory/generate_catalog_result_profiles.py || true
 ```
 
 Expected current baseline:
@@ -42,9 +42,9 @@ Expected current baseline:
 
 ## Sample Result Data
 
-When profiles are regenerated or refreshed, each per-Catalog-ID Markdown profile, and any human-readable report updated from the same profile data, must end with a `Sample Result Data` section.
+When profiles are regenerated or refreshed, each per-Catalog-ID Markdown profile under `windows/` must end with a `Sample Result Data` section. The JSONL index and aggregate human-readable summary must not contain sample-row values.
 
-Include a small, representative sample only when the validation source has rows. Prefer enough rows to show the result shape without turning the profile into evidence storage. If a response includes many rows, the generated profile must show no more than 15 sanitized sample rows total for that Catalog ID. If multiple labels return rows, distribute the 15-row maximum across labels in a representative way.
+Include a small, representative sample only when the validation source has rows. Prefer enough rows to show the result shape without turning the profile into evidence storage. If a response includes many rows, the generated profile must show no more than 15 sanitized sample rows total for that Catalog ID. Select rows deterministically in label-sorted round-robin order, taking up to three rows per label before moving to the next round.
 
 Sanitize sample values before writing them:
 
@@ -52,6 +52,8 @@ Sanitize sample values before writing them:
 - Preserve column names and safe structural cues where useful, such as file-extension shape, registry-root family, process-name class, service-state class, timestamp shape, or hash-format shape.
 - Use explicit redaction markers such as `<redacted:username>`, `<redacted:hostname>`, `<redacted:ip>`, `<redacted:guid>`, or `<redacted:sensitive-value>` rather than leaving sensitive values blank.
 - If a sample row cannot be safely sanitized without losing meaning, omit that row and state that sample data was omitted for privacy.
+- Apply default deny to sample values: preserve only safe structural placeholders, never arbitrary source values. Treat unknown fields, nested values, and unrecognized strings as `<redacted:sensitive-value>`.
+- Sanitize error details to generic error classes or messages before writing them. Do not publish raw endpoint or label error text.
 
 ## Output Locations
 
@@ -93,7 +95,8 @@ Profiles may store:
 - Platform, categories, labels, MITRE mapping, catalog update date
 - Row-count bucket and sanitized validation row count
 - Returned label names and column names
-- Sanitized sample result rows at the end of generated Markdown files
+- Sanitized sample result rows only at the end of generated per-Catalog-ID Markdown files
+- Sample availability, sanitized sample-row count, and omitted-row count in the JSONL index
 - Sanitized error classes and caveats
 - No-response handling and explanation templates
 
@@ -110,14 +113,16 @@ Profiles must not store:
 - Raw API responses
 - Credentials or tokens
 
+The JSONL index and aggregate human-readable summary must not store sample result row values.
+
 Sanitized sample rows are still subject to a maximum of 15 rows per generated per-Catalog-ID Markdown profile.
 
 ## Change Logging
 
-When profile generation behavior, profile format, project references, or skill instructions change, append a sanitized entry to `local/project-change-log.md`.
+When profile generation behavior, profile format, project references, skill instructions, or other durable project behavior changes, append a sanitized entry to `local/project-change-log.md`. Do not use the project change log for routine sync activity or operational housekeeping.
 
 When profile work creates or changes a durable project decision, also add or update a GitHub-synced decision record under `notes-and-memory/decisions/`. Use this for decisions about profile format, sanitization boundaries, sample data policy, catalog snapshot usage, result interpretation assumptions, folder ownership, or skill responsibility.
 
-When pushing profile changes to GitHub, append a sanitized operational entry to `local/sync-activity-log.md`.
+Use `local/sync-activity-log.md` for useful operational sync traceability, such as GitHub push/pull runs, workspace-to-global skill syncs, skill installation/update events, authentication or permission issues, and sync troubleshooting.
 
-Neither local log may be staged or pushed.
+Neither local log may be staged, committed, pushed, or contain credentials, bearer tokens, raw API responses, tenant data, endpoint results, hostnames, IP addresses, GUIDs, Job IDs, target selectors, usernames, or customer-identifying values.

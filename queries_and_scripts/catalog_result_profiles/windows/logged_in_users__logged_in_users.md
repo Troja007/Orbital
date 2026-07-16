@@ -105,9 +105,9 @@ The `logged_in_users` catalog query (Logged In Users) returned results that shou
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

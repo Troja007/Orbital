@@ -105,9 +105,9 @@ The `windows_security_products_monitoring` catalog query (Windows Security Produ
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

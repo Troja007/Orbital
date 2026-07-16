@@ -15,7 +15,7 @@ from urllib.request import Request, urlopen
 
 
 ROOT = Path(__file__).resolve().parents[1]
-HELPER_PATH = Path("/Users/tschranz/.codex/skills/orbital-run-osquery-live-query/scripts/run_live_query.py")
+HELPER_PATH = Path("/Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py")
 CATALOG_PATH = ROOT / "local/orbital-catalog-api-cache/stock_query_catalog.json"
 OUT_DIR = ROOT / "local/orbital_catalog_windows_validation"
 

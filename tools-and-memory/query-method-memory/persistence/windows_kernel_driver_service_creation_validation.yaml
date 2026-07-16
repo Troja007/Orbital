@@ -1,7 +1,7 @@
 title: "Validate Windows kernel driver service creation"
 status: "tested"
 created: "2026-06-30"
-updated: "2026-06-30"
+updated: "2026-07-10"
 category: "persistence"
 platforms:
   - "windows"
@@ -11,6 +11,8 @@ investigation_inputs:
     - "Check whether a kernel driver service was created with sc.exe create."
     - "Validate whether a suspicious Windows service exists after sc.exe create type= kernel."
     - "Query selected hosts for a driver service name and its ImagePath."
+    - "After starting a driver service with sc.exe, check whether it is running and whether Service Control Manager logged a stop or start failure."
+    - "After rebooting a Windows endpoint, check the current state of a named kernel driver service."
   keywords:
     - "sc.exe create"
     - "kernel driver"
@@ -18,6 +20,9 @@ investigation_inputs:
     - "SYSTEM_START"
     - "Windows service"
     - "CurrentControlSet Services"
+    - "Service Control Manager"
+    - "Windows event log"
+    - "service failed to start"
 query_goal:
   question: "Determine whether a named Windows kernel driver service creation succeeded and whether the referenced driver file exists."
   answers:
@@ -26,23 +31,31 @@ query_goal:
     - "Whether the service type/start type/path match the intended kernel driver service creation."
     - "Whether the referenced driver file exists at the expected path."
     - "Whether a driver appears currently loaded when using the drivers table or a running driver service state."
+    - "Whether Service Control Manager logged service install, start, stop, or start-failure events for the named service."
+    - "Whether the named driver service remains stopped or running after a reboot."
   does_not_answer:
     - "Who created the service unless Windows event log auditing is also queried."
     - "Whether the driver was successfully loaded unless service status/event logs/runtime driver evidence are also checked."
     - "Whether the driver is malicious."
+    - "Why the Windows kernel accepted or rejected a driver unless the relevant event-log error code and driver signature evidence are also reviewed."
 use_when:
   - "An analyst has a service name from sc.exe create and needs current endpoint state."
   - "The expected service is a kernel driver service, for example type= kernel and start= system."
   - "The analyst wants a low-impact current-state check before moving to event logs or file hashing."
+  - "An analyst attempted to start a named Windows service or driver with sc.exe and needs to know whether it is running now."
+  - "An analyst rebooted the endpoint and needs to compare post-reboot service state with pre-reboot state."
+  - "An analyst needs bounded Service Control Manager event-log evidence for a named service without querying broad Windows event logs."
 do_not_use_when:
   - "The service name is unknown; use broader service hunting or event log queries first."
   - "The analyst needs historical creation time or creator attribution; query Windows event logs 7045/4697 and process creation logs."
   - "The analyst needs file reputation or content analysis; add hash/authenticode/file metadata."
-  preferred_next_queries:
-    - "Windows Services Event Logs Monitoring for event IDs 7045 and 4697."
-    - "Process creation event logs for sc.exe command line if Security 4688 or Sysmon/EDR telemetry is available."
-    - "Hash and authenticode checks for the driver path."
-    - "Drivers table lookup if the driver is expected to be currently loaded."
+  - "The analyst needs complete driver-load telemetry from all Windows kernel providers; Service Control Manager events are only one evidence source."
+preferred_next_queries:
+  - "Windows Services Event Logs Monitoring for event IDs 7045 and 4697."
+  - "Service Control Manager System log query for event IDs 7000, 7001, 7009, 7011, 7022, 7023, 7024, 7031, 7034, 7035, 7036, 7040, and 7045 filtered to the named service."
+  - "Process creation event logs for sc.exe command line if Security 4688 or Sysmon/EDR telemetry is available."
+  - "Hash and authenticode checks for the driver path."
+  - "Drivers table lookup if the driver is expected to be currently loaded."
 catalog_context:
   exact_matches:
     - "No exact stock catalog query for validating a specific sc.exe-created kernel driver service plus its file path was found in local catalog sources during this update."
@@ -90,6 +103,20 @@ catalog_table_context:
     mitre_tactics: []
     mitre_techniques: []
     relevance: "Exact-path driver file existence and basic metadata."
+  - table: "windows_eventlog"
+    catalog_name: "Windows Services Event Logs Monitoring"
+    catalog_id: "windows_services_events_monitoring"
+    source: "Orbital stock catalog"
+    os:
+      - "windows"
+    categories:
+      - "Threat Hunting"
+    mitre_tactics:
+      - "TA0003 Persistence"
+    mitre_techniques:
+      - "T1543.003 Windows Service"
+      - "T1569.002 Service Execution"
+    relevance: "Historical Service Control Manager evidence for service installation, start, stop, start-type changes, and service start failures."
 related_table_ttp_context:
   - table: "windows_eventlog"
     catalog_name: "Windows Services Event Logs Monitoring"
@@ -110,11 +137,30 @@ osquery_context:
     - "registry"
     - "file"
     - "system_info"
+    - "windows_eventlog"
   service_indicators:
     expected_service_type: "KERNEL_DRIVER"
     expected_start_type_for_sc_start_system: "SYSTEM_START"
     driver_services_pid_note: "Kernel driver services commonly report pid 0; pid 0 should not be interpreted as missing."
+    stopped_demand_start_note: "A KERNEL_DRIVER service with status STOPPED, pid 0, and DEMAND_START can still be installed correctly; it is not loaded/running at query time."
   registry_key_pattern: "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\<service_name>"
+  service_control_manager_eventids:
+    install_or_change:
+      - 7045
+      - 7040
+    start_stop_state:
+      - 7035
+      - 7036
+    start_or_runtime_errors:
+      - 7000
+      - 7001
+      - 7009
+      - 7011
+      - 7022
+      - 7023
+      - 7024
+      - 7031
+      - 7034
 orbital_guidance:
   query_type: "scheduled host query"
   recommended_targets:
@@ -124,11 +170,31 @@ orbital_guidance:
   performance_notes:
     - "Use exact service name and exact registry key constraints."
     - "Use exact file path constraints for the driver file. Avoid broad wildcard file scans."
+    - "When querying windows_eventlog, keep channel, provider_name, eventid, service name, and LIMIT constraints. Avoid broad unbounded event-log searches."
   result_shape:
     - "One row per answering host."
     - "Return separate booleans for services-table evidence, registry-key evidence, and driver-file evidence."
     - "For loaded-driver checks, return separate booleans for drivers-table evidence, running driver service evidence, service entry, registry ImagePath, and file existence."
+    - "For service event-log checks, return datetime, channel, provider_name, eventid, level, and data; interpret eventid and rendered data rather than treating rows as a verdict."
 sql_patterns:
+  - name: "Current state for a named Windows service or driver"
+    description: "Check whether a named Windows service or kernel driver service is installed and whether it is currently running."
+    parameters:
+      service_name: "<service_name>"
+    sql: |
+      SELECT
+        name,
+        display_name,
+        service_type,
+        status,
+        pid,
+        start_type,
+        path,
+        module_path,
+        user_account
+      FROM services
+      WHERE lower(name) = lower('<service_name>')
+      ORDER BY name;
   - name: "Specific loaded driver by path"
     description: "Check whether a driver file path is currently loaded, while also showing installed service and file evidence."
     parameters:
@@ -282,20 +348,53 @@ sql_patterns:
         COALESCE((SELECT group_concat(path || ' size=' || CAST(size AS TEXT) || ' type=' || type, '; ') FROM driver_file), '') AS driver_file_evidence,
         COALESCE((SELECT group_concat(modified_utc, '; ') FROM svc_reg), '') AS registry_modified_utc
       FROM system_info si;
+  - name: "Service Control Manager events for a named service"
+    description: "Check whether Windows logged service install, start, stop, or failure events for a named service or driver service."
+    parameters:
+      service_name: "<service_name>"
+      driver_filename_or_path_fragment: "<driver_filename_or_path_fragment>"
+    sql: |
+      SELECT
+        datetime,
+        channel,
+        provider_name,
+        eventid,
+        level,
+        data
+      FROM windows_eventlog
+      WHERE channel = 'System'
+        AND provider_name = 'Service Control Manager'
+        AND eventid IN (
+          7000, 7001, 7009, 7011, 7022, 7023, 7024,
+          7031, 7034, 7035, 7036, 7040, 7045
+        )
+        AND (
+          data LIKE '%' || '<service_name>' || '%'
+          OR data LIKE '%' || '<driver_filename_or_path_fragment>' || '%'
+        )
+      ORDER BY datetime DESC
+      LIMIT 50;
 validation:
   status: "tested"
-  tested_date: "2026-06-30"
+  tested_date: "2026-07-10"
   notes:
     - "The pattern was tested as a scheduled multi-host query using explicit host selectors. Endpoint result rows, hostnames, node IDs, and Job IDs are intentionally not stored."
     - "The query can show service_created=true even when status is STOPPED. Creation and successful start/load are separate questions."
     - "For sc.exe create type= kernel start= system, expected service evidence is service_type KERNEL_DRIVER and start_type SYSTEM_START."
     - "The loaded-driver-by-path pattern was tested as a scheduled exact-host query on 2026-07-01. Endpoint rows, hostnames, node IDs, and Job IDs are intentionally not stored."
+    - "The current-state services query was re-tested as scheduled exact-host queries for a named kernel driver service on 2026-07-09. Endpoint result rows, hostnames, node IDs, service names, paths, and Job IDs are intentionally not stored."
+    - "The Service Control Manager windows_eventlog pattern was tested as a scheduled exact-host query on 2026-07-09 for a named kernel driver service after an sc.exe start attempt. It returned service installation and start-failure evidence. Endpoint result rows, hostnames, node IDs, service names, paths, and Job IDs are intentionally not stored."
+    - "A post-reboot current-state services query was tested on 2026-07-09. Use the same exact service-state query after reboot; compare status, pid, start_type, and service_type rather than assuming reboot changed the state."
 lessons:
   - "Use services for current SCM service state and registry for direct SCM key evidence."
   - "Use exact CurrentControlSet service registry key constraints; avoid broad registry scans when the service name is known."
   - "Use exact driver file path constraints; service creation can succeed even if the driver file is absent."
   - "Driver services commonly report pid 0."
   - "A driver file and service ImagePath can exist while driver_loaded remains false. Treat drivers-table evidence or a RUNNING driver service as stronger loaded-state evidence than registry/file presence."
+  - "For an sc.exe start attempt, a current services row with KERNEL_DRIVER and STOPPED should be paired with Service Control Manager event-log evidence before concluding why the service is not running."
+  - "Service Control Manager event ID 7045 shows service installation; event ID 7000 shows a service start failure; event IDs 7036, 7031, and 7034 are useful stop/runtime-state indicators when present."
+  - "Windows event-log error tokens such as %%<number> need Windows error-code interpretation; store the method but not the endpoint-specific error value."
+  - "After reboot, re-run the exact services status query; a DEMAND_START driver service is not expected to start automatically unless another component loads it."
 privacy:
   stores_endpoint_results: false
   notes:

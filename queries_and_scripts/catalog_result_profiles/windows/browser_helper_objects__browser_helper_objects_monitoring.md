@@ -105,9 +105,9 @@ The `browser_helper_objects` catalog query (Browser Helper Objects Monitoring) r
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

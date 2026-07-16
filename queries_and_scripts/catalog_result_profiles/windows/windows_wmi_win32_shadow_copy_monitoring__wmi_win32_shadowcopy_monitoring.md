@@ -105,9 +105,9 @@ The `windows_wmi_win32_shadow_copy_monitoring` catalog query (WMI: Win32_ShadowC
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

@@ -108,9 +108,9 @@ The `uac_bypass_event_viewer_registry_key` catalog query (User Access Control By
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

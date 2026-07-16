@@ -108,9 +108,9 @@ The `logon_scripts_monitoring` catalog query (Windows Logon Scripts Monitoring) 
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

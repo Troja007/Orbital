@@ -107,9 +107,9 @@ The `windows_domain_kerberos_policy_changes_monitoring` catalog query (Domain or
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

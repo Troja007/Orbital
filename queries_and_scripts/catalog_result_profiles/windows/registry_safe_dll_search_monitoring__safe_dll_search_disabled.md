@@ -107,9 +107,9 @@ The `registry_safe_dll_search_monitoring` catalog query (Safe DLL Search Disable
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

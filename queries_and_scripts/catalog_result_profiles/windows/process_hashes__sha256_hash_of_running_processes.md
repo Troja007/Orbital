@@ -106,9 +106,9 @@ The `process_hashes` catalog query (SHA256 Hash Of Running Processes) returned r
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs
@@ -127,6 +127,6 @@ Label: `sha256_hash_of_running_processes`
 
 | `pid` | `name` | `path` | `cmdline` | `state` | `sha256` |
 | --- | --- | --- | --- | --- | --- |
-| <redacted:pid> | system_process.exe | C:\Windows\System32\system_process.exe | <redacted:system-command-line> | STILL_ACTIVE | <redacted:sha256-64-hex> |
-| <redacted:pid> | service_host_process.exe | C:\Windows\System32\service_host_process.exe | <redacted:service-command-line> | STILL_ACTIVE | <redacted:sha256-64-hex> |
-| <redacted:pid> | application_process.exe | C:\Program Files\Vendor\Application\application_process.exe | <redacted:application-command-line> | STILL_ACTIVE | <redacted:sha256-64-hex> |
+| <redacted:sensitive-value> | <redacted:sensitive-value> | <path> | <redacted:sensitive-value> | <state-category> | <redacted:sensitive-value> |
+| <redacted:sensitive-value> | <redacted:sensitive-value> | <path> | <redacted:sensitive-value> | <state-category> | <redacted:sensitive-value> |
+| <redacted:sensitive-value> | <redacted:sensitive-value> | <path> | <redacted:sensitive-value> | <state-category> | <redacted:sensitive-value> |

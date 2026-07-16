@@ -104,9 +104,9 @@ The `windows_registry_uac_secure_desktop_admin_password` catalog query (User Acc
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

@@ -105,9 +105,9 @@ The `registry_computername_modifications_monitoring` catalog query (Registry Com
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

@@ -258,7 +258,7 @@ Useful helper files in the project:
 - `run_orbital_catalog_import.sh`: wrapper for catalog import.
 - `run_windows_catalog_query_validation.py`: validate Windows catalog query
   assumptions.
-- `skills/orbital-run-osquery-live-query/scripts/run_live_query.py`: run
+- `skills/orbital-run-endpoint-operation/scripts/run_live_query.py`: run
   host-targeted scheduled queries or explicit live queries and record operational
   Job ID metadata locally.
 

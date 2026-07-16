@@ -105,9 +105,9 @@ The `ie_extensions_param_search` catalog query (Internet Explorer Extensions Sea
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

@@ -122,8 +122,9 @@ These are local workspace skills with `SKILL.md` files under
   import, and catalog context inspection.
 - `orbital-query-method-memory`: reusable method memory for choosing queries,
   preserving catalog context, and storing lessons without endpoint results.
-- `orbital-run-osquery-live-query`: generic Orbital osquery execution against
-  explicit targets, including host-targeted scheduled queries and Job ID tracking.
+- `orbital-run-endpoint-operation`: targeted Orbital endpoint operation skill;
+  its implemented mode executes osquery queries against explicit targets, including
+  host-targeted scheduled queries and Job ID tracking.
 - `orbital-update-catalog`: create, preview, validate, and upload Orbital
   organization catalog query definitions without executing endpoint queries.
 

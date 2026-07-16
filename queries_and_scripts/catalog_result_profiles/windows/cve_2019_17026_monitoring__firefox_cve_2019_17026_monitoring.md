@@ -105,9 +105,9 @@ The `cve_2019_17026_monitoring` catalog query (Firefox CVE-2019-17026 Monitoring
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

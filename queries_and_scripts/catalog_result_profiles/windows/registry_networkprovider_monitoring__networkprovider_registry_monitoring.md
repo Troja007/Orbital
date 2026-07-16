@@ -105,9 +105,9 @@ The `registry_networkprovider_monitoring` catalog query (Networkprovider Registr
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

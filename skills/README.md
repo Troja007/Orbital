@@ -16,7 +16,7 @@ python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-githu
   --path skills/orbital-api-access \
   --path skills/orbital-catalog-result-profiles \
   --path skills/orbital-query-method-memory \
-  --path skills/orbital-run-osquery-live-query \
+  --path skills/orbital-run-endpoint-operation \
   --path skills/orbital-update-catalog
 ```
 
@@ -25,7 +25,7 @@ Install one skill:
 ```bash
 python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
   --repo Troja007/Orbital \
-  --path skills/orbital-run-osquery-live-query
+  --path skills/orbital-run-endpoint-operation
 ```
 
 Restart Codex after installing or updating skills.

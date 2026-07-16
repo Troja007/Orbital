@@ -104,9 +104,9 @@ The `windows_wmi_powerplan` catalog query (Windows WMI Power Plan Schemes) retur
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

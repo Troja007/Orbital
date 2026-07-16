@@ -106,9 +106,9 @@ The `global_logger_event_tracing_session_disabled` catalog query (Global Logger 
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

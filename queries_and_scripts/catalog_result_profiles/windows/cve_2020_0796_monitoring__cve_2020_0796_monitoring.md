@@ -109,9 +109,9 @@ The `cve_2020_0796_monitoring` catalog query (CVE-2020-0796 Monitoring) returned
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

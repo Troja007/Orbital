@@ -107,9 +107,9 @@ The `service_binpath_being_set_to_powershell` catalog query (Modify Service To R
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

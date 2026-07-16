@@ -106,9 +106,9 @@ The `windows_events_pass_the_hash_monitoring` catalog query (Pass the Hash Monit
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

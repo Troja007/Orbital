@@ -107,9 +107,9 @@ The `netsh_helper_dll_monitoring` catalog query (Netsh Helper DLL Monitoring) re
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

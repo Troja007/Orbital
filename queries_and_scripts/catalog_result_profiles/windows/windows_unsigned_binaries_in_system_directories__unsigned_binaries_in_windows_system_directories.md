@@ -106,9 +106,9 @@ The `windows_unsigned_binaries_in_system_directories` catalog query (Unsigned Bi
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

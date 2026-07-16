@@ -108,9 +108,9 @@ The `windows_eventlogs_driver_loaded` catalog query (Driver Loaded Windows Event
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

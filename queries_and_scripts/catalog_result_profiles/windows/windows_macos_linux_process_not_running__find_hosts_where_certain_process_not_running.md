@@ -105,9 +105,9 @@ The `windows_macos_linux_process_not_running` catalog query (Find Hosts Where Ce
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

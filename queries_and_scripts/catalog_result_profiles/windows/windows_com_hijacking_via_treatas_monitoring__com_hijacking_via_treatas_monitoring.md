@@ -107,9 +107,9 @@ The `windows_com_hijacking_via_treatas_monitoring` catalog query (COM Hijacking 
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

@@ -107,9 +107,9 @@ The `disabled_task_manager_registry` catalog query (Disabled Task Manager Regist
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

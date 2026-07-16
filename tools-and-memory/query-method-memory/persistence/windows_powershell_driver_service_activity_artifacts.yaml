@@ -1,0 +1,624 @@
+title: "Investigate PowerShell-created Windows driver service artifacts"
+status: "tested"
+created: "2026-07-10"
+updated: "2026-07-10"
+category: "persistence"
+platforms:
+  - "windows"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "I executed PowerShell commands that copied a driver file and used sc.exe to create/start a kernel driver service. Query the host for artifacts."
+    - "Find evidence of PowerShell activity that created a Windows kernel driver service."
+    - "Check a Windows endpoint for PowerShell, service creation, file, registry, loaded-driver, Prefetch, and UserAssist evidence for a named service."
+  raw_input_handling:
+    store_raw_chat: false
+    sanitization_required: true
+    notes:
+      - "Store commands only as generalized patterns with placeholders for service name, driver path, and source file."
+  keywords:
+    - "PowerShell"
+    - "script block"
+    - "sc.exe create"
+    - "kernel driver"
+    - "Service Control Manager"
+    - "Prefetch"
+    - "UserAssist"
+    - "driver service"
+  threat_context:
+    category: "persistence"
+    platforms:
+      - "windows"
+
+query_goal:
+  question: "Identify reusable endpoint artifacts showing that PowerShell copied a driver file and created or attempted to start a Windows kernel driver service."
+  expected_information:
+    - "PowerShell script block or event-log command evidence."
+    - "Service Control Manager service installation/start/failure events."
+    - "Current driver file, service, SCM registry key, and loaded-driver state."
+    - "Execution artifacts for PowerShell and sc.exe from Prefetch and UserAssist."
+  answers:
+    - "Whether PowerShell logs captured the command text."
+    - "Whether Windows logged service creation or start/failure events for the named service."
+    - "Whether the driver file exists at the expected path."
+    - "Whether the service is registered and what type/status/start mode it has."
+    - "Whether the driver appears loaded through the drivers table."
+    - "Whether Prefetch/UserAssist contain supporting execution artifacts."
+  use_when:
+    - "An analyst has a known service name or driver filename from PowerShell/sc.exe activity."
+    - "The goal is to reconstruct endpoint artifacts for a Windows service or driver-service persistence attempt."
+    - "The investigation should use multiple bounded queries instead of one broad event-log sweep."
+  do_not_use_when:
+    - "The service name, driver filename, and relevant time window are all unknown; first run broader discovery or ask for scope."
+    - "The analyst needs full forensic timeline reconstruction; Orbital artifacts are a triage view, not a disk-image timeline."
+    - "The analyst needs proof of maliciousness; these queries show activity and state, not intent or reputation."
+  does_not_answer:
+    - "Who typed the commands unless process creation, logon, EDR, or shell history evidence includes user attribution."
+    - "Whether the driver is malicious without hash, Authenticode, reputation, or content analysis."
+    - "Whether PowerShell logging was disabled before the investigation unless logging policy/state is queried separately."
+  preferred_next_queries:
+    - "Hash and Authenticode checks for the driver file."
+    - "Security 4688 or Sysmon process creation for parent/child process and command-line attribution."
+    - "Service Control Manager event-log query for install/start/stop/failure events."
+    - "Current-state service/registry/file/drivers query for the named driver service."
+    - "PowerShell logging policy and script block logging disabled checks."
+
+catalog_context:
+  searched_terms:
+    - "powershell"
+    - "script block"
+    - "windows services"
+    - "prefetch"
+    - "userassist"
+    - "driver"
+  matches:
+    - name: "Powershell Events Monitoring"
+      id: "powershell_events_monitoring"
+      source: "Orbital stock catalog"
+      relevance: "Catalog context for PowerShell script block evidence through the powershell_events table when that table is available."
+      os:
+        - "windows"
+      category: "Threat Hunting"
+      mitre:
+        - "T1059.001 PowerShell"
+      updated: ""
+    - name: "Windows Services Event Logs Monitoring"
+      id: "windows_services_events_monitoring"
+      source: "Orbital stock catalog"
+      relevance: "Catalog context for Windows service installation/start/stop/failure event-log evidence."
+      os:
+        - "windows"
+      category: "Threat Hunting"
+      mitre:
+        - "T1543.003 Windows Service"
+        - "T1569.002 Service Execution"
+      updated: ""
+    - name: "Windows Prefetch Directory Monitoring"
+      id: "windows_prefetch_directory_monitoring"
+      source: "Orbital stock catalog"
+      relevance: "Catalog context for Prefetch execution artifacts."
+      os:
+        - "windows"
+      category: "Forensics"
+      mitre: []
+      updated: ""
+    - name: "UserAssist Registry Data"
+      id: "windows_userassist_monitoring"
+      source: "Orbital stock catalog"
+      relevance: "Catalog context for GUI execution traces."
+      os:
+        - "windows"
+      category: "Forensics"
+      mitre: []
+      updated: ""
+  notes:
+    - "Use catalog entries as context, then adapt SQL to exact service name, driver filename, event IDs, and time bounds."
+
+catalog_table_context:
+  - table: "windows_eventlog"
+    matches:
+      - name: "Windows Services Event Logs Monitoring"
+        id: "windows_services_events_monitoring"
+        source: "Orbital stock catalog"
+        relevance: "Service Control Manager and Windows event-log evidence for service creation, start, stop, and failures."
+        os:
+          - "windows"
+        categories:
+          - id: "threat_hunting"
+            title: "Threat Hunting"
+        mitre:
+          tactics:
+            - "TA0003 Persistence"
+          techniques:
+            - "T1543.003 Windows Service"
+            - "T1569.002 Service Execution"
+          subtechniques: []
+        updated: ""
+    notes:
+      - "For PowerShell command text, prefer exact PowerShell channels and event IDs rather than broad event-log queries."
+  - table: "powershell_events"
+    matches:
+      - name: "Powershell Events Monitoring"
+        id: "powershell_events_monitoring"
+        source: "Orbital stock catalog"
+        relevance: "PowerShell script block evidence when available."
+        os:
+          - "windows"
+        categories:
+          - id: "threat_hunting"
+            title: "Threat Hunting"
+        mitre:
+          tactics:
+            - "TA0002 Execution"
+          techniques:
+            - "T1059.001 PowerShell"
+          subtechniques: []
+        updated: ""
+    notes:
+      - "The powershell_events table can be unavailable on some Orbital endpoints even when present in upstream osquery schema; fall back to windows_eventlog PowerShell channels."
+  - table: "prefetch"
+    matches:
+      - name: "Windows Prefetch Directory Monitoring"
+        id: "windows_prefetch_directory_monitoring"
+        source: "Orbital stock catalog"
+        relevance: "Execution artifacts for powershell.exe, pwsh.exe, sc.exe, or adjacent tools."
+        os:
+          - "windows"
+        categories:
+          - id: "forensics"
+            title: "Forensics"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: ""
+    notes:
+      - "Prefetch supports execution evidence and run counts, but not full command lines."
+  - table: "userassist"
+    matches:
+      - name: "UserAssist Registry Data"
+        id: "windows_userassist_monitoring"
+        source: "Orbital stock catalog"
+        relevance: "GUI execution traces for PowerShell or terminal shortcuts."
+        os:
+          - "windows"
+        categories:
+          - id: "forensics"
+            title: "Forensics"
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: ""
+    notes:
+      - "UserAssist is supporting evidence and can miss console-only execution."
+  - table: "services"
+    matches:
+      - name: "Running Services Search"
+        id: "running_services_search"
+        source: "Orbital stock catalog"
+        relevance: "Current service type, status, PID, start type, and path."
+        os:
+          - "windows"
+        categories: []
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: ""
+    notes:
+      - "Kernel driver services commonly report PID 0; use status and drivers table for loaded-state interpretation."
+  - table: "registry"
+    matches:
+      - name: "Registry Key Search"
+        id: "registry_parameterized_search"
+        source: "Orbital stock catalog"
+        relevance: "SCM service configuration under CurrentControlSet Services."
+        os:
+          - "windows"
+        categories: []
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: ""
+    notes:
+      - "Use exact service key constraints."
+  - table: "file"
+    matches:
+      - name: "osquery file table"
+        id: ""
+        source: "osquery schema"
+        relevance: "Exact-path driver file existence and timestamps."
+        os:
+          - "windows"
+        categories: []
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: ""
+    notes:
+      - "Use exact path constraints; avoid broad file scans."
+  - table: "drivers"
+    matches:
+      - name: "osquery drivers table"
+        id: ""
+        source: "osquery schema"
+        relevance: "Loaded driver evidence."
+        os:
+          - "windows"
+        categories: []
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: ""
+    notes:
+      - "A service and driver file can exist while the driver is not loaded."
+
+related_table_ttp_context:
+  - table: "windows_eventlog"
+    source: "Orbital stock catalog entries that use this table"
+    caution: "Related TTP context helps future query design; it does not mean every row is malicious."
+    categories:
+      - id: "threat_hunting"
+        title: "Threat Hunting"
+    mitre:
+      tactics:
+        - id: "TA0002"
+          title: "Execution"
+        - id: "TA0003"
+          title: "Persistence"
+      techniques:
+        - id: "T1059.001"
+          title: "PowerShell"
+        - id: "T1543.003"
+          title: "Windows Service"
+        - id: "T1569.002"
+          title: "Service Execution"
+      subtechniques: []
+    example_catalog_entries:
+      - name: "Powershell Events Monitoring"
+        id: "powershell_events_monitoring"
+        relevance: "PowerShell script block evidence."
+      - name: "Windows Services Event Logs Monitoring"
+        id: "windows_services_events_monitoring"
+        relevance: "Service creation/start/stop evidence."
+
+osquery_context:
+  tables:
+    - name: "windows_eventlog"
+      columns:
+        - "datetime"
+        - "channel"
+        - "provider_name"
+        - "eventid"
+        - "level"
+        - "data"
+      platform_notes:
+        - "Windows only; constrain by exact channel, event IDs, keywords, and time window."
+    - name: "powershell_events"
+      columns:
+        - "datetime"
+        - "script_text"
+        - "script_block_id"
+        - "script_name"
+        - "script_path"
+      platform_notes:
+        - "Requires PowerShell script block logging and may be unavailable in Orbital on some endpoints."
+    - name: "prefetch"
+      columns:
+        - "filename"
+        - "path"
+        - "last_run_time"
+        - "other_run_times"
+        - "run_count"
+      platform_notes:
+        - "Execution artifact; does not provide command-line arguments."
+    - name: "userassist"
+      columns:
+        - "path"
+        - "last_execution_time"
+        - "count"
+        - "sid"
+      platform_notes:
+        - "GUI execution artifact; not a complete process execution source."
+    - name: "services"
+      columns:
+        - "name"
+        - "service_type"
+        - "status"
+        - "pid"
+        - "start_type"
+        - "path"
+        - "win32_exit_code"
+      platform_notes:
+        - "Current service registration and status."
+    - name: "registry"
+      columns:
+        - "key"
+        - "name"
+        - "data"
+        - "mtime"
+      platform_notes:
+        - "Use exact HKLM\\SYSTEM\\CurrentControlSet\\Services\\<service_name> constraints."
+    - name: "file"
+      columns:
+        - "path"
+        - "size"
+        - "btime"
+        - "mtime"
+        - "ctime"
+      platform_notes:
+        - "Use exact driver file path."
+    - name: "drivers"
+      columns:
+        - "service"
+        - "device_name"
+        - "image"
+        - "signed"
+        - "service_key"
+      platform_notes:
+        - "Loaded driver evidence; absence does not mean the service or file is absent."
+  joins:
+    - "Use independent bounded queries rather than broad joins for event logs."
+  constraints:
+    - "Require explicit service name, driver filename/path, and bounded time window."
+    - "For host triage, use scheduled query with explicit host selector and 2-minute expiry."
+
+orbital_guidance:
+  preferred_query_type: "scheduled_query"
+  allow_os:
+    - "windows"
+  target_selector_guidance:
+    - "Use exact host:<hostname> or explicit endpoint selectors for investigation."
+    - "Avoid all/broad targeting unless the user explicitly approves the scope."
+  broad_targeting_risk:
+    level: "medium"
+    notes:
+      - "windows_eventlog can be slow or high-volume; keep exact channel/event ID/time/data filters."
+      - "file table scans should use exact paths, not broad wildcards."
+  execution_order:
+    - "PowerShell logs: windows_eventlog PowerShell channels and optionally powershell_events."
+    - "Process creation: Security 4688 and Sysmon when available."
+    - "Service creation/start/failure: Service Control Manager System events."
+    - "Current state: file, services, registry, drivers."
+    - "Execution artifacts: Prefetch and UserAssist."
+
+sql_patterns:
+  - name: "PowerShell Operational command evidence"
+    description: "Find PowerShell event-log command text for service/driver activity."
+    sql: |
+      SELECT
+        datetime,
+        channel,
+        provider_name,
+        eventid,
+        level,
+        data
+      FROM windows_eventlog
+      WHERE datetime >= '<start_utc>'
+        AND datetime <= '<end_utc>'
+        AND channel IN ('Microsoft-Windows-PowerShell/Operational', 'Windows PowerShell')
+        AND eventid IN (400, 403, 600, 800, 4103, 4104, 4105, 4106)
+        AND (
+          lower(data) LIKE '%' || lower('<service_name>') || '%'
+          OR lower(data) LIKE '%' || lower('<driver_filename>') || '%'
+          OR lower(data) LIKE '%copy-item%'
+          OR lower(data) LIKE '%sc.exe%'
+          OR lower(data) LIKE '%system32\\drivers%'
+        )
+      ORDER BY datetime DESC
+      LIMIT 100;
+  - name: "PowerShell script block table evidence"
+    description: "Use when the powershell_events table is available; otherwise use PowerShell windows_eventlog fallback."
+    sql: |
+      SELECT
+        datetime,
+        script_name,
+        script_path,
+        script_block_id,
+        script_block_count,
+        script_text
+      FROM powershell_events
+      WHERE datetime >= '<start_utc>'
+        AND datetime <= '<end_utc>'
+        AND (
+          lower(script_text) LIKE '%' || lower('<service_name>') || '%'
+          OR lower(script_text) LIKE '%' || lower('<driver_filename>') || '%'
+          OR lower(script_text) LIKE '%copy-item%'
+          OR lower(script_text) LIKE '%sc.exe%'
+          OR lower(script_text) LIKE '%system32\\drivers%'
+        )
+      ORDER BY datetime DESC
+      LIMIT 50;
+  - name: "Security 4688 process creation"
+    description: "Check process creation if Windows auditing and command line logging are enabled."
+    sql: |
+      SELECT
+        datetime,
+        channel,
+        provider_name,
+        eventid,
+        level,
+        data
+      FROM windows_eventlog
+      WHERE datetime >= '<start_utc>'
+        AND datetime <= '<end_utc>'
+        AND channel = 'Security'
+        AND eventid = 4688
+        AND (
+          lower(data) LIKE '%powershell%'
+          OR lower(data) LIKE '%pwsh%'
+          OR lower(data) LIKE '%sc.exe%'
+          OR lower(data) LIKE '%' || lower('<service_name>') || '%'
+          OR lower(data) LIKE '%' || lower('<driver_filename>') || '%'
+        )
+      ORDER BY datetime DESC
+      LIMIT 100;
+  - name: "Sysmon process/file/registry/driver evidence"
+    description: "Check Sysmon if installed and the channel contains process, file, registry, or driver-load telemetry."
+    sql: |
+      SELECT
+        datetime,
+        channel,
+        provider_name,
+        eventid,
+        level,
+        data
+      FROM windows_eventlog
+      WHERE datetime >= '<start_utc>'
+        AND datetime <= '<end_utc>'
+        AND channel = 'Microsoft-Windows-Sysmon/Operational'
+        AND eventid IN (1, 6, 11, 12, 13, 14)
+        AND (
+          lower(data) LIKE '%powershell%'
+          OR lower(data) LIKE '%pwsh%'
+          OR lower(data) LIKE '%sc.exe%'
+          OR lower(data) LIKE '%' || lower('<service_name>') || '%'
+          OR lower(data) LIKE '%' || lower('<driver_filename>') || '%'
+        )
+      ORDER BY datetime DESC
+      LIMIT 100;
+  - name: "Service Control Manager service events"
+    description: "Confirm service install/start/stop/failure evidence for the named service."
+    sql: |
+      SELECT
+        datetime,
+        channel,
+        provider_name,
+        eventid,
+        level,
+        data
+      FROM windows_eventlog
+      WHERE datetime >= '<start_utc>'
+        AND datetime <= '<end_utc>'
+        AND channel = 'System'
+        AND provider_name = 'Service Control Manager'
+        AND eventid IN (7000, 7001, 7009, 7011, 7022, 7023, 7024, 7031, 7034, 7035, 7036, 7040, 7045)
+        AND (
+          lower(data) LIKE '%' || lower('<service_name>') || '%'
+          OR lower(data) LIKE '%' || lower('<driver_filename>') || '%'
+        )
+      ORDER BY datetime DESC
+      LIMIT 100;
+  - name: "Current file service registry driver state"
+    description: "Show current state for the named driver file and service."
+    sql: |
+      WITH svc AS (
+        SELECT name, service_type, status, pid, start_type, path, win32_exit_code
+        FROM services
+        WHERE lower(name) = lower('<service_name>')
+           OR lower(display_name) = lower('<service_name>')
+           OR lower(path) LIKE '%' || lower('<driver_filename>') || '%'
+      ),
+      svc_reg AS (
+        SELECT key, name, type, data, datetime(mtime, 'unixepoch', 'UTC') AS modified_utc
+        FROM registry
+        WHERE key = 'HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\<service_name>'
+      ),
+      drv_file AS (
+        SELECT path, size, type, datetime(btime, 'unixepoch', 'UTC') AS created_utc, datetime(mtime, 'unixepoch', 'UTC') AS modified_utc
+        FROM file
+        WHERE path = '<driver_path>'
+      ),
+      drv AS (
+        SELECT service, device_name, image, signed, service_key
+        FROM drivers
+        WHERE lower(service) = lower('<service_name>')
+           OR lower(device_name) LIKE '%' || lower('<service_name>') || '%'
+           OR lower(image) LIKE '%' || lower('<driver_filename>') || '%'
+      )
+      SELECT
+        CASE WHEN EXISTS (SELECT 1 FROM drv_file) THEN 'true' ELSE 'false' END AS driver_file_found,
+        CASE WHEN EXISTS (SELECT 1 FROM svc) THEN 'true' ELSE 'false' END AS service_found,
+        COALESCE((SELECT group_concat(service_type, '; ') FROM svc), '') AS service_type,
+        COALESCE((SELECT group_concat(status, '; ') FROM svc), '') AS service_status,
+        COALESCE((SELECT group_concat(CAST(pid AS TEXT), '; ') FROM svc), '') AS pid,
+        COALESCE((SELECT group_concat(start_type, '; ') FROM svc), '') AS start_type,
+        CASE WHEN EXISTS (SELECT 1 FROM svc_reg) THEN 'true' ELSE 'false' END AS registry_key_found,
+        CASE WHEN EXISTS (SELECT 1 FROM drv) THEN 'true' ELSE 'false' END AS loaded_driver_found
+      FROM system_info;
+  - name: "Prefetch execution artifacts"
+    description: "Find PowerShell and sc.exe Prefetch execution artifacts."
+    sql: |
+      SELECT
+        filename,
+        path,
+        last_run_time,
+        other_run_times,
+        run_count,
+        size
+      FROM prefetch
+      WHERE lower(filename) LIKE 'powershell%.pf'
+         OR lower(filename) LIKE 'pwsh%.pf'
+         OR lower(filename) LIKE 'sc%.pf'
+         OR lower(path) LIKE '%powershell%'
+         OR lower(path) LIKE '%\sc.exe%'
+      ORDER BY last_run_time DESC
+      LIMIT 50;
+  - name: "UserAssist execution artifacts"
+    description: "Find GUI execution artifacts for PowerShell or sc.exe where present."
+    sql: |
+      SELECT
+        path,
+        last_execution_time,
+        count,
+        sid
+      FROM userassist
+      WHERE lower(path) LIKE '%powershell%'
+         OR lower(path) LIKE '%pwsh%'
+         OR lower(path) LIKE '%\sc.exe%'
+         OR lower(path) LIKE '%system32\sc%'
+      ORDER BY last_execution_time DESC
+      LIMIT 50;
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: true
+  live_query_tested: true
+  tested_date: "2026-07-10"
+  notes:
+    - "The method was tested as bounded scheduled host queries against an explicit Windows host selector. Endpoint result rows, hostnames, node IDs, Job IDs, service names, paths, SIDs, and raw event payloads are intentionally not stored."
+    - "In the test, PowerShell Operational Event ID 4104 was the strongest source for exact command text."
+    - "The powershell_events table returned an unavailable-table error on the tested endpoint; future use should treat it as optional and fall back to windows_eventlog PowerShell channels."
+    - "Security 4688 and Sysmon returned no matching rows in the test; that is a logging/configuration finding, not proof that process execution did not occur."
+    - "The current-state query may take longer than the short helper poll window; keep the Job ID and fetch stored results instead of rerunning."
+
+lessons:
+  - date: "2026-07-10"
+    note: "For PowerShell-created service/driver activity, query PowerShell Operational logs before lower-fidelity artifacts; Event ID 4104 can preserve the exact command text when script block logging is enabled."
+  - date: "2026-07-10"
+    note: "Use multiple bounded queries rather than one broad event-log sweep: PowerShell logs, process creation/Sysmon, SCM, current state, Prefetch, and UserAssist."
+  - date: "2026-07-10"
+    note: "A service creation event and current service registration do not prove the driver loaded; check services.status and drivers table separately."
+  - date: "2026-07-10"
+    note: "Prefetch and UserAssist are supporting execution artifacts. They usually do not provide the full command line and should not override PowerShell or process creation telemetry."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<service_name>"
+    - "<driver_filename>"
+    - "<driver_path>"
+    - "<start_utc>"
+    - "<end_utc>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "sids"
+    - "ip_addresses"
+    - "mac_addresses"
+    - "orbital_ids"
+    - "job_ids"
+    - "node_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "raw_event_payloads"
+    - "raw_api_responses"
+    - "endpoint_result_rows"

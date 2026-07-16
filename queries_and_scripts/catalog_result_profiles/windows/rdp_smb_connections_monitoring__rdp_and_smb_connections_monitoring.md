@@ -110,9 +110,9 @@ The `rdp_smb_connections_monitoring` catalog query (RDP and SMB Connections Moni
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

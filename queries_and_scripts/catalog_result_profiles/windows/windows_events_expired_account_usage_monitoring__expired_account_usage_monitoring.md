@@ -106,9 +106,9 @@ The `windows_events_expired_account_usage_monitoring` catalog query (Expired Acc
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

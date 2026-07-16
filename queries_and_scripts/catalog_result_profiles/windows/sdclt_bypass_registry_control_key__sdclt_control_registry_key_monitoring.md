@@ -108,9 +108,9 @@ The `sdclt_bypass_registry_control_key` catalog query (SDCLT Control Registry Ke
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

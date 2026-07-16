@@ -5,7 +5,7 @@ description: Create, preview, validate, and upload Cisco Orbital organization ca
 
 # Orbital Update Catalog
 
-Use this skill for write-capable Orbital Catalog query work. Keep it separate from endpoint query execution: this skill creates, previews, or removes organization catalog query definitions, while `orbital-run-osquery-live-query` runs queries against endpoints.
+Use this skill for write-capable Orbital Catalog query work. Keep it separate from endpoint operation execution: this skill creates, previews, or removes organization catalog query definitions, while `orbital-run-endpoint-operation` runs queries against endpoints.
 
 ## Project Change Log
 

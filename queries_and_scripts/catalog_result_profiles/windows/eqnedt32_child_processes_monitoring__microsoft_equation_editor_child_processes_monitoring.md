@@ -85,10 +85,10 @@ Catalog warnings:
 Error class: `completed_with_query_or_endpoint_errors`
 
 Label errors:
-- `eqnedt32_child_processes_monitoring`: error processing query: no such column: p.is_elevated_token
+- `eqnedt32_child_processes_monitoring`: Label error recorded during validation.
 
 Endpoint errors:
-- One or more query results have errors.
+- Endpoint error recorded during validation.
 
 ## Recommended Follow-Up
 
@@ -106,9 +106,9 @@ The `eqnedt32_child_processes_monitoring` catalog query (Microsoft Equation Edit
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

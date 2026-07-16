@@ -105,9 +105,9 @@ The `network_connection_listening` catalog query (Listening Ports Monitoring) re
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

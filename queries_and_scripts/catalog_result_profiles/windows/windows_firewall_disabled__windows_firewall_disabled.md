@@ -106,9 +106,9 @@ The `windows_firewall_disabled` catalog query (Windows Firewall Disabled) return
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

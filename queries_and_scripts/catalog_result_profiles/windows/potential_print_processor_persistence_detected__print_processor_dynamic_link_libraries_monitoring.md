@@ -108,9 +108,9 @@ The `potential_print_processor_persistence_detected` catalog query (Print Proces
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

@@ -105,9 +105,9 @@ The `blank_passwords_auth_monitoring` catalog query (Network Logon With Blank Pa
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

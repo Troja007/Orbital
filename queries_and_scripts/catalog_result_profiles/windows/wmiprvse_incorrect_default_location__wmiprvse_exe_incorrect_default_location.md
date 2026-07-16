@@ -106,9 +106,9 @@ The `wmiprvse_incorrect_default_location` catalog query (Wmiprvse.exe Incorrect 
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

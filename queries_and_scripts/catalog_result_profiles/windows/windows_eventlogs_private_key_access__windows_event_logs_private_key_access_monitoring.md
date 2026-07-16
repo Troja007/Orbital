@@ -106,9 +106,9 @@ The `windows_eventlogs_private_key_access` catalog query (Windows Event Logs: Pr
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

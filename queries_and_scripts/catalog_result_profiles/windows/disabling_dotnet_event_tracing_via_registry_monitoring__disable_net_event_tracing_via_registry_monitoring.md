@@ -107,9 +107,9 @@ The `disabling_dotnet_event_tracing_via_registry_monitoring` catalog query (Disa
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

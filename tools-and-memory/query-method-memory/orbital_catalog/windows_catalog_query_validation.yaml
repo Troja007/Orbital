@@ -1,7 +1,7 @@
 title: "Windows Orbital Catalog Query Validation"
 status: "tested"
 created: "2026-06-16"
-updated: "2026-06-16"
+updated: "2026-07-10"
 
 investigation_inputs:
   source_type: "analyst_task"
@@ -68,6 +68,12 @@ orbital_guidance:
     Full snapshots, loaded modules, broad file searches, registry searches,
     certificate searches, temporary directory listings, and service inventory
     can produce large result sets. Narrow parameters before broad deployment.
+  allow_os_shape_caveat: >
+    If an API submission is rejected before a Job ID is created because `allowOS`
+    has the wrong JSON shape, treat it as a request-body/helper issue rather
+    than an endpoint query failure. Preserve the target and SQL, correct the
+    request shape or omit allowOS when an exact host target already scopes the
+    run to a known platform, then resubmit once.
 
 sql_patterns:
   catalog_entry_execution: >
@@ -94,6 +100,7 @@ lessons:
   - "Historical artifact tables do not prove current live state."
   - "Event-log queries depend on event retention, channel availability, and timestamp filters."
   - "Store Job IDs and names for every query in multi-query tasks so existing jobs can be audited without rerunning endpoint work."
+  - "If the Query API rejects a submission before creating a Job ID because `allowOS` is serialized with the wrong JSON type, no endpoint work ran. Fix the API request/helper shape and rerun once; do not interpret the error as an endpoint, SQL, or product-health result."
 
 privacy:
   stores_endpoint_rows: false

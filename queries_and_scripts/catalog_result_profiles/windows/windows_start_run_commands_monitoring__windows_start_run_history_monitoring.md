@@ -105,9 +105,9 @@ The `windows_start_run_commands_monitoring` catalog query (Windows Start/Run His
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

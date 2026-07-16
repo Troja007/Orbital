@@ -106,9 +106,9 @@ The `windows_ntfs_acl_permissions_monitoring` catalog query (NTFS ACL Permission
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

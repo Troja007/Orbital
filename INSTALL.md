@@ -44,7 +44,7 @@ Required steps:
    - `skills/orbital-api-access`
    - `skills/orbital-catalog-result-profiles`
    - `skills/orbital-query-method-memory`
-   - `skills/orbital-run-osquery-live-query`
+   - `skills/orbital-run-endpoint-operation`
    - `skills/orbital-update-catalog`
 5. Verify the skills are installed.
 6. Do not create, request, print, or store credentials.
@@ -65,7 +65,7 @@ python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-githu
   --path skills/orbital-api-access \
   --path skills/orbital-catalog-result-profiles \
   --path skills/orbital-query-method-memory \
-  --path skills/orbital-run-osquery-live-query \
+  --path skills/orbital-run-endpoint-operation \
   --path skills/orbital-update-catalog
 ```
 

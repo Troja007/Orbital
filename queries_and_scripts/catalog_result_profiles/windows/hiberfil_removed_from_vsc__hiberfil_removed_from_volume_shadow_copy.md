@@ -106,9 +106,9 @@ The `hiberfil_removed_from_vsc` catalog query (Hiberfil Removed From Volume Shad
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

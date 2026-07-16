@@ -623,6 +623,82 @@ sql_patterns:
         AND eventid IN (1800, 1801)
       ORDER BY datetime DESC
       LIMIT 50;
+  - name: "Secure Endpoint user-mode and kernel-mode component separation"
+    description: "Show Secure Endpoint user-mode services/processes separately from kernel driver services and exact driver-file evidence."
+    sql_file: "queries_and_scripts/Generated_Queries/windows_secure_endpoint_user_and_kernel_driver_set_slate.sql"
+    evidence_tables:
+      - "drivers"
+      - "services"
+      - "file"
+      - "processes"
+    interpretation:
+      - "Use services rows with service_type containing DRIVER for kernel driver service state."
+      - "Use exact-path file rows for installed driver-file evidence."
+      - "Use processes and non-driver services for user-mode runtime evidence such as sfc.exe, cscm.exe, CiscoAMP, and CiscoSCMS."
+      - "When filtering Cisco AMP paths for user-mode services, exclude services where service_type contains DRIVER; otherwise endpoint isolation drivers such as ancrcl can be misclassified as user-mode."
+      - "The drivers table can be useful for in-use driver evidence, but absence from drivers alone is not enough to say a Secure Endpoint driver is absent or inactive. Combine drivers with services and exact-path file evidence."
+    sql: |
+      SELECT
+        'kernel_driver_service' AS evidence_type,
+        s.name AS component,
+        s.display_name,
+        COALESCE(s.path, s.module_path, '') AS path_or_image,
+        s.service_type AS class,
+        'status=' || COALESCE(s.status, '') || ' start_type=' || COALESCE(s.start_type, '') || ' pid=' || CAST(s.pid AS TEXT) AS status_or_start
+      FROM services s
+      WHERE lower(s.service_type) LIKE '%driver%'
+        AND (
+          lower(s.name) IN (
+            'bddci',
+            'trufos',
+            'immunetselfprotectdriver',
+            'immunetprotectdriver',
+            'immunetnetworkmonitordriver',
+            'ciscoampheurdriver',
+            'ciscoampelamdriver',
+            'ciscoampcefwdriver',
+            'ancrcl'
+          )
+          OR lower(s.path) LIKE '%bddci.sys%'
+          OR lower(s.path) LIKE '%trufos.sys%'
+          OR lower(s.path) LIKE '%immunetselfprotect.sys%'
+          OR lower(s.path) LIKE '%immunetprotect.sys%'
+          OR lower(s.path) LIKE '%immunetnetworkmonitor.sys%'
+          OR lower(s.path) LIKE '%ciscoampheurdriver.sys%'
+          OR lower(s.path) LIKE '%ciscoampelamdriver.sys%'
+          OR lower(s.path) LIKE '%ciscoampcefwdriver.sys%'
+          OR lower(s.path) LIKE '%ancrcl64.sys%'
+        )
+      UNION ALL
+      SELECT
+        'user_mode_service' AS evidence_type,
+        s.name AS component,
+        s.display_name,
+        COALESCE(s.path, s.module_path, '') AS path_or_image,
+        s.service_type AS class,
+        'status=' || COALESCE(s.status, '') || ' start_type=' || COALESCE(s.start_type, '') || ' pid=' || CAST(s.pid AS TEXT) AS status_or_start
+      FROM services s
+      WHERE lower(s.service_type) NOT LIKE '%driver%'
+        AND (
+          lower(s.name) IN ('ciscoamp', 'ciscoscm', 'ciscoscmgr', 'ciscoscmservice', 'ciscoscms')
+          OR lower(s.display_name) LIKE '%secure endpoint%'
+          OR lower(s.display_name) LIKE '%cisco amp%'
+          OR lower(s.path) LIKE '%\cisco\amp\%'
+          OR lower(s.module_path) LIKE '%\cisco\amp\%'
+        )
+      UNION ALL
+      SELECT
+        'user_mode_process' AS evidence_type,
+        p.name AS component,
+        '' AS display_name,
+        p.path AS path_or_image,
+        p.state AS class,
+        'pid=' || CAST(p.pid AS TEXT) || ' parent=' || CAST(p.parent AS TEXT) AS status_or_start
+      FROM processes p
+      WHERE lower(p.name) IN ('sfc.exe', 'cscm.exe')
+         OR lower(p.path) LIKE '%\cisco\amp\%'
+         OR lower(p.path) LIKE '%\cisco\secure endpoint\%'
+         OR lower(p.path) LIKE '%\immunet\%';
 
 validation:
   osquery_schema_checked: true
@@ -637,6 +713,7 @@ validation:
     - "The combined inventory query using programs, registry, services, and processes was executed successfully as a scheduled host run on 2026-06-12. Returned endpoint rows, hostnames, node IDs, and Job IDs are intentionally not stored."
     - "The Secure Client installed modules query using programs was executed successfully as a scheduled exact-host run on 2026-06-14. Returned endpoint rows, hostnames, node IDs, and Job IDs are intentionally not stored."
     - "The TDNR Secure Client module status query was executed successfully as a scheduled exact-host run on 2026-06-14. Returned endpoint rows, hostnames, node IDs, and Job IDs are intentionally not stored."
+    - "The Secure Endpoint user-mode/kernel-mode separation pattern was validated after a query-classification correction on 2026-07-10. Endpoint rows, hostnames, node IDs, and Job IDs are intentionally not stored."
 
 lessons:
   - date: "2026-06-12"
@@ -665,6 +742,10 @@ lessons:
     note: "For additional Cisco endpoint driver discovery, query drivers plus services where service_type contains DRIVER, filter for Cisco/Secure Client/AMP/Immunet/Bitdefender path or naming hints, and exclude the already-known connector driver set. Additional Cisco endpoint driver artifacts observed through this method include CiscoEVMDriver, CiscoEVMElam, acsock, cscnvmpt, vpnva, CiscoSAM, and csadc. Treat CiscoSAM exact module ownership as a candidate until verified against product documentation."
   - date: "2026-06-14"
     note: "For TDNR module readiness on Windows, check the five diagram-derived modules with low-impact evidence: EDR/Secure Endpoint, Orbital Query & Script, EVM, NVM, and Digital Forensics/XDR Forensics. Use programs for installation evidence and services/processes for active status."
+  - date: "2026-07-10"
+    note: "When separating Secure Endpoint user-mode and kernel-mode components, classify services with service_type containing DRIVER as kernel driver services before applying broad Cisco AMP path filters. Otherwise endpoint isolation drivers such as ancrcl can be misclassified as user-mode because their image path is under Cisco\\AMP."
+  - date: "2026-07-10"
+    note: "For Secure Endpoint driver health, do not rely on the drivers table alone. Combine driver-type services, exact-path file checks, and drivers-table rows. A missing drivers-table row is weaker evidence than a RUNNING driver service plus a present driver file."
 
 privacy:
   stores_endpoint_results: false

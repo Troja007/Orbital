@@ -108,9 +108,9 @@ The `windows_netlogon_events_monitoring` catalog query (Windows Netlogon Events 
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

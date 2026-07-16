@@ -105,9 +105,9 @@ The `long_command_lines_monitoring` catalog query (PowerShell Commands Monitorin
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

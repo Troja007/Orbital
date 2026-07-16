@@ -105,9 +105,9 @@ The `windows_yara_pe_dynamic_load` catalog query (YARA Scan: PE Contains Few Imp
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

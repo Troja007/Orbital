@@ -6,8 +6,8 @@ Offline copy of Cisco-managed Orbital stock catalog data used for query and scri
 
 | File | API source | Current count | Purpose |
 | --- | --- | ---: | --- |
-| `stock_query_catalog.json` | `GET /v0/stock` | 467 queries, 49 scripts | Full stock query catalog and related metadata such as authors, categories, observables, tactics, techniques, and subtechniques. |
-| `stock_catalog_scripts.json` | `GET /v0/catalogs/cisco/scripts` | 73 scripts | Full Cisco-managed stock script catalog response. |
+| `stock_query_catalog.json` | `GET /v0/stock` | 467 queries, 51 scripts | Full stock query catalog and related metadata such as authors, categories, observables, tactics, techniques, and subtechniques. |
+| `stock_catalog_scripts.json` | `GET /v0/catalogs/cisco/scripts` | 75 scripts | Full Cisco-managed stock script catalog response. |
 
 ## Handling Rules
 
@@ -20,7 +20,7 @@ Offline copy of Cisco-managed Orbital stock catalog data used for query and scri
 
 ## Current Snapshot
 
-- Retrieved: 2026-06-10T17:39:04+00:00
+- Retrieved: 2026-07-16T11:42:05+00:00
 - Region: `us`
 - Source summary: `project-context/Orbital_Catalog_API_Import.md`
 - Local refresh helper: `tools-and-memory/import_orbital_catalog.py`

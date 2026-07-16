@@ -108,9 +108,9 @@ The `cve_2023_23397_monitoring` catalog query (CVE-2023-23397 Monitoring) return
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

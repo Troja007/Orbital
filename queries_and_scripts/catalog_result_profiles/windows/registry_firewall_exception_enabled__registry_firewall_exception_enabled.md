@@ -108,9 +108,9 @@ The `registry_firewall_exception_enabled` catalog query (Registry Firewall Excep
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

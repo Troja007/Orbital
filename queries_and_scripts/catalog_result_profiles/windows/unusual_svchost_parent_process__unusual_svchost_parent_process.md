@@ -106,9 +106,9 @@ The `unusual_svchost_parent_process` catalog query (Unusual Svchost Parent Proce
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

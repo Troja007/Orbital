@@ -5,7 +5,7 @@ description: Access Cisco Orbital API and catalog context. Use when Codex needs 
 
 # Orbital API Access
 
-Use this skill for Cisco Orbital API connectivity and catalog context work. Keep this separate from live endpoint query execution; use `orbital-run-osquery-live-query` when the task is to run osquery SQL against explicit target endpoints. Use `orbital-query-method-memory` when the task is to improve SQL design, reuse prior query methods, or find relevant catalog/osquery mappings.
+Use this skill for Cisco Orbital API connectivity and catalog context work. Keep this separate from endpoint operation execution; use `orbital-run-endpoint-operation` when the task is to run osquery SQL against explicit target endpoints. Use `orbital-query-method-memory` when the task is to improve SQL design, reuse prior query methods, or find relevant catalog/osquery mappings.
 
 ## Project Change Log
 

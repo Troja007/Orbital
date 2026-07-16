@@ -106,9 +106,9 @@ The `windows_eventlogs_permission_change_on_ou_by_computer` catalog query (Windo
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

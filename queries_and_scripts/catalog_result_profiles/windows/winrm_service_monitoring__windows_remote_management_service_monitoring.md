@@ -106,9 +106,9 @@ The `winrm_service_monitoring` catalog query (Windows Remote Management Service 
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

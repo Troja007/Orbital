@@ -1,0 +1,56 @@
+{
+  "change_set": {
+    "added": [],
+    "deleted": [],
+    "modified": [
+      "SKILL.md",
+      "VERSION",
+      "scripts/version_skill.py"
+    ]
+  },
+  "created_at": "2026-07-16T08:26:38.704512Z",
+  "files": [
+    {
+      "path": "SKILL.md",
+      "sha256": "8ec6819b02905230fe0a61b8cc5d08b91aab75869cc64b99024c532b703df1b0"
+    },
+    {
+      "path": "VERSION",
+      "sha256": "2bde3ae39f59ee21201f87089cf7d215cf58ea437711e3d8e3e65fbc3078c798"
+    },
+    {
+      "path": "agents/openai.yaml",
+      "sha256": "fb96a75c655abfeada34f81b3124543d69efb3750db319da70f5f0304ecab061"
+    },
+    {
+      "path": "scripts/run_live_query.py",
+      "sha256": "3c8ab5aa92a2f8113b618ed072ebfe891ad52acc03682a12a5dc91f878bafd05"
+    },
+    {
+      "path": "scripts/version_skill.py",
+      "sha256": "581fcf58f0e37c993d345d8e1d5791f8760e6a1365cf3316a76690f6d9cc46cf"
+    }
+  ],
+  "outcome_guardrails": {
+    "dependency_review": "Reviewed all active global skill names, local referenced resources, and the common release workflow; no new duplicate owner or unresolved path conflict was introduced.",
+    "failure_path_validation": "",
+    "negative_trigger": "Change an unrelated project artifact that does not modify this skill or its bundled resources.",
+    "positive_trigger": "Update this skill to fix a verified failure in its documented workflow.",
+    "problem_statement": "Previous release tracking recorded file changes but did not require evidence that a skill update solves a defined problem without widening or conflicting scope.",
+    "risk_tier": "code",
+    "success_criteria": "Every new release manifest records all four outcome guardrails and rejects missing release evidence."
+  },
+  "regression_review": {
+    "matching_prior_trees": [],
+    "override_used": false,
+    "possible_reintroduced_paths": []
+  },
+  "release": {
+    "change_summary": "Add outcome-focused release guardrails for problem definition, trigger boundaries, dependency review, and risk-based validation.",
+    "change_type": "maintenance",
+    "review_notes": "Reviewed the immediately preceding release and retained history; this update replaces release-process metadata only and introduces no reintroduced skill behavior.",
+    "reviewed_previous_version": "1.1.3",
+    "validation": "Executed the updated release script and verified manifest hashes, history parsing, and required metadata fields."
+  },
+  "version": "1.1.4"
+}

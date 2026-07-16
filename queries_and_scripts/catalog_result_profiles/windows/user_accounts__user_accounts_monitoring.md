@@ -104,9 +104,9 @@ The `user_accounts` catalog query (User Accounts Monitoring) returned results th
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

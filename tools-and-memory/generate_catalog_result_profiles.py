@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 from collections import Counter
@@ -24,6 +25,30 @@ STATUS_PRIORITY = {
 }
 
 
+MAX_SAMPLE_ROWS_PER_PROFILE = 15
+PREFERRED_SAMPLE_ROWS_PER_LABEL = 3
+SENSITIVE_COLUMN_RE = re.compile(
+    r"(?:account|auth|bearer|client|computer|credential|customer|device|domain|email|endpoint|guid|host|job|"
+    r"machine|node|organization|org|password|secret|selector|serial|sid|target|tenant|token|user|uuid|"
+    r"(?:^|[_-])ip(?:$|[_-]))",
+    re.IGNORECASE,
+)
+EMAIL_RE = re.compile(r"(?i)^[^\s@]+@[^\s@]+\.[^\s@]+$")
+IPV4_RE = re.compile(r"^(?:25[0-5]|2[0-4]\d|1?\d?\d)(?:\.(?:25[0-5]|2[0-4]\d|1?\d?\d)){3}$")
+IPV6_RE = re.compile(r"(?i)^(?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}$")
+GUID_RE = re.compile(r"(?i)^\{?[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\}?$")
+WINDOWS_SID_RE = re.compile(r"(?i)^s-1-\d+(?:-\d+){1,}$")
+URL_RE = re.compile(r"(?i)^(?:https?|ftp)://")
+TARGET_SELECTOR_RE = re.compile(r"(?i)^(?:host|queryid|node|target):")
+USER_PROFILE_PATH_RE = re.compile(r"(?i)^[a-z]:\\users\\[^\\]+")
+WINDOWS_PATH_RE = re.compile(r"(?i)^[a-z]:\\|^\\\\")
+REGISTRY_ROOT_RE = re.compile(r"(?i)^(hklm|hkcu|hku|hkcr|hkey_local_machine|hkey_current_user|hkey_users|hkey_classes_root)(?:\\|$)")
+HASH_RE = re.compile(r"(?i)^[0-9a-f]{32}$|^[0-9a-f]{40}$|^[0-9a-f]{64}$")
+ISO_TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2}(?:[ t]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:z|[+-]\d{2}:?\d{2})?)?$")
+UNIX_TIMESTAMP_RE = re.compile(r"^\d{10}(?:\.\d+)?$")
+SAFE_SAMPLE_VALUE_RE = re.compile(r"^<[a-z0-9:._ -]+>$")
+
+
 def row_bucket(row_count: int | None) -> str:
     if row_count is None:
         return "unknown"
@@ -36,6 +61,158 @@ def row_bucket(row_count: int | None) -> str:
     if row_count <= 1000:
         return "high_101_1000"
     return "very_high_over_1000"
+
+
+def sample_redaction_marker(column_name: str) -> str:
+    column = column_name.lower()
+    if "user" in column or "account" in column or "sid" in column:
+        return "<redacted:username>"
+    if "host" in column or "computer" in column or "machine" in column or "device" in column:
+        return "<redacted:hostname>"
+    if "ip" in column or "address" in column:
+        return "<redacted:ip>"
+    if "guid" in column or "uuid" in column:
+        return "<redacted:guid>"
+    return "<redacted:sensitive-value>"
+
+
+def sample_value_shape(column_name: str, value: Any) -> str:
+    """Return a structural, non-identifying representation of a sample value."""
+    column = str(column_name or "")
+    column_lower = column.lower()
+
+    if SENSITIVE_COLUMN_RE.search(column):
+        return sample_redaction_marker(column)
+    if value is None:
+        return "<null>"
+    if isinstance(value, bool):
+        return "<boolean:true>" if value else "<boolean:false>"
+    if isinstance(value, int) and not isinstance(value, bool):
+        return "<integer>"
+    if isinstance(value, float):
+        return "<number>"
+    if not isinstance(value, str):
+        return "<redacted:structured-value>"
+
+    text = value.strip()
+    if not text:
+        return "<empty>"
+    if EMAIL_RE.match(text):
+        return "<redacted:email>"
+    if IPV4_RE.match(text) or IPV6_RE.match(text):
+        return "<redacted:ip>"
+    if GUID_RE.match(text):
+        return "<redacted:guid>"
+    if WINDOWS_SID_RE.match(text):
+        return "<redacted:username>"
+    if URL_RE.match(text) or TARGET_SELECTOR_RE.match(text):
+        return "<redacted:sensitive-value>"
+    if re.match(r"(?i)^(?:bearer\s+|.*(?:token|secret|password|client[_ -]?id).*)", text):
+        return "<redacted:sensitive-value>"
+    if USER_PROFILE_PATH_RE.match(text):
+        return "<path:windows-user-profile>"
+    if REGISTRY_ROOT_RE.match(text):
+        return "<registry-path>"
+    if WINDOWS_PATH_RE.match(text) or "/" in text or "\\" in text:
+        return "<path>"
+    if HASH_RE.match(text):
+        return f"<hash:{len(text)}-hex>"
+    if ISO_TIMESTAMP_RE.match(text):
+        return "<timestamp:iso-8601>"
+    if UNIX_TIMESTAMP_RE.match(text):
+        return "<timestamp:unix>"
+    if text.lower() in {"true", "false"}:
+        return f"<boolean:{text.lower()}>"
+    if "extension" in column_lower and re.fullmatch(r"\.[a-z0-9]{1,10}", text, re.IGNORECASE):
+        return "<file-extension>"
+    if "state" in column_lower or "status" in column_lower:
+        return "<state-category>"
+    if "process" in column_lower and "name" in column_lower:
+        return "<process-name>"
+
+    # Default deny: never copy an arbitrary endpoint string into GitHub output.
+    return "<redacted:sensitive-value>"
+
+
+def sanitize_sample_result_data(raw_sample_data: Any) -> tuple[dict[str, list[dict[str, str]]], str, int]:
+    """Sanitize and select representative rows without retaining raw endpoint values."""
+    if not isinstance(raw_sample_data, dict) or not raw_sample_data:
+        return {}, "not_available", 0
+
+    sanitized_by_label: dict[str, list[dict[str, str]]] = {}
+    omitted_rows = 0
+    for raw_label, raw_rows in raw_sample_data.items():
+        if not isinstance(raw_label, str) or not isinstance(raw_rows, list):
+            omitted_rows += 1
+            continue
+        sanitized_rows: list[dict[str, str]] = []
+        for raw_row in raw_rows:
+            if not isinstance(raw_row, dict):
+                omitted_rows += 1
+                continue
+            sanitized_row: dict[str, str] = {}
+            for raw_column, raw_value in raw_row.items():
+                if not isinstance(raw_column, str) or not raw_column.strip():
+                    omitted_rows += 1
+                    continue
+                sanitized_row[raw_column] = sample_value_shape(raw_column, raw_value)
+            if sanitized_row:
+                sanitized_rows.append(sanitized_row)
+            else:
+                omitted_rows += 1
+        if sanitized_rows:
+            sanitized_by_label[raw_label] = sanitized_rows
+
+    selected: dict[str, list[dict[str, str]]] = {}
+    labels = sorted(sanitized_by_label)
+    for sample_index in range(PREFERRED_SAMPLE_ROWS_PER_LABEL):
+        for label in labels:
+            if sum(len(rows) for rows in selected.values()) >= MAX_SAMPLE_ROWS_PER_PROFILE:
+                break
+            rows = sanitized_by_label[label]
+            if sample_index < len(rows):
+                selected.setdefault(label, []).append(rows[sample_index])
+        if sum(len(rows) for rows in selected.values()) >= MAX_SAMPLE_ROWS_PER_PROFILE:
+            break
+
+    available_rows = sum(len(rows) for rows in sanitized_by_label.values())
+    omitted_rows += max(available_rows - sum(len(rows) for rows in selected.values()), 0)
+    if not selected:
+        return {}, "omitted_for_privacy", omitted_rows
+    if omitted_rows:
+        return selected, "partially_omitted_for_privacy", omitted_rows
+    return selected, "available", 0
+
+
+def validate_sanitized_sample_data(sample_data: dict[str, list[dict[str, str]]]) -> None:
+    sample_row_count = sum(len(rows) for rows in sample_data.values())
+    if sample_row_count > MAX_SAMPLE_ROWS_PER_PROFILE:
+        raise ValueError(f"Sample row limit exceeded: {sample_row_count} > {MAX_SAMPLE_ROWS_PER_PROFILE}")
+    for label, rows in sample_data.items():
+        if not isinstance(label, str) or not isinstance(rows, list):
+            raise ValueError("Sample result data has an invalid label structure")
+        for row in rows:
+            if not isinstance(row, dict):
+                raise ValueError("Sample result data has an invalid row structure")
+            for column, value in row.items():
+                if not isinstance(column, str) or not isinstance(value, str) or not SAFE_SAMPLE_VALUE_RE.fullmatch(value):
+                    raise ValueError("Sample result data contains a non-sanitized value")
+
+
+def sanitize_label_errors(raw_label_errors: Any) -> dict[str, str]:
+    if not isinstance(raw_label_errors, dict):
+        return {}
+    return {
+        str(label): "Label error recorded during validation."
+        for label, error in raw_label_errors.items()
+        if error
+    }
+
+
+def sanitize_endpoint_errors(raw_endpoint_errors: Any) -> list[str]:
+    if not isinstance(raw_endpoint_errors, list) or not raw_endpoint_errors:
+        return []
+    return ["Endpoint error recorded during validation."]
 
 
 def error_class(record: dict[str, Any]) -> str | None:
@@ -282,6 +459,10 @@ def build_profiles(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
         caveat = error_class(record)
         row_count = result_summary.get("row_count")
         tactics, techniques, subtechniques = mitre_maps(catalog, snapshot_item, snapshot)
+        sample_result_data, sample_status, sample_omitted_rows = sanitize_sample_result_data(
+            result_summary.get("sample_result_data")
+        )
+        validate_sanitized_sample_data(sample_result_data)
 
         profiles.append(
             {
@@ -311,10 +492,13 @@ def build_profiles(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
                     "labels_returned": result_summary.get("labels_returned") or [],
                     "label_row_counts": result_summary.get("label_row_counts") or {},
                     "label_columns": result_summary.get("label_columns") or {},
-                    "label_errors": result_summary.get("label_errors") or {},
-                    "endpoint_errors": result_summary.get("endpoint_errors") or [],
+                    "label_errors": sanitize_label_errors(result_summary.get("label_errors")),
+                    "endpoint_errors": sanitize_endpoint_errors(result_summary.get("endpoint_errors")),
                     "error_class": caveat,
-                    "sample_result_data": result_summary.get("sample_result_data") or {},
+                    "sample_result_data": sample_result_data,
+                    "sample_result_data_status": sample_status,
+                    "sample_result_data_row_count": sum(len(rows) for rows in sample_result_data.values()),
+                    "sample_result_data_omitted_row_count": sample_omitted_rows,
                 },
                 "responder_reading": responder_reading(catalog, status, result_summary, caveat),
                 "assumptions_and_limits": assumptions_and_limits(catalog, status, result_summary, caveat),
@@ -324,7 +508,12 @@ def build_profiles(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def write_jsonl(profiles: list[dict[str, Any]], path: Path) -> None:
-    path.write_text("\n".join(json.dumps(profile, sort_keys=True) for profile in profiles) + "\n")
+    jsonl_profiles: list[dict[str, Any]] = []
+    for profile in profiles:
+        validation = dict(profile["validation"])
+        validation.pop("sample_result_data", None)
+        jsonl_profiles.append({**profile, "validation": validation})
+    path.write_text("\n".join(json.dumps(profile, sort_keys=True) for profile in jsonl_profiles) + "\n")
 
 
 def escape_cell(value: Any) -> str:
@@ -476,6 +665,8 @@ def markdown_table_from_rows(rows: list[dict[str, Any]]) -> list[str]:
 
 def sample_result_data_lines(profile: dict[str, Any]) -> list[str]:
     sample_data = profile["validation"].get("sample_result_data") or {}
+    sample_status = profile["validation"].get("sample_result_data_status")
+    omitted_row_count = profile["validation"].get("sample_result_data_omitted_row_count") or 0
     lines = [
         "## Sample Result Data",
         "",
@@ -483,7 +674,10 @@ def sample_result_data_lines(profile: dict[str, Any]) -> list[str]:
         "",
     ]
     if not sample_data:
-        lines.append("No sanitized sample result data was recorded for this profile.")
+        if sample_status == "omitted_for_privacy":
+            lines.append("Sample result data was omitted because it could not be represented safely.")
+        else:
+            lines.append("No sanitized sample result data was recorded for this profile.")
         return lines
 
     for label, rows in sorted(sample_data.items()):
@@ -495,6 +689,8 @@ def sample_result_data_lines(profile: dict[str, Any]) -> list[str]:
                 "",
             ]
         )
+    if omitted_row_count:
+        lines.append("Additional source rows were omitted to preserve privacy and the 15-row limit.")
     return lines
 
 
@@ -612,9 +808,9 @@ def write_per_catalog_markdown(profiles: list[dict[str, Any]], output_dir: Path)
             "",
             "## Privacy Boundary",
             "",
-            "This profile intentionally does not store:",
+            "This profile intentionally does not store raw endpoint evidence:",
             "",
-            "- Endpoint result rows",
+            "- Raw endpoint result rows",
             "- Hostnames",
             "- Target selectors",
             "- Job IDs",
@@ -702,31 +898,70 @@ def write_readme(path: Path) -> None:
 
 This folder contains GitHub-synced, sanitized result-profile artifacts for Orbital catalog validation runs.
 
-These files are designed to help an incident responder understand what an Orbital catalog query result means: expected result shape, row-count behavior, common caveats, and safe assumptions.
+These files are designed to help an incident responder understand what an Orbital catalog query result means: expected result shape, row-count behavior, common caveats, safe assumptions, and sanitized sample shape where it is useful.
 
 Included files:
 
-- `windows_stock_catalog_result_profiles.jsonl`: structured per-Catalog-ID profiles for Windows stock catalog queries.
-- `windows_stock_catalog_result_profiles.md`: human-readable summary and table.
+- `windows_stock_catalog_result_profiles.jsonl`: structured per-Catalog-ID profiles for Windows stock catalog queries. It contains no sample-row values.
+- `windows_stock_catalog_result_profiles.md`: human-readable summary and table. It contains no sample-row values.
 - `windows/`: one analyst-facing Markdown file per Windows stock catalog query, named `<catalog_id>__<normalized_query_name>.md`.
 
 Privacy boundary:
 
-- Store interpretation profiles, row counts, returned column names, catalog metadata, and sanitized caveats.
-- Do not store endpoint result rows, hostnames, target selectors, Job IDs, raw API responses, tenant data, credentials, IP addresses, GUIDs, usernames, or customer-identifying values.
+- Store interpretation profiles, row counts, returned column names, catalog metadata, sanitized caveats, and no more than 15 structural sample rows in each per-Catalog-ID Markdown file.
+- Do not store raw endpoint result rows, hostnames, target selectors, Job IDs, raw API responses, tenant data, credentials, IP addresses, GUIDs, usernames, customer-identifying values, or sample-row values in the JSONL or summary Markdown files.
 
 Raw operational validation files stay local-only under `local/orbital_catalog_windows_validation/`.
 """
     )
 
 
+def validate_generated_artifacts(output_dir: Path) -> None:
+    jsonl_path = output_dir / "windows_stock_catalog_result_profiles.jsonl"
+    for line in jsonl_path.read_text().splitlines():
+        if not line.strip():
+            continue
+        validation = json.loads(line).get("validation") or {}
+        if "sample_result_data" in validation:
+            raise ValueError("JSONL must not contain sample result row values")
+
+    for path in (output_dir / "windows").glob("*.md"):
+        content = path.read_text()
+        if content.count("## Sample Result Data") != 1:
+            raise ValueError(f"{path.name} must contain exactly one Sample Result Data section")
+        sample_section = content.split("## Sample Result Data", 1)[1]
+        if "\n## " in sample_section:
+            raise ValueError(f"{path.name} must end with Sample Result Data")
+
+        sample_row_count = 0
+        for line in sample_section.splitlines():
+            if not line.startswith("|") or "---" in line or "`" in line:
+                continue
+            cells = [cell.strip() for cell in line.strip("|").split("|")]
+            if not all(SAFE_SAMPLE_VALUE_RE.fullmatch(cell) for cell in cells):
+                raise ValueError(f"{path.name} contains a non-sanitized sample value")
+            sample_row_count += 1
+        if sample_row_count > MAX_SAMPLE_ROWS_PER_PROFILE:
+            raise ValueError(f"{path.name} exceeds the {MAX_SAMPLE_ROWS_PER_PROFILE}-row sample limit")
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--validate-only", action="store_true", help="Validate existing generated profile artifacts.")
+    args = parser.parse_args()
+
+    if args.validate_only:
+        validate_generated_artifacts(OUTPUT_DIR)
+        print(f"Validated catalog result profiles in {OUTPUT_DIR}")
+        return
+
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     profiles = build_profiles(load_best_records(DEFAULT_INPUT))
     write_jsonl(profiles, OUTPUT_DIR / "windows_stock_catalog_result_profiles.jsonl")
     write_markdown(profiles, OUTPUT_DIR / "windows_stock_catalog_result_profiles.md")
     write_per_catalog_markdown(profiles, OUTPUT_DIR)
     write_readme(OUTPUT_DIR / "README.md")
+    validate_generated_artifacts(OUTPUT_DIR)
     print(f"Generated {len(profiles)} catalog result profiles in {OUTPUT_DIR}")
 
 

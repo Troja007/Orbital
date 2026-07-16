@@ -105,9 +105,9 @@ The `unusual_conhost_parent_process` catalog query (Unusual Conhost Parent Proce
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

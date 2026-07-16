@@ -104,9 +104,9 @@ The `windows_msft_mpcomputerstatus_windows_defender_monitoring` catalog query (W
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

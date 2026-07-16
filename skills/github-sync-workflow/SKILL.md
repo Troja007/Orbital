@@ -12,6 +12,8 @@ Use this skill to move content between a local Codex workspace and GitHub withou
 - Inspect the repository before changing anything: current branch, remote URL, status, recent commits, and ignored files.
 - Treat a dirty working tree as user-owned until proven otherwise. Do not discard changes unless the user explicitly asks and the effect is clear.
 - Never commit secrets, `.env` files, local Codex runtime state, local Git metadata backups, generated tenant-specific API snapshots, or machine-local files.
+- For a public project repository, publish tracked, sanitized reusable content by default. This includes documentation, product context, schemas, reusable methods, generic queries and scripts, result profiles, and installable project skills. Do not exclude an artifact merely because it is detailed technical context or a reusable skill.
+- Keep credentials, tokens, hostnames, usernames, IP addresses, GUIDs, tenant identifiers, raw endpoint evidence, raw API responses, organization-specific exports, and local execution logs out of GitHub.
 - Do not add routine GitHub sync reports to `local/project-change-log.md`. If a sync publishes or downloads durable project changes, append a sanitized entry for the underlying project/content change, not for the sync mechanics.
 - Append useful sync activity to `local/sync-activity-log.md`: GitHub push/pull results, connector fallback, authentication or permission issues, metadata reconciliation, and troubleshooting notes. Skip noise-only entries. This file is local-only and must never be staged, committed, or pushed.
 - If the sync publishes a durable project decision or a change that should be remembered by future GitHub imports, verify that a sanitized decision record exists under `notes-and-memory/decisions/`. Do not treat the local-only project change log as sufficient for reusable project memory.
@@ -207,7 +209,7 @@ Use the GitHub connector when local push cannot authenticate but the connector h
 1. Confirm the remote repository and current remote branch head.
 2. Show the mandatory upload preview for the files that will be represented in the connector tree.
 3. Build the intended GitHub tree from the local tracked content only.
-4. Exclude ignored local content such as `.env`, `.codex/`, `skills/`, `local/`, `.DS_Store`, SQLite files, and generated tenant-specific snapshots unless the user explicitly wants them.
+4. Exclude ignored local content such as `.env`, `.codex/`, `skills/.system/`, `local/`, `.DS_Store`, SQLite files, and generated tenant-specific snapshots. Keep tracked installable project skills under `skills/` in the connector tree.
 5. Before creating the commit, list connector-tree file paths that will be added, modified, deleted, or moved relative to the remote branch head.
 6. Create blobs or tree entries through the connector.
 7. Create a commit whose parent is the current remote branch head.
@@ -252,3 +254,44 @@ queries_and_scripts/
 - Commit `.env.example` templates when useful, not real `.env` files.
 - If terminal push should work long term, recommend configuring either HTTPS with a GitHub token in the user's credential manager or an SSH key registered in GitHub.
 - If Codex can use the GitHub connector, prefer it for publishing when the user wants to avoid local terminal credentials.
+
+## Global Alignment
+
+This workspace copy extends the global GitHub-sync baseline with Orbital public-repository boundaries and local-log rules. Keep the global release guardrails intact when updating either copy.
+
+- Do not use a blind workspace-to-global `rsync --delete` for this skill when the global copy contains a newer `VERSION`, `scripts/version_skill.py`, or retained release history.
+- Merge the current skill files deliberately, validate each variant, and create a local release snapshot for each changed copy.
+- Keep `versions/` local-only. Publish the current `SKILL.md`, `VERSION`, agent metadata, and release script needed by a newly imported project.
+
+## Outcome Guardrails, Version Review, And Retention
+
+Apply `$skill-governance-guardrail` to every material update of this skill, its scripts, references, or assets. Before editing, inspect retained history and record the four release inputs below:
+
+1. **Problem and success:** state the observed problem and a falsifiable success criterion.
+2. **Trigger boundary:** give one request that should trigger the skill and one similar request that must not; review the frontmatter description against both.
+3. **Dependencies and conflicts:** check related skills, referenced files, scripts, and tools for overlap, stale references, or contradictory instructions.
+4. **Risk-based validation:** classify the change as `documentation`, `code`, or `sensitive`; run and record the relevant validation. For `sensitive`, also validate a failure or safe-rejection path.
+
+```bash
+python3 scripts/version_skill.py --history
+```
+
+After validation, increment `VERSION` and create the release snapshot. The command rejects missing outcome data, an unchanged release, or an unreviewed reintroduction from an older retained version.
+
+```bash
+python3 scripts/version_skill.py \
+  --version "$(tr -d '\n' VERSION)" \
+  --change-type maintenance \
+  --change-summary "Describe the user-visible improvement." \
+  --problem-statement "Describe the observed failure or gap." \
+  --success-criteria "State the observable result that proves the improvement." \
+  --positive-trigger "A request that should activate this skill." \
+  --negative-trigger "A similar request that should use another approach." \
+  --dependency-review "State checked skills, files, tools, and conflicts." \
+  --risk-tier documentation \
+  --review-notes "State the previous release and regression risks reviewed." \
+  --validation "State the exact command or task and its result." \
+  --keep 5
+```
+
+For `code`, run the changed script or a representative test. For `sensitive`, add `--failure-path-validation` with the rejected-input or safe-failure test. Keep at most five local snapshots in `versions/`. Publish only current files, including `VERSION` and `scripts/version_skill.py`, to GitHub; never publish `versions/` or runtime state.

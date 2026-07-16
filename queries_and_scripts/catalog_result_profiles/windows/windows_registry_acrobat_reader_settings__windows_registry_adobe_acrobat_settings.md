@@ -106,9 +106,9 @@ The `windows_registry_acrobat_reader_settings` catalog query (Windows Registry A
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

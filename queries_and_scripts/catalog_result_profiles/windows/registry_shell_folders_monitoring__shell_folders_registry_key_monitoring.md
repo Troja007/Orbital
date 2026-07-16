@@ -105,9 +105,9 @@ The `registry_shell_folders_monitoring` catalog query (Shell Folders Registry Ke
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

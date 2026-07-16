@@ -105,9 +105,9 @@ The `accounts_excluded_from_sync_monitoring` catalog query (Account Excluded Fro
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

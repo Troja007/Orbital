@@ -106,9 +106,9 @@ The `windows_printer_port_monitors` catalog query (Windows Printer Port Monitors
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

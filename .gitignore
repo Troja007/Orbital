@@ -32,3 +32,6 @@ local/orbital-catalog-api-cache/
 # Generated query scratch output is temporary by default.
 queries_and_scripts/Generated_Queries/
 local/generated-queries/
+
+# Local release history for the GitHub sync skill. The current skill files are tracked.
+skills/github-sync-workflow/versions/

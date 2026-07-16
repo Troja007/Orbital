@@ -104,9 +104,9 @@ The `chrome_extensions_monitoring` catalog query (Chrome Browser Extensions Moni
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

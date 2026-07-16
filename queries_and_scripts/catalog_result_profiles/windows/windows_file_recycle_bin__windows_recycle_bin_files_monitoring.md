@@ -105,9 +105,9 @@ The `windows_file_recycle_bin` catalog query (Windows Recycle Bin Files Monitori
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

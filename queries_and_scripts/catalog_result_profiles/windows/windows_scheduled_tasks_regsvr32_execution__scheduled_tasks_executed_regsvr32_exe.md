@@ -108,9 +108,9 @@ The `windows_scheduled_tasks_regsvr32_execution` catalog query (Scheduled Tasks 
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

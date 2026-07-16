@@ -106,9 +106,9 @@ The `registry_appinit_dll_monitoring` catalog query (Registry AppInit_Dll Key Mo
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

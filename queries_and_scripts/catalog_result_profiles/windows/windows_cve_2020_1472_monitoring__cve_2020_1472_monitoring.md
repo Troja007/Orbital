@@ -108,9 +108,9 @@ The `windows_cve_2020_1472_monitoring` catalog query (CVE-2020-1472 Monitoring) 
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

@@ -71,6 +71,15 @@ Relevant catalog API concept:
 
 Note: use `/v0`, not `/vo`. The API version path uses the digit zero.
 
+GitHub-synced offline stock snapshot:
+
+```text
+queries_and_scripts/catalog_snapshot/stock_query_catalog.json
+queries_and_scripts/catalog_snapshot/stock_catalog_scripts.json
+```
+
+Use `project-context/Orbital_Catalog_API_Import.md` to determine the snapshot retrieval time and API import status. Organization catalog exports remain local-only and are not a source for GitHub-synced context.
+
 Use for:
 
 - Programmatic access to stock catalog entries

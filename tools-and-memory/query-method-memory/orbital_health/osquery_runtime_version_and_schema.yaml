@@ -1,0 +1,169 @@
+title: "Check osquery runtime version and schema metadata on Orbital endpoints"
+status: "tested"
+created: "2026-07-10"
+updated: "2026-07-10"
+category: "orbital_health"
+platforms:
+  - "windows"
+  - "linux"
+  - "darwin"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Show which osquery schema or runtime version Orbital is using on a selected endpoint."
+    - "Check the osquery version from one or more online endpoints."
+    - "Schedule a recurring query to see when an endpoint comes online and reports osquery_info."
+  keywords:
+    - "osquery schema"
+    - "osquery version"
+    - "osquery_info"
+    - "schema version"
+    - "Orbital runtime"
+    - "online endpoint"
+
+query_goal:
+  question: "Determine the osquery runtime metadata exposed by an Orbital endpoint."
+  answers:
+    - "The osquery version reported by the endpoint runtime."
+    - "The osquery build platform, SDK version, start time, and config hash where exposed."
+    - "Whether a target endpoint answered the query during the scheduled window."
+  does_not_answer:
+    - "Whether every upstream osquery 5.23.0 table is enabled by Orbital."
+    - "Whether a specific table is available on that endpoint; validate table use separately."
+    - "Whether an offline endpoint is enrolled; no response only means it did not answer this query window."
+use_when:
+  - "A query depends on a table or column and the analyst wants runtime context from the endpoint."
+  - "An endpoint did not answer a prior query and the analyst wants a low-impact check over a short schedule window."
+  - "A broad investigation needs to separate upstream schema documentation from actual endpoint runtime behavior."
+do_not_use_when:
+  - "The analyst already needs a specific table validation; query that table directly with safe constraints."
+  - "The target scope is unclear. Ask for exact target selectors before execution."
+preferred_next_queries:
+  - "Operating system inventory with os_version and system_info."
+  - "Specific table smoke test with LIMIT and safe constraints."
+  - "Catalog compatibility checks when stock catalog SQL fails against an endpoint runtime."
+
+catalog_context:
+  exact_matches:
+    - "No exact stock catalog query for osquery_info runtime schema/version lookup is recorded in local method memory."
+  related:
+    - name: "Operating System Attributes"
+      id: "os_info"
+      source: "Orbital stock catalog"
+      relevance: "Related low-impact runtime posture context, but it reports OS version rather than osquery runtime version."
+
+catalog_table_context:
+  - table: "osquery_info"
+    catalog_name: ""
+    catalog_id: ""
+    source: "osquery schema"
+    os:
+      - "windows"
+      - "linux"
+      - "darwin"
+    categories: []
+    mitre_tactics: []
+    mitre_techniques: []
+    relevance: "Endpoint runtime metadata for osquery version/build/config context."
+  - table: "system_info"
+    catalog_name: "Inventory System Information"
+    catalog_id: "system_info"
+    source: "Orbital stock catalog"
+    os:
+      - "windows"
+      - "linux"
+      - "darwin"
+    categories:
+      - "Posture Assessment"
+    mitre_tactics: []
+    mitre_techniques: []
+    relevance: "Adds endpoint hostname to runtime metadata output."
+
+related_table_ttp_context:
+  - table: "osquery_info"
+    note: "This is operational health and compatibility context. Do not map runtime version checks to threat activity."
+
+osquery_context:
+  tables:
+    - "osquery_info"
+    - "system_info"
+  columns:
+    osquery_info:
+      - "version"
+      - "config_hash"
+      - "config_valid"
+      - "extensions"
+      - "build_platform"
+      - "build_distro"
+      - "start_time"
+      - "watcher"
+    system_info:
+      - "hostname"
+  constraints:
+    - "osquery_info is a small single-row utility table; keep output narrow."
+    - "Use explicit target selectors or approved OS selectors."
+
+orbital_guidance:
+  query_type: "scheduled query for Job ID tracking"
+  recommended_targets:
+    - "host:<hostname>"
+    - "multiple explicit host:<hostname> selectors"
+    - "os:<platform> only after broad-targeting approval"
+    - "all only after explicit broad-scope approval"
+  platform_filter: "Cross-platform, but target selector scope must be explicit."
+  performance_notes:
+    - "Low expected endpoint cost."
+    - "For recurring online checks, use a short interval and short expiry, then monitor the returned Job ID instead of submitting duplicate jobs."
+  result_shape:
+    - "One row per answering endpoint."
+    - "Include hostname plus osquery_info version/build/config fields."
+    - "No rows from a target means no endpoint answered in the query window, not proof of absence."
+
+sql_patterns:
+  - name: "Runtime osquery version and config metadata"
+    description: "Return endpoint osquery runtime metadata with host identity."
+    sql: |
+      SELECT
+        si.hostname AS host,
+        oi.version,
+        oi.config_hash,
+        oi.config_valid,
+        oi.extensions,
+        oi.build_platform,
+        oi.build_distro,
+        datetime(oi.start_time, 'unixepoch', 'UTC') AS osquery_start_utc,
+        oi.watcher
+      FROM osquery_info oi
+      CROSS JOIN system_info si;
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: false
+  live_query_tested: true
+  notes:
+    - "Generated SQL files for Windows and Linux runtime schema checks use osquery_info and system_info."
+    - "This method stores the query approach only. Endpoint rows, hostnames, node IDs, Job IDs, version values, and raw API responses are intentionally not stored."
+
+lessons:
+  - date: "2026-07-10"
+    note: "Use osquery_info to query the runtime version exposed by an endpoint. Keep this separate from the local upstream osquery schema snapshot, because upstream schema availability does not prove Orbital endpoint table availability."
+  - date: "2026-07-10"
+    note: "For scheduled online checks, keep the returned orbital_queryID and poll job status/results. Do not resubmit the same query just to see whether a host has come online."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<platform>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

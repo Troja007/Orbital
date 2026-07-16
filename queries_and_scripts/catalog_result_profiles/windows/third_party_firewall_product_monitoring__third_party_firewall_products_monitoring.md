@@ -105,9 +105,9 @@ The `third_party_firewall_product_monitoring` catalog query (Third Party Firewal
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

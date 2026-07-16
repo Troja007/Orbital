@@ -104,9 +104,9 @@ The `arp_cache_inspection` catalog query (ARP Cache Inspection) returned results
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs
@@ -125,6 +125,6 @@ Label: `arp_cache_inspection`
 
 | `address` | `mac` | `count` |
 | --- | --- | --- |
-| <redacted:ipv4-private> | <redacted:mac-unicast> | 1 |
-| <redacted:ipv4-multicast> | <redacted:mac-multicast> | 1 |
-| <redacted:ipv4-broadcast> | <redacted:mac-broadcast> | 1 |
+| <redacted:sensitive-value> | <redacted:sensitive-value> | <redacted:sensitive-value> |
+| <redacted:sensitive-value> | <redacted:sensitive-value> | <redacted:sensitive-value> |
+| <redacted:sensitive-value> | <redacted:sensitive-value> | <redacted:sensitive-value> |

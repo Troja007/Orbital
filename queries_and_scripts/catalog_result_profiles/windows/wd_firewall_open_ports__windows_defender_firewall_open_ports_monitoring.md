@@ -106,9 +106,9 @@ The `wd_firewall_open_ports` catalog query (Windows Defender Firewall Open Ports
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

@@ -106,9 +106,9 @@ The `windows_eventlogs_audit_log_cleared` catalog query (Windows Events Audit Lo
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

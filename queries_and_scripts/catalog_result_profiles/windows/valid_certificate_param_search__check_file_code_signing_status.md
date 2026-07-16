@@ -105,9 +105,9 @@ The `valid_certificate_param_search` catalog query (Check File Code Signing Stat
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

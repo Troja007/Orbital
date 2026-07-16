@@ -105,9 +105,9 @@ The `windows_registry_wsh_status` catalog query (Registry Windows Script Host St
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

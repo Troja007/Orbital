@@ -106,9 +106,9 @@ The `windows_yara_pe_sysinternals` catalog query (YARA Scan: Binary Contains Ref
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

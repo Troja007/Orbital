@@ -105,9 +105,9 @@ The `connected_networks_history_monitoring` catalog query (Networks Host Connect
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

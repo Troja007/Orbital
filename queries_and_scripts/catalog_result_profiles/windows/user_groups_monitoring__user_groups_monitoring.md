@@ -108,9 +108,9 @@ The `user_groups_monitoring` catalog query (User Groups Monitoring) returned res
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

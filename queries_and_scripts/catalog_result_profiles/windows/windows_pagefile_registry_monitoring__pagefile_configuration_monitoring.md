@@ -105,9 +105,9 @@ The `windows_pagefile_registry_monitoring` catalog query (Pagefile Configuration
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

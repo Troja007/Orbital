@@ -108,9 +108,9 @@ The `outlook_email_attachments_monitoring` catalog query (Outlook Email Attachme
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

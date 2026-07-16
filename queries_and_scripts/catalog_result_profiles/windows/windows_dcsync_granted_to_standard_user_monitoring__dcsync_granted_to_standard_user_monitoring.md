@@ -107,9 +107,9 @@ The `windows_dcsync_granted_to_standard_user_monitoring` catalog query (DCSync G
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

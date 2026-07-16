@@ -106,9 +106,9 @@ The `accessibility_features_registry_backdoor` catalog query (Sticky Keys Regist
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

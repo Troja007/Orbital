@@ -105,9 +105,9 @@ The `dns_server_search_order_monitoring` catalog query (Rogue DNS Servers Monito
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

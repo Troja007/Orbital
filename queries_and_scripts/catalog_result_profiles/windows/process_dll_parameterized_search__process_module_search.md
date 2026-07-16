@@ -105,9 +105,9 @@ The `process_dll_parameterized_search` catalog query (Process Module Search) ret
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

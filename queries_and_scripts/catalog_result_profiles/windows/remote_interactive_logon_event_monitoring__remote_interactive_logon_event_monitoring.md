@@ -108,9 +108,9 @@ The `remote_interactive_logon_event_monitoring` catalog query (Remote Interactiv
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs

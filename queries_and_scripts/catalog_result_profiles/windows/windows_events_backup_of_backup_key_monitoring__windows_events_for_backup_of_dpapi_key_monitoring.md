@@ -105,9 +105,9 @@ The `windows_events_backup_of_backup_key_monitoring` catalog query (Windows Even
 
 ## Privacy Boundary
 
-This profile intentionally does not store:
+This profile intentionally does not store raw endpoint evidence:
 
-- Endpoint result rows
+- Raw endpoint result rows
 - Hostnames
 - Target selectors
 - Job IDs
