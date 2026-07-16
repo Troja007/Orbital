@@ -1,0 +1,51 @@
+title: "Run custom inline Python scripts through Orbital"
+category: "software"
+summary: "Use Orbital /script/run with base64-encoded Python in script.content when no suitable catalog script exists."
+use_when:
+  - "A response action requires endpoint-side Python and no stock or organization catalog script fits the task."
+  - "A catalog script is close enough to use as a behavioral example, but the endpoint operation needs custom logic."
+  - "The user explicitly wants to execute a Python script directly through the Orbital API without first creating a catalog entry."
+do_not_use_when:
+  - "The task can be answered with osquery SQL; prefer a query for read-only inspection."
+  - "A suitable catalog script already exists and should be reused as-is."
+  - "The script is state-changing and the user has not explicitly approved the exact action and target scope."
+sources:
+  - "project-context/Orbital_API_DevNet.md"
+  - "project-context/Orbital_Script_Page_Linked_Context.md"
+  - "queries_and_scripts/catalog_snapshot/stock_catalog_scripts.json"
+api_pattern:
+  method: "POST"
+  path: "/v0/script/run"
+  body_shape:
+    script:
+      content: "<base64-encoded Python source>"
+      name: "Human-readable script name"
+      label: "Optional label"
+      timeout: 600
+      args:
+        - Name: "parameter_name"
+          ArgType: "ORBITAL_BASIC_STRING"
+          Value: "parameter value"
+    nodes:
+      - "host:EXAMPLE-HOST"
+    os:
+      - "windows"
+    name: "Human-readable operation name"
+    expiryinminutes: "2"
+    requestdurationsec: "60"
+workflow:
+  - "Search catalog scripts first and use the closest catalog entry as an API and behavior example."
+  - "If no suitable catalog script exists, write or adapt a small Python script for the endpoint runtime."
+  - "Classify the script as observational or state-changing before execution."
+  - "For state-changing scripts, require explicit approval for the exact target, exact action, and key parameters."
+  - "Base64-encode the Python source and submit it in script.content instead of script.catalog_id."
+  - "Pass runtime values through script.args using the API field names Name and Value, with ArgType when helpful."
+  - "Use exact Orbital node selectors and explicit OS values; do not broaden target scope silently."
+  - "Report the result_id, target selector, operation class, endpoint answer count, exit code, and concise stdout/stderr interpretation."
+safety_notes:
+  - "Inline Python executes directly on the endpoint and should be handled as endpoint automation, not as a query."
+  - "Do not store raw endpoint stdout/stderr, host/node identifiers, tenant data, raw API responses, credentials, or tokens in GitHub-synced memory."
+  - "Catalog examples are reusable references; inline script content is appropriate for one-off reviewed operations without creating a durable catalog entry."
+validation:
+  status: "documented_from_user_guidance_and_api_schema"
+  last_updated: "2026-07-16"

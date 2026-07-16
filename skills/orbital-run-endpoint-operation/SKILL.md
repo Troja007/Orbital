@@ -12,6 +12,7 @@ Use this as the shared endpoint-operation boundary for Orbital. Run custom osque
 - **Query mode is implemented.** Use `scripts/run_live_query.py` for custom osquery queries and their existing Job IDs.
 - **Observational catalog-script mode is implemented.** Use `scripts/run_live_script.py` only for an explicit, reviewed catalog script that does not change endpoint state. It uses `POST /script/run`; never submit a script to a query endpoint.
 - **State-changing script mode is not automated.** Classify every script before submission. Require the applicable review and explicit approval before creating a state-changing script workflow.
+- **Custom inline Python script mode is supported by the Orbital API.** If no suitable catalog script exists, use the catalog script as a behavior and payload example, then place base64-encoded Python directly in `script.content` for `POST /script/run`. This allows the endpoint to execute Python without creating or using a catalog entry. Treat inline Python as script execution with the same safety, review, target, logging, and approval requirements as catalog scripts.
 
 ## Operating Model
 
@@ -145,6 +146,39 @@ python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run
 ```
 
 Treat a script's reported condition precisely. For example, a script that returns only `Installed` does not, by itself, prove that a service or process is currently running. Use a separate, platform-appropriate query when the runtime state is required.
+
+## Custom Inline Python Scripts
+
+When no suitable catalog script exists, use the closest catalog script as an implementation and API-body reference, but submit a custom script through `POST /script/run` by providing `script.content` instead of `script.catalog_id`.
+
+- Encode the Python source as base64 and put it in `script.content`.
+- Put user-supplied parameters in `script.args` using the API field names `Name`, `Value`, and optionally `ArgType`, `Description`, and `Optional`.
+- Include `script.name`, `script.label`, and `script.timeout` where useful for traceability and execution control.
+- Include exact `nodes`, `os`, `name`, `expiryinminutes`, and `requestdurationsec` in the request body.
+- Do not create a catalog entry merely to run one-off Python. Catalog entries are useful reusable examples and durable managed assets; inline content is appropriate for reviewed one-time endpoint operations.
+- Review, classify, and obtain explicit approval for state-changing inline Python just as for state-changing catalog scripts.
+- Store only sanitized operation metadata and error summaries in local ledgers. Do not store raw stdout/stderr, endpoint rows, host/node identifiers, tenant data, raw API responses, credentials, or tokens in GitHub-synced files.
+
+Minimal request-body shape:
+
+```json
+{
+  "script": {
+    "args": [
+      {"Name": "name", "ArgType": "ORBITAL_BASIC_STRING", "Value": "example"}
+    ],
+    "content": "<base64-encoded-python>",
+    "label": "codex_custom_script",
+    "name": "codex custom Python script",
+    "timeout": 600
+  },
+  "nodes": ["host:EXAMPLE-HOST"],
+  "os": ["windows"],
+  "name": "codex custom Python script",
+  "expiryinminutes": "2",
+  "requestdurationsec": "60"
+}
+```
 
 ## Result Handling
 
