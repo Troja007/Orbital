@@ -21,7 +21,7 @@ api_pattern:
       content: "<base64-encoded Python source>"
       name: "Human-readable script name"
       label: "Optional label"
-      timeout: 600
+      timeout: 120
       args:
         - Name: "parameter_name"
           ArgType: "ORBITAL_BASIC_STRING"
@@ -32,7 +32,7 @@ api_pattern:
       - "windows"
     name: "Human-readable operation name"
     expiryinminutes: "2"
-    requestdurationsec: "60"
+    requestdurationsec: "120"
 workflow:
   - "Search catalog scripts first and use the closest catalog entry as an API and behavior example."
   - "If no suitable catalog script exists, write or adapt a small Python script for the endpoint runtime."
@@ -40,12 +40,35 @@ workflow:
   - "For state-changing scripts, require explicit approval for the exact target, exact action, and key parameters."
   - "Base64-encode the Python source and submit it in script.content instead of script.catalog_id."
   - "Pass runtime values through script.args using the API field names Name and Value, with ArgType when helpful."
+  - "Respect the Orbital API script timeout limit. A timeout value over 120 seconds can be rejected before endpoint execution."
   - "Use exact Orbital node selectors and explicit OS values; do not broaden target scope silently."
   - "Report the result_id, target selector, operation class, endpoint answer count, exit code, and concise stdout/stderr interpretation."
+state_changing_windows_msi_uninstall_pattern:
+  use_when:
+    - "A Windows product is installed through MSI and the catalog uninstall script does not successfully trigger or report execution."
+    - "The uninstall entry exposes a stable identifying_number/product code and the analyst explicitly approves removal."
+  method:
+    - "Confirm the target product with the programs table using product name and identifying_number before uninstall."
+    - "Submit inline Python through /script/run with a UI-visible run name supplied by the analyst."
+    - "Have the endpoint Python run msiexec.exe with /x <product_code> /qn /norestart."
+    - "Treat msiexec return codes 0 and 3010 as successful uninstall states; 3010 means reboot required. Treat 1605 as already absent only when the intent is idempotent removal."
+    - "Verify removal with a follow-up programs query for the same product name and identifying_number."
+  verification_sql_template: |
+    SELECT name, version, publisher, install_location, uninstall_string, identifying_number, install_date
+    FROM programs
+    WHERE name LIKE '%<product display name fragment>%'
+       OR identifying_number = '<product code>'
+    ORDER BY name;
+  notes:
+    - "The product UI run name is the top-level script request name; keep it analyst-specified when tracking matters."
+    - "Use inline Python only after catalog-script options are checked or found insufficient for the specific task."
 safety_notes:
   - "Inline Python executes directly on the endpoint and should be handled as endpoint automation, not as a query."
   - "Do not store raw endpoint stdout/stderr, host/node identifiers, tenant data, raw API responses, credentials, or tokens in GitHub-synced memory."
   - "Catalog examples are reusable references; inline script content is appropriate for one-off reviewed operations without creating a durable catalog entry."
 validation:
-  status: "documented_from_user_guidance_and_api_schema"
+  status: "validated_with_state_changing_windows_msi_uninstall_pattern"
   last_updated: "2026-07-16"
+  caveats:
+    - "Do not store or reuse endpoint-specific execution result IDs, hostnames, or returned script output in this memory."
+    - "Future helpers should expose script.args and inline script.content directly so parameterized and custom scripts do not require ad hoc API code."
