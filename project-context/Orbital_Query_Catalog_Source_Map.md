@@ -1,6 +1,6 @@
 # Orbital Query Catalog Source Map
 
-Retrieved/updated: 2026-06-02
+Retrieved/updated: 2026-07-28
 
 Purpose: Link the main information sources used to understand Orbital queries: upstream osquery schema, Orbital Catalog API, authenticated Orbital Catalog UI, and sanitized catalog result profiles.
 
@@ -129,6 +129,7 @@ Source folder:
 ```text
 queries_and_scripts/catalog_result_profiles/
 queries_and_scripts/catalog_result_profiles/windows/
+queries_and_scripts/catalog_result_profiles/linux/
 ```
 
 Use for:
@@ -171,7 +172,7 @@ Do not use alone for:
 4. Validate referenced tables and columns against `osquery_schema_5_23_0.json`.
 5. Check whether Orbital-specific availability, disabled tables, `allowos`, or platform filters apply.
 6. Preserve Catalog metadata such as OS, category, MITRE mapping, owner/updater, and update date.
-7. If explaining an executed catalog result, check the matching per-Catalog-ID Markdown file under `queries_and_scripts/catalog_result_profiles/windows/`. Use the JSONL file for automated lookup or bulk processing.
+7. If explaining an executed catalog result, check the matching per-Catalog-ID Markdown file under the platform folder, such as `queries_and_scripts/catalog_result_profiles/windows/` or `queries_and_scripts/catalog_result_profiles/linux/`. Use the matching platform JSONL file for automated lookup or bulk processing.
 8. If adapting the query, copy it into `queries_and_scripts/draft_queries/` before editing.
 
 ## Example From UI Analysis

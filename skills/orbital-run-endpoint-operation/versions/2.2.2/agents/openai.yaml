@@ -1,0 +1,4 @@
+interface:
+  display_name: "Orbital Run Endpoint Operation"
+  short_description: "Run targeted Orbital endpoint operations safely."
+  default_prompt: "Use the configured Orbital API to run a targeted osquery endpoint query, choosing scheduled or live mode safely, and return the requested result summary."

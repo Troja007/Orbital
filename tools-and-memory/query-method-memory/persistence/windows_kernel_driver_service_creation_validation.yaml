@@ -1,7 +1,7 @@
 title: "Validate Windows kernel driver service creation"
 status: "tested"
 created: "2026-06-30"
-updated: "2026-07-10"
+updated: "2026-07-21"
 category: "persistence"
 platforms:
   - "windows"
@@ -13,6 +13,7 @@ investigation_inputs:
     - "Query selected hosts for a driver service name and its ImagePath."
     - "After starting a driver service with sc.exe, check whether it is running and whether Service Control Manager logged a stop or start failure."
     - "After rebooting a Windows endpoint, check the current state of a named kernel driver service."
+    - "I ran sc.exe create for a demand-start kernel driver and saw no error; verify whether the service, registry ImagePath, driver file, and loaded-driver state agree."
   keywords:
     - "sc.exe create"
     - "kernel driver"
@@ -41,6 +42,7 @@ query_goal:
 use_when:
   - "An analyst has a service name from sc.exe create and needs current endpoint state."
   - "The expected service is a kernel driver service, for example type= kernel and start= system."
+  - "The expected service is a demand-start kernel driver service, for example type= kernel and start= demand."
   - "The analyst wants a low-impact current-state check before moving to event logs or file hashing."
   - "An analyst attempted to start a named Windows service or driver with sc.exe and needs to know whether it is running now."
   - "An analyst rebooted the endpoint and needs to compare post-reboot service state with pre-reboot state."
@@ -141,6 +143,7 @@ osquery_context:
   service_indicators:
     expected_service_type: "KERNEL_DRIVER"
     expected_start_type_for_sc_start_system: "SYSTEM_START"
+    expected_start_type_for_sc_start_demand: "DEMAND_START"
     driver_services_pid_note: "Kernel driver services commonly report pid 0; pid 0 should not be interpreted as missing."
     stopped_demand_start_note: "A KERNEL_DRIVER service with status STOPPED, pid 0, and DEMAND_START can still be installed correctly; it is not loaded/running at query time."
   registry_key_pattern: "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\<service_name>"
@@ -381,6 +384,7 @@ validation:
     - "The pattern was tested as a scheduled multi-host query using explicit host selectors. Endpoint result rows, hostnames, node IDs, and Job IDs are intentionally not stored."
     - "The query can show service_created=true even when status is STOPPED. Creation and successful start/load are separate questions."
     - "For sc.exe create type= kernel start= system, expected service evidence is service_type KERNEL_DRIVER and start_type SYSTEM_START."
+    - "For sc.exe create type= kernel start= demand, expected creation evidence is service_type KERNEL_DRIVER, start_type DEMAND_START, an SCM registry ImagePath, and optionally the referenced file. This does not imply the driver is currently loaded."
     - "The loaded-driver-by-path pattern was tested as a scheduled exact-host query on 2026-07-01. Endpoint rows, hostnames, node IDs, and Job IDs are intentionally not stored."
     - "The current-state services query was re-tested as scheduled exact-host queries for a named kernel driver service on 2026-07-09. Endpoint result rows, hostnames, node IDs, service names, paths, and Job IDs are intentionally not stored."
     - "The Service Control Manager windows_eventlog pattern was tested as a scheduled exact-host query on 2026-07-09 for a named kernel driver service after an sc.exe start attempt. It returned service installation and start-failure evidence. Endpoint result rows, hostnames, node IDs, service names, paths, and Job IDs are intentionally not stored."
@@ -390,6 +394,7 @@ lessons:
   - "Use exact CurrentControlSet service registry key constraints; avoid broad registry scans when the service name is known."
   - "Use exact driver file path constraints; service creation can succeed even if the driver file is absent."
   - "Driver services commonly report pid 0."
+  - "A no-error result from sc.exe create type= kernel means the service registration likely succeeded; validate it through the services table and HKLM\\SYSTEM\\CurrentControlSet\\Services\\<service_name> ImagePath, then separately check exact driver file presence and loaded/running state."
   - "A driver file and service ImagePath can exist while driver_loaded remains false. Treat drivers-table evidence or a RUNNING driver service as stronger loaded-state evidence than registry/file presence."
   - "For an sc.exe start attempt, a current services row with KERNEL_DRIVER and STOPPED should be paired with Service Control Manager event-log evidence before concluding why the service is not running."
   - "Service Control Manager event ID 7045 shows service installation; event ID 7000 shows a service start failure; event IDs 7036, 7031, and 7034 are useful stop/runtime-state indicators when present."

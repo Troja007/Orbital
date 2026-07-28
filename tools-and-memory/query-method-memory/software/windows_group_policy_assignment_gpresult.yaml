@@ -1,0 +1,50 @@
+title: "Check assigned Windows Group Policies with gpresult through Orbital"
+category: "software"
+summary: "Use an observational inline Python /script/run operation to execute gpresult.exe on a Windows endpoint when osquery tables do not expose the needed Resultant Set of Policy view."
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Check a Windows endpoint and show which Group Policies are assigned."
+    - "Use gpresult on a host to show applied computer policies."
+    - "Show the Resultant Set of Policy for a Windows endpoint."
+  keywords:
+    - "gpresult"
+    - "group policy"
+    - "GPO"
+    - "RSoP"
+    - "Resultant Set of Policy"
+use_when:
+  - "The analyst needs assigned/applied Group Policy Objects for a specific Windows endpoint."
+  - "The desired output is the same operational view an administrator would get from gpresult.exe."
+  - "User-scope policy is useful but the execution context may only have machine-account RSoP data."
+do_not_use_when:
+  - "The analyst only needs static registry policy values; use targeted registry/osquery queries instead."
+  - "The target is broad or unspecified. gpresult should be run against explicit Windows host selectors."
+  - "The requirement is to modify Group Policy; this method is read-only observation."
+execution_method:
+  type: "observational_inline_python_script"
+  api_path: "/v0/script/run"
+  target_scope: "explicit Windows host selector, for example host:<hostname>"
+  script_behavior:
+    - "Execute gpresult.exe /R /SCOPE COMPUTER."
+    - "Optionally execute gpresult.exe /R /SCOPE USER, but expect no user RSoP data when Orbital runs as LocalSystem or machine context."
+    - "Capture stdout/stderr and return code for interpretation in chat."
+  timeout_guidance:
+    script_timeout_seconds: 120
+    requestdurationsec: "120"
+    note: "Orbital API can reject script timeout values over 120 seconds before endpoint execution."
+interpretation:
+  applied_computer_gpos:
+    - "Parse the 'COMPUTER SETTINGS' section and the 'Applied Group Policy Objects' subsection."
+    - "Also report 'Group Policy was applied from', domain, site, and last applied time when present."
+  user_scope:
+    - "If gpresult reports that the machine account has no RSoP data, do not call this a user-policy absence for an interactive user."
+    - "Explain that Orbital script execution context may not represent an interactive user's policy context."
+  caveats:
+    - "gpresult output can be localized and formatted differently by OS language/version."
+    - "Do not store raw gpresult output or endpoint identifiers in GitHub-synced memory."
+related_methods:
+  - "tools-and-memory/query-method-memory/software/orbital_inline_python_script_execution.yaml"
+validation:
+  status: "validated_observational_pattern"
+  last_updated: "2026-07-17"

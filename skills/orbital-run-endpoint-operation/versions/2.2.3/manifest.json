@@ -1,0 +1,30 @@
+{
+  "created_at": "2026-07-17T07:27:05.400308Z",
+  "files": [
+    {
+      "path": "SKILL.md",
+      "sha256": "0d2c0f8d02da4c0d24d83fe62f0ac525dd138c4417690389171b22b8e7f8e1eb"
+    },
+    {
+      "path": "VERSION",
+      "sha256": "4d66ce434c5ffb80f286227e918f77e14a9bc80e7bcc445353c02d484c33b699"
+    },
+    {
+      "path": "agents/openai.yaml",
+      "sha256": "16f987c84e6c91217bef24841c1e7cbba0d29dcfea51f58f72a309a651174455"
+    },
+    {
+      "path": "scripts/run_live_query.py",
+      "sha256": "9bbab0df1fbc091238ecefe5f0df618c96f47cdc29d57a5ab344bc0151f832db"
+    },
+    {
+      "path": "scripts/run_live_script.py",
+      "sha256": "7775e0d081c984945f04c387858489f299172fdc821c162a9bb25891fe162230"
+    },
+    {
+      "path": "scripts/version_skill.py",
+      "sha256": "90663a9a196cf8be0a7603ada38c0d84f826031ad888fde1738c9891e4bbbd72"
+    }
+  ],
+  "version": "2.2.3"
+}

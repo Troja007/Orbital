@@ -523,12 +523,15 @@ sql_patterns:
           r.path LIKE '\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\%\%'
           OR r.path LIKE '\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\%\%'
           OR r.path LIKE '\HKEY_LOCAL_MACHINE\SOFTWARE\Cisco\AMP\%'
+          OR r.path LIKE '\HKEY_LOCAL_MACHINE\SOFTWARE\Immunet Protect\%'
+          OR r.key LIKE 'HKEY_LOCAL_MACHINE\SOFTWARE\Immunet Protect%'
         )
         AND (
           lower(r.data) LIKE '%secure endpoint%'
           OR lower(r.data) LIKE '%amp for endpoints%'
           OR lower(r.data) LIKE '%cisco amp%'
           OR lower(r.path) LIKE '%\cisco\amp\%'
+          OR lower(r.path) LIKE '%\immunet protect\%'
         )
       ORDER BY si.hostname, r.path, r.name;
   - name: "Secure Client / Secure Endpoint combined inventory"
@@ -568,6 +571,7 @@ sql_patterns:
           OR r.key LIKE 'HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\%%'
           OR r.key LIKE 'HKEY_LOCAL_MACHINE\SOFTWARE\Cisco\Cloud Management%%'
           OR r.key LIKE 'HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Cisco\Cloud Management%%'
+          OR r.key LIKE 'HKEY_LOCAL_MACHINE\SOFTWARE\Immunet Protect%%'
         )
         AND (
           lower(r.data) LIKE '%cisco%'
@@ -575,6 +579,7 @@ sql_patterns:
           OR lower(r.data) LIKE '%secure endpoint%'
           OR lower(r.data) LIKE '%amp%'
           OR lower(r.data) LIKE '%anyconnect%'
+          OR lower(r.path) LIKE '%\immunet protect%'
           OR lower(r.path) LIKE '%\cisco\cloud management%'
         )
       UNION ALL
@@ -746,6 +751,10 @@ lessons:
     note: "When separating Secure Endpoint user-mode and kernel-mode components, classify services with service_type containing DRIVER as kernel driver services before applying broad Cisco AMP path filters. Otherwise endpoint isolation drivers such as ancrcl can be misclassified as user-mode because their image path is under Cisco\\AMP."
   - date: "2026-07-10"
     note: "For Secure Endpoint driver health, do not rely on the drivers table alone. Combine driver-type services, exact-path file checks, and drivers-table rows. A missing drivers-table row is weaker evidence than a RUNNING driver service plus a present driver file."
+  - date: "2026-07-17"
+    note: "For Cisco Secure Client Endpoint Visibility Module restart on Windows, do not assume Services UI or a normal service stop works. If a reviewed single-host response action is approved, use the engineering-supported sequence `sc control CiscoEvmService 128` followed by `sc start CiscoEvmService`, then verify with the services table that `CiscoEVMService` is RUNNING and record the current service path/start type/PID in the chat result only."
+  - date: "2026-07-21"
+    note: "Treat `HKEY_LOCAL_MACHINE\\SOFTWARE\\Immunet Protect` as Secure Endpoint registry context because Secure Endpoint was formerly named Immunet. Include this branch when collecting deep Secure Endpoint registry evidence, but redact or summarize GUID-like identifiers, named-pipe suffixes, tokens, certificates, private keys, and binary key material in user-facing output and never store raw values in durable memory."
 
 privacy:
   stores_endpoint_results: false

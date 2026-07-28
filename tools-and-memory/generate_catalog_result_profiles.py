@@ -12,8 +12,6 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_INPUT = ROOT / "local/orbital_catalog_windows_validation/windows_catalog_execution_results.jsonl"
-PROFILE_UPDATES_INPUT = ROOT / "local/orbital_catalog_windows_validation/profile_updates.jsonl"
 CATALOG_SNAPSHOT_INPUT = ROOT / "queries_and_scripts/catalog_snapshot/stock_query_catalog.json"
 OUTPUT_DIR = ROOT / "queries_and_scripts/catalog_result_profiles"
 
@@ -320,10 +318,13 @@ def assumptions_and_limits(
     status: str | None,
     result_summary: dict[str, Any],
     caveat: str | None,
+    platform: str,
 ) -> list[str]:
     output: list[str] = []
     if status in {"completed", "completed_direct_verification"}:
-        output.append("Validation used one explicit Windows endpoint; do not generalize row counts to other endpoints or fleets.")
+        output.append(
+            f"Validation used one explicit {platform.title()} endpoint; do not generalize row counts to other endpoints or fleets."
+        )
         output.append("Row counts describe this validation run only; they are useful for expected result shape and interpretation, not baseline truth.")
         if result_summary.get("row_count", 0) == 0:
             output.append("Zero rows means no matching rows returned after the endpoint answered; it is not the same as query failure.")
@@ -408,9 +409,9 @@ def mitre_maps(catalog: dict[str, Any], snapshot_item: dict[str, Any], snapshot:
     return dict(tactics), techniques, subtechniques
 
 
-def load_best_records(input_path: Path) -> list[dict[str, Any]]:
+def load_best_records(input_path: Path, profile_updates_input: Path, platform: str) -> list[dict[str, Any]]:
     best_by_catalog_id: dict[str, dict[str, Any]] = {}
-    records = iter_jsonl_records(input_path) + iter_jsonl_records(PROFILE_UPDATES_INPUT)
+    records = iter_jsonl_records(input_path) + iter_jsonl_records(profile_updates_input)
     for record in records:
         catalog_id = record.get("catalog", {}).get("catalog_id")
         if not catalog_id:
@@ -422,7 +423,7 @@ def load_best_records(input_path: Path) -> list[dict[str, Any]]:
     # The runner had one result-fetch error for this entry. The durable project
     # context documents that direct follow-up verification returned 0 rows.
     catalog_id = "registry_safe_dll_search_monitoring"
-    if catalog_id in best_by_catalog_id and best_by_catalog_id[catalog_id].get("status") != "completed":
+    if platform == "windows" and catalog_id in best_by_catalog_id and best_by_catalog_id[catalog_id].get("status") != "completed":
         record = dict(best_by_catalog_id[catalog_id])
         record["status"] = "completed_direct_verification"
         record["result_summary"] = {
@@ -447,7 +448,7 @@ def load_best_records(input_path: Path) -> list[dict[str, Any]]:
     )
 
 
-def build_profiles(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def build_profiles(records: list[dict[str, Any]], platform: str) -> list[dict[str, Any]]:
     snapshot = load_catalog_snapshot()
     queries_by_id = snapshot["queries_by_id"]
     profiles: list[dict[str, Any]] = []
@@ -456,6 +457,12 @@ def build_profiles(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
         snapshot_item = queries_by_id.get(catalog.get("catalog_id"), {})
         result_summary = record.get("result_summary") or {}
         status = record.get("status")
+        if platform == "linux" and (
+            status != "completed" or not result_summary.get("answered_endpoint_count")
+        ):
+            # A missing endpoint response is retained in local operational records,
+            # but does not create a GitHub-synced Linux profile.
+            continue
         caveat = error_class(record)
         row_count = result_summary.get("row_count")
         tactics, techniques, subtechniques = mitre_maps(catalog, snapshot_item, snapshot)
@@ -479,9 +486,9 @@ def build_profiles(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "mitre_subtechniques": subtechniques,
                 "catalog_updated": catalog.get("updated"),
                 "validation": {
-                    "source": "sanitized_from_local_windows_catalog_validation",
+                    "source": f"sanitized_from_local_{platform}_catalog_validation",
                     "source_run_date": record.get("profile_source_run_date") or "2026-06-15/2026-06-16",
-                    "target_scope": "one explicit Windows endpoint",
+                    "target_scope": f"one explicit {platform.title()} endpoint",
                     "status": status,
                     "endpoint_answered": bool(result_summary.get("answered_endpoint_count"))
                     if "answered_endpoint_count" in result_summary
@@ -501,7 +508,9 @@ def build_profiles(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
                     "sample_result_data_omitted_row_count": sample_omitted_rows,
                 },
                 "responder_reading": responder_reading(catalog, status, result_summary, caveat),
-                "assumptions_and_limits": assumptions_and_limits(catalog, status, result_summary, caveat),
+                "assumptions_and_limits": assumptions_and_limits(
+                    catalog, status, result_summary, caveat, platform
+                ),
             }
         )
     return profiles
@@ -694,16 +703,16 @@ def sample_result_data_lines(profile: dict[str, Any]) -> list[str]:
     return lines
 
 
-def write_per_catalog_markdown(profiles: list[dict[str, Any]], output_dir: Path) -> None:
-    windows_dir = output_dir / "windows"
-    windows_dir.mkdir(parents=True, exist_ok=True)
-    for old_file in windows_dir.glob("*.md"):
+def write_per_catalog_markdown(profiles: list[dict[str, Any]], output_dir: Path, platform: str) -> None:
+    platform_dir = output_dir / platform
+    platform_dir.mkdir(parents=True, exist_ok=True)
+    for old_file in platform_dir.glob("*.md"):
         old_file.unlink()
 
     for profile in profiles:
         validation = profile["validation"]
         filename = f"{slugify(profile['catalog_id'])}__{slugify(profile['title'])}.md"
-        path = windows_dir / filename
+        path = platform_dir / filename
         lines = [
             f"# {profile['title']}",
             "",
@@ -826,7 +835,7 @@ def write_per_catalog_markdown(profiles: list[dict[str, Any]], output_dir: Path)
         path.write_text("\n".join(lines))
 
 
-def write_markdown(profiles: list[dict[str, Any]], path: Path) -> None:
+def write_markdown(profiles: list[dict[str, Any]], path: Path, platform: str) -> None:
     status_counts = Counter(profile["validation"]["status"] for profile in profiles)
     bucket_counts = Counter(profile["validation"]["row_count_bucket"] for profile in profiles)
     caveat_profiles = [profile for profile in profiles if profile["validation"]["error_class"]]
@@ -837,9 +846,9 @@ def write_markdown(profiles: list[dict[str, Any]], path: Path) -> None:
     ]
 
     lines = [
-        "# Windows Stock Catalog Result Profiles",
+        f"# {platform.title()} Stock Catalog Result Profiles",
         "",
-        "Generated from a sanitized local Windows catalog validation run from 2026-06-15/2026-06-16.",
+        f"Generated from a sanitized local {platform.title()} catalog validation run.",
         "",
         "This file is GitHub-safe project context. It does not include endpoint result rows, hostnames, target selectors, Job IDs, raw API responses, tenant data, credentials, or customer-identifying values.",
         "",
@@ -902,22 +911,22 @@ These files are designed to help an incident responder understand what an Orbita
 
 Included files:
 
-- `windows_stock_catalog_result_profiles.jsonl`: structured per-Catalog-ID profiles for Windows stock catalog queries. It contains no sample-row values.
-- `windows_stock_catalog_result_profiles.md`: human-readable summary and table. It contains no sample-row values.
-- `windows/`: one analyst-facing Markdown file per Windows stock catalog query, named `<catalog_id>__<normalized_query_name>.md`.
+- `<platform>_stock_catalog_result_profiles.jsonl`: structured per-Catalog-ID profiles for a platform's stock catalog queries. It contains no sample-row values.
+- `<platform>_stock_catalog_result_profiles.md`: human-readable summary and table. It contains no sample-row values.
+- `<platform>/`: one analyst-facing Markdown file per platform-specific stock catalog query, named `<catalog_id>__<normalized_query_name>.md`.
 
 Privacy boundary:
 
 - Store interpretation profiles, row counts, returned column names, catalog metadata, sanitized caveats, and no more than 15 structural sample rows in each per-Catalog-ID Markdown file.
 - Do not store raw endpoint result rows, hostnames, target selectors, Job IDs, raw API responses, tenant data, credentials, IP addresses, GUIDs, usernames, customer-identifying values, or sample-row values in the JSONL or summary Markdown files.
 
-Raw operational validation files stay local-only under `local/orbital_catalog_windows_validation/`.
+Raw operational validation files stay local-only under `local/orbital_catalog_<platform>_validation/`.
 """
     )
 
 
-def validate_generated_artifacts(output_dir: Path) -> None:
-    jsonl_path = output_dir / "windows_stock_catalog_result_profiles.jsonl"
+def validate_generated_artifacts(output_dir: Path, platform: str) -> None:
+    jsonl_path = output_dir / f"{platform}_stock_catalog_result_profiles.jsonl"
     for line in jsonl_path.read_text().splitlines():
         if not line.strip():
             continue
@@ -925,7 +934,7 @@ def validate_generated_artifacts(output_dir: Path) -> None:
         if "sample_result_data" in validation:
             raise ValueError("JSONL must not contain sample result row values")
 
-    for path in (output_dir / "windows").glob("*.md"):
+    for path in (output_dir / platform).glob("*.md"):
         content = path.read_text()
         if content.count("## Sample Result Data") != 1:
             raise ValueError(f"{path.name} must contain exactly one Sample Result Data section")
@@ -947,22 +956,27 @@ def validate_generated_artifacts(output_dir: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--platform", choices=("linux", "windows"), default="windows")
     parser.add_argument("--validate-only", action="store_true", help="Validate existing generated profile artifacts.")
     args = parser.parse_args()
 
+    input_dir = ROOT / f"local/orbital_catalog_{args.platform}_validation"
+    input_path = input_dir / f"{args.platform}_catalog_execution_results.jsonl"
+    profile_updates_input = input_dir / "profile_updates.jsonl"
+
     if args.validate_only:
-        validate_generated_artifacts(OUTPUT_DIR)
-        print(f"Validated catalog result profiles in {OUTPUT_DIR}")
+        validate_generated_artifacts(OUTPUT_DIR, args.platform)
+        print(f"Validated {args.platform} catalog result profiles in {OUTPUT_DIR}")
         return
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    profiles = build_profiles(load_best_records(DEFAULT_INPUT))
-    write_jsonl(profiles, OUTPUT_DIR / "windows_stock_catalog_result_profiles.jsonl")
-    write_markdown(profiles, OUTPUT_DIR / "windows_stock_catalog_result_profiles.md")
-    write_per_catalog_markdown(profiles, OUTPUT_DIR)
+    profiles = build_profiles(load_best_records(input_path, profile_updates_input, args.platform), args.platform)
+    write_jsonl(profiles, OUTPUT_DIR / f"{args.platform}_stock_catalog_result_profiles.jsonl")
+    write_markdown(profiles, OUTPUT_DIR / f"{args.platform}_stock_catalog_result_profiles.md", args.platform)
+    write_per_catalog_markdown(profiles, OUTPUT_DIR, args.platform)
     write_readme(OUTPUT_DIR / "README.md")
-    validate_generated_artifacts(OUTPUT_DIR)
-    print(f"Generated {len(profiles)} catalog result profiles in {OUTPUT_DIR}")
+    validate_generated_artifacts(OUTPUT_DIR, args.platform)
+    print(f"Generated {len(profiles)} {args.platform} catalog result profiles in {OUTPUT_DIR}")
 
 
 if __name__ == "__main__":

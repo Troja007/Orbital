@@ -7,7 +7,7 @@ Store the offline Cisco-managed stock catalog snapshot and sanitized catalog res
 Use:
 
 - `queries_and_scripts/catalog_snapshot/` for the offline stock catalog JSON snapshot.
-- `queries_and_scripts/catalog_result_profiles/` for sanitized expected-result and interpretation profiles.
+- `queries_and_scripts/catalog_result_profiles/<platform>/` and the matching platform JSONL/summary files for sanitized expected-result and interpretation profiles.
 
 ## Reason
 
@@ -18,6 +18,7 @@ The catalog snapshot supports query/script selection without constantly calling 
 - Stock catalog snapshots are reusable source context.
 - Organization catalog exports can contain tenant-specific data and stay local-only unless explicitly sanitized and approved.
 - Catalog result profiles must not contain endpoint result rows, hostnames, target selectors, Job IDs, raw API responses, tenant data, credentials, IP addresses, GUIDs, usernames, or customer-identifying values.
+- Generate a platform profile only from an answered validation run. Keep no-response operational state local-only rather than creating a GitHub-synced profile.
 
 ## References
 

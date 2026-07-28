@@ -1,224 +1,90 @@
 ---
 name: orbital-run-endpoint-operation
-description: Run targeted Cisco Orbital endpoint operations. Use when Codex needs to validate and execute an osquery query or an approved observational catalog script, resolve an active Codex ORG Mapping and credential source, monitor a query Job ID, or parse endpoint results and errors.
+description: Run targeted Cisco Orbital osquery queries and approved endpoint scripts. Use for immediate single-host checks, tracked scheduled queries, Job-ID result retrieval, ORG mapping and credential resolution, osquery table reporting, and safe observational or approved state-changing endpoint operations.
 ---
 
 # Orbital Run Endpoint Operation
 
-Use this as the shared endpoint-operation boundary for Orbital. Run custom osquery through the Orbital API only against explicit `nodes` selectors. Validate table/column, platform, target scope, ORG mapping, and credentials before an API call.
+Use the helper at `scripts/run_live_query.py` for custom osquery. Use `scripts/run_live_script.py` only for an explicit catalog or reviewed inline script. Never send a script to a query endpoint.
 
-## Operation Modes
+## Fast Query Path
 
-- **Query mode is implemented.** Use `scripts/run_live_query.py` for custom osquery queries and their existing Job IDs.
-- **Observational catalog-script mode is implemented.** Use `scripts/run_live_script.py` only for an explicit, reviewed catalog script that does not change endpoint state. It uses `POST /script/run`; never submit a script to a query endpoint.
-- **State-changing script mode is not automated.** Classify every script before submission. Require the applicable review and explicit approval before creating a state-changing script workflow.
-- **Custom inline Python script mode is supported by the Orbital API.** If no suitable catalog script exists, use the catalog script as a behavior and payload example, then place base64-encoded Python directly in `script.content` for `POST /script/run`. This allows the endpoint to execute Python without creating or using a catalog entry. Treat inline Python as script execution with the same safety, review, target, logging, and approval requirements as catalog scripts.
+Use this path first when all of these are true:
 
-## Operating Model
+- The user gives one exact, non-wildcard `host:` or `hostname:` selector.
+- The request is a read-only `SELECT` or `WITH ... SELECT` query.
+- The currently selected global ORG mapping is acceptable; the user does not name a new ORG group.
+- The query is a simple known-table check or the table/columns are clear from the supplied SQL.
 
-- Use `POST /query` for scheduled queries. It is the default for `host:` and `hostname:` targets: expiry is 2 minutes and interval is 0.
-- Use `POST /query/run` only when the user explicitly requests an immediate/live probe and accepts that it may not return a Job ID.
-- Treat a response `ID` or `id`, or an explicit job-ID response header, as `orbital_queryID`. Never treat `queryId`, request ID, or another nested identifier as a Job ID.
-- Persist the submission record before status or result retrieval. Reuse `orbital_queryID` for `/v0/jobs/{id}` and `/v0/jobs/{id}/results`; never resubmit a query merely to monitor it.
-- Use `orbital-api-access` for connectivity, authentication troubleshooting, or catalog import. Use `orbital-query-method-memory` for investigation design, table selection, catalog reuse, or repeatable query methods.
+For this path, do not search catalog snapshots, project memory, or project-relative context files before submission. The helper reads the current global mapping at `~/.codex/state/cisco-security-api-access/current_org_mapping.json` and the mapping's credential source directly. Do not ask to rediscover ORGs already selected in that mapping.
 
-Cisco distinguishes scheduled queries for results that arrive over time from live queries for currently connected nodes; both support custom `osQuery` statements. [Cisco Orbital Query API](https://developer.cisco.com/docs/orbital/queries/)
-
-## ORG And Credential Resolution
-
-The active global mapping is `~/.codex/state/cisco-security-api-access/current_org_mapping.json`, unless `--org-mapping-state-file` explicitly selects another mapping state file.
-
-- The mapping supplies non-secret EDR, XDR, Orbital, and Secure Endpoint v3 identifiers plus `source_env_file`.
-- The credential env file supplies the token or OAuth client credentials. It determines the effective Orbital tenant; `org_context` is local metadata and is never sent in the Orbital request body.
-- In the current chat, retain the mapping/group already established for short follow-ups. The helper's local context cache is only a durable hint; it cannot inspect Codex chat history.
-- A supplied `--org-group` must match the selected mapping alias. An ORG label or `--org` list cannot switch tenants. Switch the global mapping with the credential-management workflow, or explicitly select the matching mapping state file, before a new group is queried.
-- Keep ORG IDs, product mappings, and credential-file paths local only. Do not include them in GitHub artifacts or routine user-facing output.
-
-Resolve in this order: selected mapping state -> matching ORG metadata -> mapping `source_env_file`; use `--env-file` only as an explicit override. Use the project-local credential file only as legacy fallback.
-
-## Required Inputs
-
-Before a new submission, confirm:
-
-- an exact `nodes` selector list;
-- SQL, either supplied or safely constructed from clear intent;
-- a concise query label/purpose;
-- a selected ORG mapping and a credential source;
-- a network-enabled Codex runtime.
-
-If the user supplies a bare hostname, ID, GUID, `device`, `node`, `target`, or `endpoint`, ask which identifier and selector type it represents. Do not guess among Catalog ID, Orbital ID, Secure Endpoint GUID, Secure Client GUID, AnyConnect UDID, `queryId`, and `orbital_queryID`.
-
-Do not infer broad scope from "any", "online", "all", or "every". Require the exact submitted selector list. `all`, `random`, OS selectors, CIDR ranges, and broad wildcards require explicit approval and `--approve-broad-target`.
-
-## Target Rules
-
-Use documented selectors from `project-context/Orbital_Target_Node_Selectors.md`, for example:
-
-- `host:EXAMPLE-HOST`, `hostname:EXAMPLE-HOST`
-- `orb:<orbital_id>`, `amp:<secure_endpoint_guid>`, `cm:<secure_client_guid>`
-- `ip:10.0.0.1`, `ipv4:192.168.1.%`, `netmask:192.168.1.168/24`
-- `machine:<machine_id>`, `os:windows`, `random:5`, `queryId:<query_id>`
-
-`os` adds all hosts with the selected operating system to the target set. `allowOS` filters results after target selection. Do not describe both as generic OS filters. `all` cannot be combined with other node selectors or `allowOS`; it can use the operating-system field as documented in project context.
-
-`allowOS:<platform>` inside `nodes` and `--allow-os <platform>` are alternative representations. Use only one and always include another endpoint selector. `queryId:<id>` is a selector, not a Job ID; this helper still requires explicit `osQuery` SQL.
-
-For a concrete short hostname that may be stored as an FQDN, try a narrow trailing wildcard such as `host:slate%` or `hostname:slate%` before treating the endpoint as unavailable. Do not begin with contains matching such as `host:%late%`; it can match unrelated devices. The helper considers a single trailing hostname wildcard with a four-character-or-longer stem narrow; every other wildcard requires broad-target approval.
-
-## Execution Workflow
-
-1. Check `CODEX_SANDBOX_NETWORK_DISABLED`; if network policy blocks sockets, report a sandbox limitation rather than a credential failure.
-2. Resolve the active mapping, validate any supplied ORG group against its alias, and load only the selected credential source.
-3. Convert the intended targets to the exact `nodes` array. Reject unclear, invalid, or unapproved broad scope before any API call.
-4. For new SQL, search query-method memory and relevant catalog context when the task involves investigation logic, repeatable patterns, or catalog reuse.
-5. Validate upstream osquery tables/columns against `product-context/osquery/osquery_schema_5_23_0.json`; also check Orbital availability, platform, required constraints, and cost.
-6. Prefer specific columns and `LIMIT` for exploration. Avoid `SELECT *` on broad or expensive tables unless explicitly requested.
-7. Show the exact SQL, exact target list, execution mode, and relevant `os`/`allowOS` semantics before submission whenever approval or safety depends on them. For an already-approved narrow follow-up, a SQL summary is sufficient.
-8. Use `--task-name` before the first query when one analyst task may need multiple submissions.
-9. Submit through `scripts/run_live_query.py`. Record the returned Job ID before interpretation.
-10. Poll a Job ID at most through 20 seconds after submission. Fetch stored results after a completed endpoint is reported; if `done_count` is unavailable but a Job ID exists and no rows/errors were returned yet, perform one stored-results check after polling before concluding there are no rows. If status retrieval fails, retain and report the Job ID rather than resubmitting.
-11. Treat no data rows as a no-hit only when at least one endpoint answered, the job is no longer pending, and `query_error_count` is zero. A missing response means the endpoint may not have answered within the scheduled window.
-12. If the endpoint answered and `query_error_count` is non-zero, do not immediately rewrite or rerun the query. The helper must surface a nested `osQueryResult.error` before a generic endpoint error and store both meaningful response errors locally. Inspect the stored Job ID once with `--job-results --raw-response` only when the response shape needs troubleshooting. If the error is real, stop execution and route SQL/table/column correction to `orbital-query-method-memory`; do not run diagnostic replacement queries in this execution skill unless the user explicitly asks.
-13. For multi-query work, inspect the run ledger by task name and report each query label, Job ID, status/error outcome, and purpose.
-
-## Helper
-
-Run from the project root. The helper never prints credentials.
+Submit with the interactive profile. It uses `POST /query/run`, skips Job-status polling, and returns after the API response:
 
 ```bash
 python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
+  --execution-profile interactive \
   --target host:EXAMPLE-HOST \
   --label codex_system_info \
-  --name "codex scheduled system information" \
-  --task-name "Inspect one endpoint" \
+  --name "codex immediate system information" \
   --sql-file /tmp/query.sql
 ```
 
-The preceding command uses scheduled mode automatically. Use `--live` only for an explicitly requested immediate probe:
+The interactive profile accepts only one explicit host selector and a read-only query. It can return immediate results but does not promise an `orbital_queryID`. Use it when the user wants a quick online endpoint check.
+
+Use the tracked profile when a Job ID, scheduled expiry window, multiple targets, a wildcard, an endpoint that may be offline, or later result retrieval is required. Submit it without initial polling when fast acknowledgement matters:
 
 ```bash
 python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
-  --live \
+  --execution-profile tracked \
+  --no-status-poll \
+  --target host:EXAMPLE-HOST \
+  --label codex_tracked_check \
+  --sql-file /tmp/query.sql
+```
+
+Show the returned Job ID immediately, then retrieve it once with `--job-id JOB_ID --job-results`. Do not resubmit a query merely to monitor it.
+
+## Required Safety Checks
+
+Before every real submission, confirm the exact target selector, SQL, and query purpose. Reject ambiguous identifiers and unapproved broad scope. `all`, `random`, OS selectors, CIDR ranges, multiple broad wildcards, and wildcard host matching require explicit approval plus `--approve-broad-target`.
+
+For a known short hostname that might be stored as an FQDN, retry only with a narrow trailing wildcard such as `host:slate%`. Do not use contains matching such as `host:%late%`.
+
+Use project context, schema validation, catalog data, or query-method memory only when the query is new, complex, potentially expensive, platform-specific, incident-sensitive, or a returned table/column error needs correction. Read [references/targeting-and-query-design.md](references/targeting-and-query-design.md) for those cases. In another project, do not search relative `project-context` paths that are not present.
+
+Do not use the fast path for scripts or state-changing work. Read [references/scripts-and-actions.md](references/scripts-and-actions.md) before any script operation.
+
+## ORG And Credentials
+
+The active global mapping supplies the non-secret product IDs, selected group alias, region, and `source_env_file`. The credential file determines the effective Orbital tenant; local ORG context never changes the tenant.
+
+Retain the current mapping for follow-up work in the same task. A supplied `--org-group` must match the selected mapping alias. An ORG label or ID cannot switch tenants. Use the credential-management workflow or an explicit mapping-state file before querying a different group.
+
+Never print or store credentials, tokens, product IDs, endpoint evidence, raw responses, or result rows in GitHub-synced artifacts.
+
+## Simulation And Timing
+
+Use `--dry-run` to validate a planned new query without acquiring a token, calling Orbital, or contacting an endpoint. It prints the selected profile, API path, request body, osquery tables, sanitized context summary, and local preflight timing.
+
+```bash
+python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
+  --dry-run \
+  --execution-profile interactive \
   --target host:EXAMPLE-HOST \
   --label codex_system_info \
   --sql-file /tmp/query.sql
 ```
 
-Use a broad selector only after explicit approval:
+Real helper output includes sanitized `timing_ms` for mapping/context resolution, token acquisition, submission, status polling, and total runtime. Use it to distinguish assistant preflight delay from API submission and endpoint execution time.
 
-```bash
-python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
-  --target netmask:192.168.1.168/24 \
-  --approve-broad-target \
-  --label codex_system_info \
-  --sql-file /tmp/query.sql
-```
+## Results And Reports
 
-Check an existing job without rerunning the endpoint query:
+For a query, show the unique `osquery tables` before run identifiers and before result data. List physical tables in SQL encounter order, including tables within CTEs and subqueries; do not list aliases, CTE names, or returned columns. Add a short table purpose when it helps product learning, for example `services` for installed-service configuration and state.
 
-```bash
-python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
-  --job-id "{{orbital_queryID}}" \
-  --job-results
-```
+Start every execution result with the exact target definition and target scope. Distinguish requested target count from answered endpoints. End with `**Summary**` covering the submitted operation, the evidence used, and any separate verification. Read [references/tracked-query-and-results.md](references/tracked-query-and-results.md) for Job-ID handling, errors, and the full report format.
 
-Use `--raw-response` only for response-shape troubleshooting. Do not expose raw API payloads by default.
+## Reference Selection
 
-## Observational Catalog Scripts
-
-Before invoking a catalog script, inspect its ID, source, supported operating systems, arguments, and behavior. Use the read-only catalog snapshot or authenticated catalog API. Do not infer that a script is observational from its title.
-
-- The user must explicitly identify the script and targets.
-- Use a narrow `host:` or `hostname:` selector. For a previously confirmed short name that may be an FQDN, `host:slate%` is a narrow fallback; do not use contains matching such as `host:%late%`.
-- The Script API requires `os`. Supplying all platforms for a single explicit host is an OS compatibility filter, not permission to broaden the `nodes` target set.
-- A live script returns immediate `result_id`, endpoint stdout/stderr, and exit codes. It does not produce an `orbital_queryID`; do not use query-job endpoints to poll it.
-- Store every API or foundational script error in `local/orbital_script_runs/live_script_runs.jsonl`. Store only operation metadata and error text/hash: never endpoint stdout/stderr, host/node identity, raw response, ORG data, or credentials.
-
-Run an observational catalog script:
-
-```bash
-python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_script.py \
-  --catalog-id check_cisco_nvm_module \
-  --target host:EXAMPLE-HOST \
-  --os windows \
-  --name "codex NVM installation check" \
-  --task-name "Inspect one endpoint"
-```
-
-Treat a script's reported condition precisely. For example, a script that returns only `Installed` does not, by itself, prove that a service or process is currently running. Use a separate, platform-appropriate query when the runtime state is required.
-
-## Custom Inline Python Scripts
-
-When no suitable catalog script exists, use the closest catalog script as an implementation and API-body reference, but submit a custom script through `POST /script/run` by providing `script.content` instead of `script.catalog_id`.
-
-- Encode the Python source as base64 and put it in `script.content`.
-- Put user-supplied parameters in `script.args` using the API field names `Name`, `Value`, and optionally `ArgType`, `Description`, and `Optional`.
-- Include `script.name`, `script.label`, and `script.timeout` where useful for traceability and execution control.
-- Include exact `nodes`, `os`, `name`, `expiryinminutes`, and `requestdurationsec` in the request body.
-- Do not create a catalog entry merely to run one-off Python. Catalog entries are useful reusable examples and durable managed assets; inline content is appropriate for reviewed one-time endpoint operations.
-- Review, classify, and obtain explicit approval for state-changing inline Python just as for state-changing catalog scripts.
-- Store only sanitized operation metadata and error summaries in local ledgers. Do not store raw stdout/stderr, endpoint rows, host/node identifiers, tenant data, raw API responses, credentials, or tokens in GitHub-synced files.
-
-Minimal request-body shape:
-
-```json
-{
-  "script": {
-    "args": [
-      {"Name": "name", "ArgType": "ORBITAL_BASIC_STRING", "Value": "example"}
-    ],
-    "content": "<base64-encoded-python>",
-    "label": "codex_custom_script",
-    "name": "codex custom Python script",
-    "timeout": 600
-  },
-  "nodes": ["host:EXAMPLE-HOST"],
-  "os": ["windows"],
-  "name": "codex custom Python script",
-  "expiryinminutes": "2",
-  "requestdurationsec": "60"
-}
-```
-
-## Result Handling
-
-The helper returns compact JSON with `query_mode`, `api_path`, `targets`, `orbital_queryID`, `run_ledger`, `answered_endpoint_count`, `row_count`, `query_error_count`, `query_errors`, `meta`, and `rows`. New submissions also include a sanitized `context` summary. Full local `org_context` and `credential_context` details are included only with `--raw-response` for troubleshooting and must not be shown routinely.
-
-- `row_count` counts data rows only.
-- `query_error_count` includes endpoint-level and osquery-level failures; never call these successful no-hits. Empty Orbital error placeholders, such as empty strings or dictionaries without a non-empty localized message, are not meaningful errors.
-- If a stored Job ID result contains valid rows and an empty error placeholder, present the rows and mention that the raw response included a non-meaningful error field only when troubleshooting requires it.
-- Store every meaningful error in `local/orbital_query_runs/live_query_runs.jsonl` as an `orbital_error` record. Record `phase`, `scope`, error text and hash, optional query label, Job ID, and HTTP status. Do not store raw responses, endpoint rows, host/node identity, ORG data, credentials, or tokens in the error record.
-- Use `scope=endpoint_osquery` for SQL/table/column errors reported by an endpoint. Use `scope=foundational` for failures before or while creating/following an API call, including validation, mapping/credential resolution, token acquisition, HTTP/API responses, Job-ID extraction, status polling, and stored-results retrieval.
-- Endpoint identity is available in `meta`; include it when multiple targets or ambiguous rows require it.
-- For a high-volume result, present a relevant preview and total count. For a small result, show only columns needed to answer the user. Do not emit raw JSON unless requested.
-- When explaining a Windows stock catalog query, use its Catalog ID and the matching sanitized profile under `queries_and_scripts/catalog_result_profiles/windows/`.
-
-Default user-facing trace: target selector list, purpose, execution mode, SQL summary or exact SQL when needed, Job ID/status, answered endpoint count, data-row count, error count, compact result, caveat, and whether reusable method memory should be updated.
-
-## Version Retention
-
-`VERSION` is the current semantic version. `scripts/version_skill.py` creates a non-recursive snapshot under `versions/<version>/` with a SHA-256 manifest and automatically retains only the newest five version directories.
-
-Before releasing a substantive change, verify that the current version already has a snapshot. After validation, increment `VERSION` and create the release snapshot:
-
-```bash
-python3 scripts/version_skill.py --version "$(tr -d '\n' < VERSION)" --keep 5
-```
-
-Sync the complete skill folder, including `VERSION`, `versions/`, and scripts, to the global skill only after validation.
-
-## Durable Project Updates
-
-After changing this skill, its helper, reusable SQL artifacts, project context, or query-method memory, append a sanitized entry to `local/project-change-log.md`. Record workspace-to-global skill syncs in `local/sync-activity-log.md`. Do not stage either log or include endpoint rows, target selectors, Job IDs, credentials, tenant data, raw responses, hostnames, IPs, GUIDs, or other customer-identifying data.
-
-Promote reusable, sanitized lessons to `notes-and-memory/decisions/`, query-method memory, project context, product context, or catalog result profiles as appropriate. Never store endpoint evidence in GitHub.
-
-## Safety
-
-- Never execute with an ambiguous or missing target.
-- Never silently broaden one host to a wildcard, range, random sample, OS scope, or `all`.
-- Never store or display tokens and client secrets.
-- Never store raw API responses or endpoint result rows in the error ledger; store only the minimal error record needed to diagnose and correlate the failure.
-- Never rerun a query merely to check status or compensate for a failed status call.
-- Never use this execution skill to iterate on broken SQL after a real endpoint/osquery error. Preserve the Job ID, summarize the error, and move query correction to `orbital-query-method-memory`.
-- Keep API/catalog access workflows and query-method memory separate from this execution skill.
+- Read [references/targeting-and-query-design.md](references/targeting-and-query-design.md) for non-fast-path target selection, schema checks, table selection, or platform/cost concerns.
+- Read [references/tracked-query-and-results.md](references/tracked-query-and-results.md) for scheduled query lifecycle, errors, no-response interpretation, stored results, and report details.
+- Read [references/scripts-and-actions.md](references/scripts-and-actions.md) only for catalog or inline script execution.

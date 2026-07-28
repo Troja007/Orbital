@@ -52361,7 +52361,7 @@
       "updated": "2022-03-08T20:58:13.661Z"
     },
     {
-      "ParentQueryMetaID": "powershell_opensource_offensive_tools_monitoring",
+      "ParentQueryMetaID": "local_group_membership_enumeration_monitoring",
       "authors": [
         "mitre"
       ],

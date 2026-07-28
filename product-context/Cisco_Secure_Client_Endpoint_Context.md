@@ -131,12 +131,15 @@ Service discovery must be validated with the `services` table before creating re
 
 Interpretation notes:
 
+- `CiscoEVMService` can appear as non-stoppable in Windows Services UI and with normal stop controls, even for an administrator. For a reviewed EVM restart action, engineering guidance is to use `sc control CiscoEvmService 128` followed by `sc start CiscoEvmService`, then verify that `CiscoEVMService` is running again through the Windows `services` table.
+
 - Driver services commonly report PID `0`; this is expected and should not be interpreted as a missing process.
 - `STOPPED / BOOT_START` for ELAM or adapter drivers can be normal depending on driver type and runtime state.
 - Secure Client module versions can differ from the base VPN version.
 - Installation evidence should combine `programs`, Microsoft Installer/uninstall registry keys, `services`, and current `processes`.
 - For installed-product inventory in Orbital, prefer the catalog-backed `programs` table patterns such as `Installed Programs On Windows Host` and `Installed Programs Search`. Do not assume WMI `Win32_Product` is available as an Orbital table or safe to use; native Windows `Win32_Product` inventory can be slow and is known to trigger MSI consistency checks in some environments.
 - Registry evidence for Secure Client Cloud Management can appear outside the `SecureClient` key family under `HKEY_LOCAL_MACHINE\SOFTWARE\Cisco\Cloud Management` and `HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Cisco\Cloud Management`; the `CMID` subkey is relevant to Cloud Management identity/component context and should be included in Secure Client registry queries.
+- Registry evidence for Secure Endpoint can also appear under the legacy product name `HKEY_LOCAL_MACHINE\SOFTWARE\Immunet Protect`. Secure Endpoint was formerly named Immunet, so files, services, drivers, pipes, and registry values containing `Immunet` can be relevant Secure Endpoint artifacts. When querying this branch, summarize or redact GUID-like identifiers, pipe suffixes, tokens, certificates, private keys, and binary key material. Useful high-level values can include pipe names, AMSI enablement, connector identifiers, and Orbital/AMP server settings, but raw sensitive value data should not be copied into durable memory.
 - Secure Client and Secure Endpoint can also register COM classes under `HKEY_CLASSES_ROOT\CLSID`. Cisco-related CLSID evidence observed in this project includes `Cisco Secure Client Surrogate64` with `InprocServer32` pointing to `C:\Program Files (x86)\Cisco\Cisco Secure Client\NVM\Surrogate64.dll`, and `Cisco AMP AMSI Provider` with `InProcServer32` pointing to an AMP `scriptid\damsicom64.dll` path. Include `HKEY_CLASSES_ROOT\CLSID` searches when building deep registry context for Secure Client / Secure Endpoint.
 
 ### Cisco Orbital

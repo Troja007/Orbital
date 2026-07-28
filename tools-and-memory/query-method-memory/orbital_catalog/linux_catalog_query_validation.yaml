@@ -1,0 +1,125 @@
+title: "Linux Orbital Catalog Query Validation"
+status: "tested"
+created: "2026-07-28"
+updated: "2026-07-28"
+
+investigation_inputs:
+  source_type: "analyst_task"
+  examples:
+    - "Execute each Linux-related Orbital catalog query against a controlled endpoint and create sanitized result profiles."
+    - "Validate Linux stock catalog entries once and capture reusable result-shape guidance."
+  raw_input_handling:
+    store_raw_chat: false
+    sanitization_required: true
+    notes:
+      - "Replace endpoint-specific input with platform and selector placeholders before saving method knowledge."
+  keywords:
+    - "linux catalog"
+    - "catalog validation"
+    - "result profile"
+    - "multi-label query"
+  threat_context:
+    category: "other"
+    platforms:
+      - "linux"
+
+query_goal:
+  question: "How should active Linux stock catalog entries be validated and converted into reusable result-reading guidance?"
+  expected_information:
+    - "Per-catalog result shape, row-count bucket, returned labels, and returned columns."
+    - "Generic compatibility and result-interpretation caveats without retaining endpoint evidence."
+  answers:
+    - "Whether a Linux catalog entry produced an answered result, no-hit, caveat, or no-response condition during controlled validation."
+  use_when:
+    - "Refreshing Linux catalog result profiles after a stock catalog import."
+    - "Testing catalog-provided Linux SQL compatibility against a controlled endpoint."
+  do_not_use_when:
+    - "Investigating a specific incident, user, process, or endpoint artifact."
+    - "A broad fleet-wide production query has not been explicitly approved."
+  does_not_answer:
+    - "Whether an endpoint is clean, affected, or representative of a fleet."
+  not_for:
+    - "Storing endpoint-specific findings, raw rows, or operational identifiers."
+  preferred_next_queries:
+    - "Use the matching Catalog ID profile to select a narrow follow-up query for a specific investigation."
+
+catalog_context:
+  source: "Orbital Catalog API stock query catalog"
+  selection: "active Linux-related stock catalog queries"
+  selected_catalog_entries: 65
+  notes:
+    - "A catalog entry can contain multiple osQuery blocks. Submit all catalog-provided blocks and preserve labels for profile interpretation."
+    - "Profile artifacts are stored under queries_and_scripts/catalog_result_profiles/linux/ and are keyed by Catalog ID."
+
+catalog_table_context:
+  note: "This method validates full catalog entries rather than one table-specific SQL pattern. Enrich a specific table method only when a follow-up investigation uses that Catalog ID."
+
+related_table_ttp_context:
+  note: "Use the matching per-Catalog-ID profile for category and MITRE metadata. Those mappings aid routing and prioritization; they do not turn returned rows into detection claims."
+
+osquery_context:
+  tables:
+    - name: "catalog-defined"
+      columns: []
+      platform_notes:
+        - "Validate table and column availability against the Orbital runtime when a catalog label reports an error."
+  joins:
+    - "Preserve catalog-provided joins and query blocks during compatibility validation."
+  constraints:
+    - "Inject catalog parameter defaults only where the catalog SQL uses __vars."
+
+orbital_guidance:
+  preferred_query_type: "scheduled_query"
+  allow_os:
+    - "linux"
+  target_selector_guidance:
+    - "Use one exact host selector such as host:<hostname> for controlled validation; do not infer a wildcard, OS-wide selector, or fleet scope."
+  broad_targeting_risk:
+    level: "high"
+    notes:
+      - "Full snapshots and broad inventory, package, module, process, file, or configuration queries can return high-volume data."
+      - "Submit each catalog entry once, wait before result collection, and retrieve each existing job once rather than duplicating endpoint work."
+      - "For this catalog validation flow, do not add allowOS to the request body. The API rejection before Job-ID creation is a helper/request-shape issue, not an endpoint or SQL result."
+
+sql_patterns:
+  - name: "catalog_entry_execution"
+    description: "Run every catalog-provided osQuery block and label as one catalog entry without adapting its SQL."
+    sql: "Catalog-provided SQL blocks are used as-is; only catalog parameter defaults are injected for __vars."
+  - name: "result_profile_selection"
+    description: "Generate a GitHub-synced profile only after the endpoint answered."
+    sql: "Not applicable; this is result handling, not an endpoint SQL statement."
+
+validation:
+  osquery_schema_checked: false
+  orbital_catalog_checked: true
+  live_query_tested: true
+  scheduled_query_tested: true
+  notes:
+    - "The method was exercised against the current Cisco-managed Linux stock catalog snapshot through tracked one-shot jobs."
+    - "Profiles preserve only sanitized result shape and generic caveats; operational no-response records remain local-only."
+    - "A per-label error is a compatibility caveat and must not be treated as a successful no-hit."
+
+lessons:
+  - date: "2026-07-28"
+    note: "Treat a rejected request without an Orbital Job ID as a request-shape failure, correct the helper, then submit once; it did not execute endpoint SQL."
+  - date: "2026-07-28"
+    note: "An answered endpoint with zero rows is a completed no-hit for the exact catalog condition, not a proof that the broader behavior never occurred."
+  - date: "2026-07-28"
+    note: "Generate Linux profiles only from answered runs. Retain no-response state locally for operational follow-up rather than publishing a profile."
+  - date: "2026-07-28"
+    note: "Use the per-Catalog-ID profile for returned labels, columns, row-count behavior, high-volume cautions, and result-reading guidance."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<path>"
+    - "<process_name>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_job_ids"
+    - "endpoint_result_rows"
+    - "raw_api_responses"
+    - "credentials"
