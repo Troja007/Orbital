@@ -25,6 +25,89 @@ The repository should contain enough GitHub-synced memory, knowledge, context, a
 
 Do not sync raw endpoint evidence. The reusable outcome is the method: what question was asked, which table/query/script pattern helped, when it applies, what assumptions or caveats matter, and how to interpret the result shape safely.
 
+## Project Knowledge Model
+
+The project is organized around a reusable knowledge layer. Inputs such as the
+Orbital Catalog, osquery schema, validation results, analyst feedback, and
+context files are normalized into source cross-links, query-method memory,
+result profiles, and project decisions. Codex skills consume this knowledge to
+query, explain, script, update catalog assets, and improve future work.
+
+Other skills can be added to the skill layer as needed. The model is not limited
+to the currently listed skills; any skill can be adopted when it can consume the
+same sanitized knowledge, respect the local-only evidence boundary, and improve
+Orbital work without storing raw endpoint data.
+
+```mermaid
+%%{init: {"flowchart": {"nodeSpacing": 75, "rankSpacing": 80}, "themeVariables": {"fontSize": "18px"}} }%%
+flowchart LR
+
+  subgraph Inputs["Input and reference sources"]
+    Catalog["Orbital Catalog"]
+    Osquery["osquery schema"]
+    Validation["Validation results"]
+    Analyst["Analyst feedback"]
+  end
+
+  subgraph Context["Context files"]
+    OrbitalCtx["Orbital API / catalog / target context"]
+    ProductCtx["Secure Client / Secure Endpoint context"]
+    ProductCtxMore["Additional product context files"]
+    RepoCtx["Repository and memory rules"]
+  end
+
+  subgraph Knowledge["Knowledge layer"]
+    Crosslinks["Source cross-links"]
+    Methods["Query method memory"]
+    Profiles["Result profiles"]
+    Decisions["Project decisions"]
+  end
+
+  subgraph Skills["Skill layer"]
+    Core["Orbital core skills"]
+    Support["Cisco / XDR / Secure Endpoint skills"]
+    Sync["GitHub / global skill sync skills"]
+  end
+
+  Local["Local-only evidence and credentials"]
+
+  Catalog --> Crosslinks
+  Osquery --> Crosslinks
+  Validation --> Profiles
+  Validation --> Methods
+  Analyst --> Methods
+  Analyst --> Decisions
+
+  OrbitalCtx --> Crosslinks
+  ProductCtx --> Crosslinks
+  ProductCtxMore --> Crosslinks
+  ProductCtx --> Methods
+  ProductCtxMore --> Methods
+  ProductCtx --> Profiles
+  ProductCtxMore --> Profiles
+  RepoCtx --> Decisions
+
+  Crosslinks --> Methods
+  Crosslinks --> Profiles
+
+  Local -. sanitized lessons only .-> Methods
+  Local -. sanitized validation shape only .-> Profiles
+
+  Methods --> Core
+  Profiles --> Core
+  Crosslinks --> Core
+  Decisions --> Sync
+
+  Methods --> Support
+  Profiles --> Support
+  ProductCtx --> Support
+  ProductCtxMore --> Support
+
+  Core --> Use["Query, explain, script, update catalog"]
+  Support --> Use
+  Sync --> Use
+```
+
 ## Start Here
 
 For Codex or human review, read these files first:
