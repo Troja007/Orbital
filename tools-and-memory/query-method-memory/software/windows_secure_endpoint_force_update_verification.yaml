@@ -1,0 +1,136 @@
+title: "Force Cisco Secure Endpoint update and verify outcome on Windows"
+status: "tested"
+created: "2026-07-29"
+updated: "2026-07-29"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Force a Cisco Secure Endpoint update on a Windows endpoint and verify it."
+    - "Run the Secure Endpoint update CLI, check sfc.exe.log, and confirm the computer is active."
+  raw_input_handling:
+    store_raw_chat: false
+    sanitization_required: true
+    notes:
+      - "Store only generic update and verification intent; never retain endpoint-specific paths or log output."
+  keywords:
+    - "Cisco Secure Endpoint update"
+    - "sfc.exe -forceupdate"
+    - "sfc.exe.log"
+    - "connector update"
+    - "computer active"
+  threat_context:
+    category: "software"
+    platforms:
+      - "windows"
+
+query_goal:
+  question: "Did an explicitly approved Cisco Secure Endpoint force-update request run, and what evidence shows whether the update itself succeeded?"
+  expected_information:
+    - "active connector path and process evidence"
+    - "bounded post-command sfc.exe.log evidence"
+    - "current Secure Endpoint computer properties"
+  answers:
+    - "Whether the connector accepted the force-update CLI request."
+    - "Whether local log evidence indicates update success or an update-stage failure."
+    - "Whether the current Secure Endpoint computer record is active and reports current definition state."
+  use_when:
+    - "An operator explicitly approves a force update for one known Windows endpoint."
+    - "A connector update needs both endpoint-side and console-side verification."
+  do_not_use_when:
+    - "The target is broad, wildcarded, or not explicitly approved for state change."
+    - "The active sfc.exe path cannot be discovered and validated."
+    - "The goal is only current definition inventory; use the Computers API without invoking the CLI."
+  does_not_answer:
+    - "Whether every future connector or definition update will succeed."
+    - "Whether a current Definitions Up To Date console value was caused by this specific request."
+  preferred_next_queries:
+    - "Secure Endpoint cloud-connectivity and proxy troubleshooting when the update log identifies a download or proxy failure."
+    - "Secure Endpoint presence and service-state checks when sfc.exe cannot be discovered."
+
+catalog_context:
+  searched_terms:
+    - "sfc.exe"
+    - "force update"
+  matches: []
+  notes:
+    - "Organization catalog scripts may exist, but no portable catalog ID is retained for this method."
+
+osquery_context:
+  tables:
+    - name: "processes"
+      columns:
+        - "pid"
+        - "name"
+        - "path"
+        - "cmdline"
+      platform_notes:
+        - "Use to discover the active connector path before any action."
+    - name: "file"
+      columns:
+        - "path"
+        - "directory"
+        - "filename"
+        - "size"
+        - "mtime"
+      platform_notes:
+        - "Use an exact or directory-constrained lookup for sfc.exe.log metadata."
+  joins: []
+  constraints:
+    - "Do not hard-code an AMP version directory in a reusable action."
+    - "Use one exact host target and validate the host and discovered Cisco AMP path inside the action."
+
+orbital_guidance:
+  preferred_query_type: "depends"
+  allow_os:
+    - "windows"
+  target_selector_guidance:
+    - "State-changing work requires one exact non-wildcard host selector and explicit operator approval."
+  broad_targeting_risk:
+    level: "high"
+    notes:
+      - "Do not force-update multiple endpoints without an explicitly reviewed rollout plan."
+
+operation_pattern:
+  action_class: "state-changing"
+  command: "sfc.exe -forceupdate"
+  preconditions:
+    - "Discover the active sfc.exe process and derive its directory."
+    - "Validate endpoint identity and that the executable is under the Cisco AMP product root."
+  verification:
+    - "Capture bounded sfc.exe.log metadata and a bounded tail before and after the command."
+    - "Treat zero process exit and a ForceUpdate log entry as request acceptance, not update success."
+    - "Classify later proxy, download, or update-engine log errors as update failure."
+    - "Read GET /v1/computers?hostname=<hostname>&limit=10 and inspect active, last_seen, connector_version, av_update_definitions, faults, and orbital.status."
+  custom_script_boundary:
+    - "Do not store inline script source, script output, endpoint identifiers, exact paths, or result IDs."
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: false
+  live_query_tested: true
+  notes:
+    - "The discovery, guarded force-update action, log-tail verification, and bounded Computers API lookup were tested as one explicit-host workflow."
+    - "Validation showed that command acceptance and update completion must be reported separately."
+
+lessons:
+  - date: "2026-07-29"
+    note: "A zero sfc.exe CLI exit code alone is insufficient evidence of a successful update; use post-command log evidence."
+  - date: "2026-07-29"
+    note: "A current active console record and Definitions Up To Date status establish current state, not causation by the force-update request."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<active_sfc_directory>"
+  forbidden_values:
+    - "hostnames"
+    - "ip_addresses"
+    - "connector_guids"
+    - "group_guids"
+    - "result_ids"
+    - "exact_connector_versions"
+    - "raw_log_output"
+    - "raw_api_responses"
+    - "credentials"

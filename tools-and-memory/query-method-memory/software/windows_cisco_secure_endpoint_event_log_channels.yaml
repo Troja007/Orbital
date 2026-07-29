@@ -1,0 +1,153 @@
+title: "Query Cisco Secure Endpoint Windows Event Log channels"
+status: "tested"
+created: "2026-07-29"
+updated: "2026-07-29"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Query the latest Cisco Secure Endpoint Windows Event Log records."
+    - "Check the CiscoSecureEndpoint Cloud, Events, and WMI logs on a Windows endpoint."
+    - "Show the most recent Secure Endpoint Event Viewer records for an endpoint."
+  raw_input_handling:
+    store_raw_chat: false
+    sanitization_required: true
+    notes:
+      - "Store reusable intent only; do not preserve endpoint identifiers or returned event data."
+  keywords:
+    - "Cisco Secure Endpoint"
+    - "CiscoSecureEndpoint/Cloud"
+    - "CiscoSecureEndpoint/Events"
+    - "CiscoSecureEndpoint/WMI"
+    - "Windows Event Log"
+    - "windows_eventlog"
+  threat_context:
+    category: "software"
+    platforms:
+      - "windows"
+
+query_goal:
+  question: "What are the latest records in the requested Cisco Secure Endpoint Windows Event Viewer channels?"
+  expected_information:
+    - "event timestamp, provider, event ID, level, and structured event data"
+    - "independent row counts for each requested channel"
+  answers:
+    - "Whether the requested channel has recent retained records."
+    - "Whether recent Secure Endpoint Cloud, firewall, or WMI telemetry is available."
+  use_when:
+    - "The analyst supplies one or more exact CiscoSecureEndpoint Event Viewer channel names."
+    - "The analyst asks for the latest N records from Cloud, Events, or WMI."
+  do_not_use_when:
+    - "The required Event Viewer channel is unknown; ask for the channel or receive explicit approval to enumerate channels."
+    - "The question requires cloud-side detections, enrichment, or policy state rather than local endpoint records."
+  does_not_answer:
+    - "Whether Secure Endpoint is currently healthy, installed, or connected to the cloud."
+    - "Whether a zero-row channel never existed or contains no older retained records."
+  preferred_next_queries:
+    - "Cisco Secure Endpoint presence check when product installation or service state is in doubt."
+    - "CiscoSecureEndpoint/Cloud Event ID 401 EVENT_DETECTION query for local detection telemetry."
+    - "CiscoSecureEndpoint/Events Event IDs 1800 and 1801 query for Host Based Firewall decisions."
+
+catalog_context:
+  searched_terms:
+    - "CiscoSecureEndpoint"
+    - "windows_eventlog"
+  matches: []
+  notes:
+    - "Use exact Event Viewer channel names as the primary selection key; no exact local stock-catalog match is required for a bounded live query."
+
+catalog_table_context:
+  - table: "windows_eventlog"
+    matches: []
+    notes:
+      - "The method uses the Windows-specific osquery event-log table."
+
+osquery_context:
+  tables:
+    - name: "windows_eventlog"
+      columns:
+        - "channel"
+        - "datetime"
+        - "provider_name"
+        - "eventid"
+        - "level"
+        - "data"
+      platform_notes:
+        - "Windows only. Upstream osquery schema structure was checked; Orbital channel availability depends on the endpoint."
+  joins: []
+  constraints:
+    - "Use exact channel equality, ORDER BY datetime DESC, and a small LIMIT."
+    - "Submit each requested channel as a separate query rather than a broad multi-channel expression."
+
+orbital_guidance:
+  preferred_query_type: "live_query"
+  allow_os:
+    - "windows"
+  target_selector_guidance:
+    - "For one known Windows endpoint, use one exact host selector and the interactive profile."
+    - "Use tracked execution for broad, offline-tolerant, or later-result retrieval work."
+  broad_targeting_risk:
+    level: "medium"
+    notes:
+      - "Windows event-log scans can be expensive or slow; exact channels and low row limits are required."
+
+sql_patterns:
+  - name: "Latest records from one supplied Event Viewer channel"
+    description: "Use for a general channel health or recent-activity check."
+    sql: |
+      SELECT datetime, provider_name, eventid, level, data
+      FROM windows_eventlog
+      WHERE channel = 'EVENT_VIEWER_CHANNEL'
+      ORDER BY datetime DESC
+      LIMIT 3;
+  - name: "Cisco Secure Endpoint Cloud detection records"
+    description: "Use only when the question is specifically about local Secure Endpoint detection telemetry."
+    sql: |
+      SELECT datetime, provider_name, eventid, level, data
+      FROM windows_eventlog
+      WHERE channel = 'CiscoSecureEndpoint/Cloud'
+        AND eventid = 401
+        AND data LIKE '%EVENT_DETECTION%'
+      ORDER BY datetime DESC
+      LIMIT 3;
+  - name: "Cisco Secure Endpoint firewall decision records"
+    description: "Use only when the question is specifically about Host Based Firewall allow or block decisions."
+    sql: |
+      SELECT datetime, provider_name, eventid, level, data
+      FROM windows_eventlog
+      WHERE channel = 'CiscoSecureEndpoint/Events'
+        AND eventid IN (1800, 1801)
+      ORDER BY datetime DESC
+      LIMIT 3;
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: false
+  live_query_tested: true
+  notes:
+    - "The general exact-channel pattern was tested as separate bounded live queries for Cloud, Events, and WMI."
+    - "Cloud and Events returned records; WMI returned zero rows without an API or query error."
+    - "This validates independent handling of populated and empty channel results, not universal channel availability."
+
+lessons:
+  - date: "2026-07-29"
+    note: "For a known Event Viewer channel, direct exact-channel live queries are faster and clearer than an initial catalog or broad event-log search."
+  - date: "2026-07-29"
+    note: "Keep multiple channels separate so zero rows and errors remain attributable to the correct channel."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "EVENT_VIEWER_CHANNEL"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

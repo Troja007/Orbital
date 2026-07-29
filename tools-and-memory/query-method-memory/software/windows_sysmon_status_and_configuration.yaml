@@ -1,0 +1,195 @@
+title: "Check Windows Sysmon service status and configuration-change evidence"
+status: "tested"
+created: "2026-07-28"
+updated: "2026-07-28"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Check the Sysmon status and configuration on a Windows endpoint."
+    - "Is Sysmon installed and running, and when was its configuration last changed?"
+    - "Check whether the Sysmon Operational channel has configuration-change events."
+  raw_input_handling:
+    store_raw_chat: false
+    sanitization_required: true
+    notes:
+      - "Replace endpoint identifiers with generic endpoint wording."
+  keywords:
+    - "Sysmon"
+    - "Sysinternals Sysmon"
+    - "Sysmon status"
+    - "Sysmon configuration"
+    - "Sysmon Event ID 16"
+    - "Sysmon Operational"
+    - "services"
+    - "windows_eventlog"
+  threat_context:
+    category: "software"
+    platforms:
+      - "windows"
+
+query_goal:
+  question: "Is standard-name Sysmon service or driver evidence currently present, and is Sysmon configuration-change evidence available in the Operational event log?"
+  expected_information:
+    - "Sysmon service or driver name, display name, current state, startup type, process ID, and executable path"
+    - "Latest Sysmon Operational Event ID 16 timestamp and event data when retained"
+  answers:
+    - "Whether services exposes a standard Sysmon service or driver and its current state."
+    - "Whether the Sysmon Operational channel contains retained configuration-change evidence."
+  use_when:
+    - "An analyst needs a quick Windows Sysmon availability and configuration-audit check."
+    - "Before relying on Sysmon telemetry for an investigation."
+    - "After a suspected Sysmon configuration update or telemetry gap."
+  do_not_use_when:
+    - "The question requires the complete current Sysmon XML configuration."
+    - "The endpoint is not Windows."
+    - "A full historical Sysmon event investigation is needed; use bounded event-specific queries instead."
+  does_not_answer:
+    - "Whether Sysmon was never installed; services can use non-standard names and artifacts can be removed."
+    - "Whether a retained Event ID 16 represents the complete current configuration."
+    - "Whether Sysmon is healthy enough to generate every configured event type."
+    - "Whether the Sysmon Operational log was cleared, unavailable, or retained for a limited period."
+  not_for:
+    - "Using a zero-row result as proof that Sysmon has never existed on an endpoint."
+    - "Dumping the active configuration XML through osquery alone."
+  preferred_next_queries:
+    - "Bounded Sysmon Operational event query for the event IDs relevant to the investigation."
+    - "Windows process and exact-path file checks when standard service names do not resolve."
+    - "Approved observational current-configuration collection outside query-method memory when a full Sysmon configuration dump is required."
+
+catalog_context:
+  searched_terms:
+    - "Sysmon"
+    - "Sysinternals Sysmon Configuration Monitoring"
+    - "sysinternals_sysmon_config"
+  matches:
+    - name: "Sysinternals Sysmon Configuration Monitoring"
+      id: "sysinternals_sysmon_config"
+      source: "stock_catalog_result_profile"
+      relevance: "Cisco-managed catalog context for Sysmon configuration monitoring and no-response versus zero-row interpretation."
+      os:
+        - "windows"
+      category: "live-acquisition-of-volatile-data"
+      mitre:
+        - "TA0005 Defense Evasion"
+      updated: "2023-11-14T17:51:59.150055646Z"
+  notes:
+    - "The local catalog result profile establishes the catalog identity and safe result interpretation, but does not expose the catalog SQL source in this project."
+    - "Catalog MITRE context is catalog metadata, not a finding or detection claim from this method."
+
+catalog_table_context:
+  - table: "services"
+    matches: []
+    notes:
+      - "Use for current standard-name Sysmon service or driver state, including RUNNING, STOPPED, startup type, process ID, and service path."
+  - table: "windows_eventlog"
+    matches: []
+    notes:
+      - "Use with the exact Sysmon Operational channel and Event ID 16 to bound configuration-change audit retrieval."
+
+related_table_ttp_context: []
+
+osquery_context:
+  tables:
+    - name: "services"
+      columns:
+        - "name"
+        - "display_name"
+        - "status"
+        - "start_type"
+        - "pid"
+        - "path"
+        - "win32_exit_code"
+        - "service_exit_code"
+      platform_notes:
+        - "Windows-only table. A driver service can report PID 0; do not treat that alone as absence."
+        - "A renamed Sysmon service or driver can evade name/display-name matching."
+    - name: "windows_eventlog"
+      columns:
+        - "channel"
+        - "datetime"
+        - "provider_name"
+        - "eventid"
+        - "data"
+      platform_notes:
+        - "Windows-only table. Event ID 16 is Sysmon configuration-change audit evidence, not a guaranteed current XML dump."
+  joins: []
+  constraints:
+    - "Constrain windows_eventlog to channel Microsoft-Windows-Sysmon/Operational and eventid 16."
+    - "Run service status and configuration-event checks as separate queries for clear error isolation and result interpretation."
+
+orbital_guidance:
+  preferred_query_type: "live_query"
+  allow_os:
+    - "windows"
+  target_selector_guidance:
+    - "Use one explicit Windows host for a fast status check."
+    - "Use a tracked scheduled query when the endpoint may be offline or a Job ID is required for later retrieval."
+  broad_targeting_risk:
+    level: "medium"
+    notes:
+      - "The services query is low impact. Event-log checks must remain constrained to exact channel and event ID before broader execution."
+
+sql_patterns:
+  - name: "Sysmon standard service and driver status"
+    description: "Check current Windows service inventory for standard Sysmon service and driver names."
+    sql: |
+      SELECT
+        name,
+        display_name,
+        status,
+        start_type,
+        pid,
+        path,
+        win32_exit_code,
+        service_exit_code
+      FROM services
+      WHERE lower(name) IN ('sysmon', 'sysmon64', 'sysmondrv')
+         OR lower(display_name) LIKE '%sysmon%';
+  - name: "Latest Sysmon configuration-change event"
+    description: "Retrieve the most recent retained Sysmon configuration-change audit event."
+    sql: |
+      SELECT
+        datetime,
+        provider_name,
+        eventid,
+        data
+      FROM windows_eventlog
+      WHERE channel = 'Microsoft-Windows-Sysmon/Operational'
+        AND eventid = 16
+      ORDER BY datetime DESC
+      LIMIT 1;
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: true
+  live_query_tested: true
+  notes:
+    - "Validated table and column names against the upstream osquery 5.23.0 schema."
+    - "The two bounded queries completed successfully as separate live checks against one Windows endpoint; endpoint-specific results are intentionally omitted."
+    - "A prior combined request received a foundational API error before endpoint execution. The cause was not established, so no incompatibility claim is stored."
+
+lessons:
+  - date: "2026-07-28"
+    note: "Separate current service-state and configuration-change evidence. A zero-row service result means no matching standard-name service is visible at query time; it is weaker than proof of never-installed Sysmon."
+  - date: "2026-07-28"
+    note: "Treat zero Event ID 16 rows as no retained configuration-change evidence for the exact channel and event ID, not as a complete current configuration assessment."
+  - date: "2026-07-28"
+    note: "Use an approved observational configuration-dump workflow when the exact active Sysmon XML is required; do not claim that an event-log query supplies it."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<path>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "anyconnect_udids"
+    - "customer_names"
+    - "bearer_tokens"
+    - "raw_api_responses"

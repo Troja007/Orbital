@@ -41,3 +41,4 @@ Recommended entry format:
 | 2026-07-02 | Store upstream osquery schema snapshots under product context as refreshable source snapshots. | `2026-07-02_osquery_schema_source_snapshots.md` |
 | 2026-07-02 | Promote reusable lessons from local logs into GitHub-synced project memory. | `2026-07-02_log_to_memory_promotion.md` |
 | 2026-07-02 | Keep query answers compact and traceable by default while still using the full project capability stack internally. | `2026-07-02_compact_query_responses_full_capability.md` |
+| 2026-07-29 | Use validated reusable methods as the direct path for recurring exact read-only work. | `2026-07-29_validated_method_fast_path.md` |

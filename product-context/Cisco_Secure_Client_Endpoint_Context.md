@@ -923,6 +923,17 @@ Use this sequence for scripts:
 | Exploit Prevention protected-process check | `process_memory_map` plus Cisco Protector DLL path | `Protector64.dll`, `Protector32.dll`, signed Cisco DLL metadata, protected process path | No repair initially; use as evidence for engine activity and application compatibility triage |
 | Disk footprint check | Cisco path list | file sizes under bounded Cisco paths | No repair initially; report large or stale paths |
 
+### Secure Endpoint Force-Update Verification
+
+For an explicitly approved update on one Windows endpoint, discover the active `sfc.exe` path first and validate the host and Cisco AMP path inside the action. Invoke the documented `-forceupdate` CLI argument, then inspect a bounded tail of the co-located `sfc.exe.log`.
+
+Interpret the evidence in two layers:
+
+1. A zero CLI exit code and a new `ForceUpdate` log entry prove the connector accepted the request and woke its update thread.
+2. They do not prove update completion. Look for subsequent update success or failure messages. Proxy-setting, download, or update-engine errors mean the attempted update failed even when the CLI process returned zero.
+
+Verify current console state independently with the bounded Secure Endpoint Computers API request `GET /v1/computers?hostname=<hostname>&limit=10`. Use `active`, `last_seen`, `connector_version`, `av_update_definitions.status`, `av_update_definitions.updated_at`, `faults`, and `orbital.status` as current properties. Do not claim that the force-update request caused a definition-state change unless the connector log supplies explicit success evidence.
+
 ### Repair Safety Rules
 
 - Do not stop or restart endpoint security services without explicit operator approval.

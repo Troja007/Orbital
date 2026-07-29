@@ -8,7 +8,7 @@ Use `POST /query` for tracked scheduled queries. A host selector defaults to a o
 
 Persist a submission before monitoring. Reuse `orbital_queryID` with `/v0/jobs/{id}` and `/v0/jobs/{id}/results`; never resubmit solely to check progress. Use `--no-status-poll` when immediate acknowledgement is more valuable than waiting for a short status update.
 
-Treat no rows as a no-hit only when at least one endpoint answered, the job is no longer pending, and `query_error_count` is zero. A missing response can mean that an endpoint did not answer within the scheduled window. For endpoint SQL/table/column errors, surface the nested osquery error before a generic endpoint error; do not automatically rerun a replacement query.
+Treat no rows as a no-hit only when at least one endpoint answered, the job is no longer pending, and `query_error_count` is zero. A missing response can mean that an endpoint did not answer within the scheduled window. For endpoint SQL/table/column errors, surface the nested osquery error before a generic endpoint error. Do not blindly rerun a replacement query: follow the one-attempt, same-scope recovery rules in the main skill after diagnosing the exact error class.
 
 Store meaningful errors only in the local query ledger. Store phase, error scope, sanitized text/hash, optional label, Job ID, and HTTP status. Never store raw results, endpoint identity, ORG data, credentials, or tokens.
 
