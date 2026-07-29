@@ -15,6 +15,26 @@ The project is not only a collection of SQL snippets. It now contains:
 - Codex skill working copies for Orbital API access, query-method memory, live or
   scheduled osquery execution, and catalog update work.
 
+## Table Of Contents
+
+- [Continuous Improvement Model](#continuous-improvement-model)
+- [Project Knowledge Model](#project-knowledge-model)
+  - [Diagram Box Descriptions](#diagram-box-descriptions)
+  - [How Source Cross-Links Work](#how-source-cross-links-work)
+- [Start Here](#start-here)
+- [Directory Map](#directory-map)
+- [Local Logs](#local-logs)
+- [Query-Method Memory](#query-method-memory)
+- [Orbital Query Work](#orbital-query-work)
+- [Orbital Script Work](#orbital-script-work)
+- [Orbital API And Catalog Data](#orbital-api-and-catalog-data)
+- [Credentials](#credentials)
+- [Local Helpers](#local-helpers)
+- [Current Investigation Focus](#current-investigation-focus)
+- [SQL Result Helpers](#sql-result-helpers)
+- [Git And Sync Notes](#git-and-sync-notes)
+- [Install In A New Codex Workspace](#install-in-a-new-codex-workspace)
+
 ## Continuous Improvement Model
 
 The project is designed to improve query quality and investigation speed over time.
@@ -106,7 +126,65 @@ flowchart LR
   Core --> Use["Query, explain, script, update catalog"]
   Support --> Use
   Sync --> Use
+
+  classDef externalSkill fill:#dbeafe,stroke:#2563eb,color:#0f172a;
+  class Support externalSkill;
 ```
+
+### Diagram Box Descriptions
+
+- `Input and reference sources`: source material that feeds the reusable
+  knowledge model.
+- `Orbital Catalog`: Cisco-managed and organization-managed query/script
+  definitions, including Catalog `ID`, name, SQL or script content, OS,
+  category, and MITRE metadata.
+- `osquery schema`: upstream table and column structure used to validate SQL
+  table names, column names, and platform assumptions.
+- `Validation results`: controlled execution observations used to learn result
+  shape and caveats after sanitization.
+- `Analyst feedback`: user-approved corrections, interpretation notes, and
+  reusable lessons from investigations.
+- `Context files`: durable documentation that explains how to interpret sources
+  and where project knowledge belongs.
+- `Orbital API / catalog / target context`: API behavior, catalog source
+  mapping, target selector terminology, and Orbital-specific query rules.
+- `Secure Client / Secure Endpoint context`: product knowledge for Cisco Secure
+  Client, Cisco Secure Endpoint, EVM, NVM, drivers, services, registry paths,
+  files, logs, and related endpoint artifacts.
+- `Additional product context files`: other product-specific context that can be
+  added when investigations expand beyond the current Secure Client / Secure
+  Endpoint focus.
+- `Repository and memory rules`: rules for source ownership, privacy boundaries,
+  GitHub-synced memory, local-only logs, and generated artifacts.
+- `Knowledge layer`: the central reusable project intelligence built from
+  sources, context, validation, and analyst feedback.
+- `Source cross-links`: relationships that connect Catalog IDs, names, SQL or
+  scripts, osquery tables, osquery columns, result profiles, query-method
+  memory, and product/API context.
+- `Query method memory`: sanitized reusable methods that explain when to use a
+  query or stock script, when not to use it, target assumptions, SQL patterns,
+  caveats, and validation status.
+- `Result profiles`: sanitized per-catalog interpretation artifacts that explain
+  expected columns, row-count behavior, no-response handling, caveats, and
+  incident-responder reading guidance.
+- `Project decisions`: durable decisions about project behavior, memory model,
+  privacy boundaries, source ownership, and skill responsibility.
+- `Skill layer`: Codex skills and adjacent capabilities that consume the
+  knowledge layer.
+- `Orbital core skills`: GitHub-available project skills for Orbital API access,
+  endpoint query/script execution, query-method memory, catalog result profiles,
+  and catalog update work.
+- `Cisco / XDR / Secure Endpoint skills`: supporting skills used in this
+  workspace for Cisco Security, XDR, and Secure Endpoint context. This box is
+  light blue because these skills are relevant to the model but are not
+  necessarily available from this GitHub repository.
+- `GitHub / global skill sync skills`: skills used to synchronize reusable
+  project skills or GitHub-synced knowledge to other workspaces.
+- `Local-only evidence and credentials`: raw endpoint evidence, run ledgers,
+  credentials, org mappings, Job IDs, query IDs, host identifiers, IP addresses,
+  GUIDs, and other sensitive runtime material that must not be committed.
+- `Query, explain, script, update catalog`: the operational work enabled by the
+  skills after they consume the reusable knowledge layer.
 
 ### How Source Cross-Links Work
 
