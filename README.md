@@ -108,6 +108,50 @@ flowchart LR
   Sync --> Use
 ```
 
+### How Source Cross-Links Work
+
+Source cross-links are the project's translation layer. They connect information
+that lives in different places but describes the same investigation capability.
+
+For example, an Orbital Catalog query can provide:
+
+- Catalog `Name`
+- Catalog `ID`
+- SQL content
+- OS/platform metadata
+- category
+- MITRE mapping
+
+The SQL then links the catalog item to osquery tables and columns. A query such
+as a running-process hash query may link to the `processes` and `hash` tables
+and to columns such as `pid`, `name`, `path`, `cmdline`, `state`, and `sha256`.
+
+The Catalog `ID` becomes the stable connector between:
+
+- the catalog item and its metadata;
+- the SQL or script content;
+- the osquery tables and columns used by the query;
+- the result profile that explains returned rows;
+- query-method memory that says when to use or adapt the query;
+- product and API context that adds Orbital-specific or Secure
+  Client / Secure Endpoint meaning.
+
+This matters because each source answers a different question:
+
+- `osquery_schema_5_23_0.json` validates table and column structure.
+- The Orbital Catalog identifies Cisco-managed and organization-managed query or
+  script definitions.
+- Context files explain API behavior, target selectors, catalog terminology,
+  repository rules, and product-specific evidence.
+- Catalog result profiles explain expected result shape, row-count behavior,
+  no-response handling, caveats, and incident-responder interpretation.
+- Query-method memory explains when an analyst should use a query, when not to
+  use it, and what follow-up or caveat matters.
+
+Without cross-links, the project only has separate files. With cross-links,
+Codex can answer which query to use, why it fits, which tables it touches, and
+how the result should be explained.
+
 ## Start Here
 
 For Codex or human review, read these files first:
