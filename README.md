@@ -131,6 +131,22 @@ flowchart LR
   class Support externalSkill;
 ```
 
+### How Each Box Is Maintained
+
+Use `Maintained by` instead of `mandatory skill` because some boxes are source
+files or generated artifacts rather than actions. Skills and helpers can evolve,
+but the project boundary and output locations should stay stable.
+
+| Box | Maintained by | Uses | Output |
+| --- | --- | --- | --- |
+| Orbital Catalog | `orbital-api-access`, `orbital-update-catalog`, `import_orbital_catalog.py` | Orbital Catalog API such as `/v0/stock`, authenticated catalog context | `queries_and_scripts/catalog_snapshot/`, catalog query/script source snapshots |
+| osquery schema | manual/project context maintenance | upstream osquery schema | `product-context/osquery/` |
+| Source cross-links | `orbital-query-method-memory`, `orbital-catalog-result-profiles`, catalog source-map logic | Catalog `ID`, catalog SQL/script content, osquery tables and columns, catalog metadata, product/API context | query-method memory, result profiles, source-map context |
+| Result profiles | `orbital-catalog-result-profiles`, `generate_catalog_result_profiles.py` | local validation results, catalog metadata, returned labels and columns, sanitized sample shape | `queries_and_scripts/catalog_result_profiles/` |
+| Query method memory | `orbital-query-method-memory` | analyst feedback, catalog entries, osquery schema, result profiles, validated lessons | `tools-and-memory/query-method-memory/` |
+| Context files | relevant product/API skills and manual project context maintenance | product/API research, source maps, validated lessons, repository rules | `project-context/`, `product-context/` |
+| Skill layer | GitHub sync and global skill sync workflows | GitHub skill folders, global skill installation, workspace-specific skills | `skills/`, global Codex skill locations such as `~/.codex/skills/` |
+
 ### Diagram Box Descriptions
 
 - `Input and reference sources`: source material that feeds the reusable
