@@ -142,6 +142,24 @@ Interpretation notes:
 - Registry evidence for Secure Endpoint can also appear under the legacy product name `HKEY_LOCAL_MACHINE\SOFTWARE\Immunet Protect`. Secure Endpoint was formerly named Immunet, so files, services, drivers, pipes, and registry values containing `Immunet` can be relevant Secure Endpoint artifacts. When querying this branch, summarize or redact GUID-like identifiers, pipe suffixes, tokens, certificates, private keys, and binary key material. Useful high-level values can include pipe names, AMSI enablement, connector identifiers, and Orbital/AMP server settings, but raw sensitive value data should not be copied into durable memory.
 - Secure Client and Secure Endpoint can also register COM classes under `HKEY_CLASSES_ROOT\CLSID`. Cisco-related CLSID evidence observed in this project includes `Cisco Secure Client Surrogate64` with `InprocServer32` pointing to `C:\Program Files (x86)\Cisco\Cisco Secure Client\NVM\Surrogate64.dll`, and `Cisco AMP AMSI Provider` with `InProcServer32` pointing to an AMP `scriptid\damsicom64.dll` path. Include `HKEY_CLASSES_ROOT\CLSID` searches when building deep registry context for Secure Client / Secure Endpoint.
 
+#### Secure Client Uninstall Note
+
+One historical workflow in this repository is uninstalling Cisco Secure Client
+with Orbital scripts:
+
+1. Query installed files or installed products first.
+2. Execute the predefined script pattern for a PowerShell cmdlet.
+3. Example uninstall command:
+
+```powershell
+wmic product where "name like 'Cisco Secure Client%'" call uninstall
+```
+
+Prefer current product-specific guidance and validate the installed product names
+before using this workflow.
+
+![Secure Client uninstall script example](https://github.com/user-attachments/assets/dffa6baa-818b-483d-b185-c59ced880086)
+
 ### Cisco Orbital
 
 Orbital is not Secure Endpoint/Secure Client, but it is part of the same endpoint context because this project uses Orbital to collect evidence.

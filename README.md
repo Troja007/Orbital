@@ -420,24 +420,6 @@ JSON_EXTRACT(json(data), '$.EventData.LocalPort') AS source_port
 SPLIT(message, ',', 1) AS protocol
 ```
 
-## Secure Client Uninstall Note
-
-One historical workflow in this repository is uninstalling Cisco Secure Client
-with Orbital scripts:
-
-1. Query installed files or installed products first.
-2. Execute the predefined script pattern for a PowerShell cmdlet.
-3. Example uninstall command:
-
-```powershell
-wmic product where "name like 'Cisco Secure Client%'" call uninstall
-```
-
-Prefer current product-specific guidance and validate the installed product names
-before using this workflow.
-
-![Secure Client uninstall script example](https://github.com/user-attachments/assets/dffa6baa-818b-483d-b185-c59ced880086)
-
 ## Git And Sync Notes
 
 Before syncing to GitHub:
