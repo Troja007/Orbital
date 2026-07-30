@@ -33,6 +33,22 @@ python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run
 
 The interactive profile accepts only one explicit host selector and a read-only query. It can return immediate results but does not promise an `orbital_queryID`. Use it when the user wants a quick online endpoint check.
 
+## Hostname Resolution And Stable Targeting
+
+When the user supplies a hostname such as `victim3`, start the requested read-only query directly with `host:victim3`. Treat endpoint resolution as the number of answered endpoints, not the number of data rows: a response with zero data rows can still identify exactly one target.
+
+Apply this sequence before reporting the final result:
+
+1. Submit the requested SQL against `host:NAME` with the interactive profile.
+2. If exactly one endpoint answered and no API or endpoint query error occurred, extract its returned `nodeId`. It is the Orbital ID. Re-submit the same SQL with `orb:NODE_ID`; use that stable-target result as the final single-device result. The helper's interactive profile accepts only host selectors, so use the tracked profile for the `orb:` re-query.
+3. If no endpoint answered and no API or endpoint query error occurred, repeat the same SQL with `host:NAME%`. This is the FQDN-resolution fallback, never a contains match such as `host:%NAME%`. Use the tracked profile and `--approve-broad-target`, because a trailing wildcard can select multiple endpoints.
+4. If the fallback returns exactly one endpoint, extract its `nodeId` and re-submit the SQL with `orb:NODE_ID` as in step 2.
+5. If either selector returns multiple endpoints, do not choose one or re-query a single Orbital ID. Continue with the result from that selector and show all returned hosts and their result rows. State clearly that `host:NAME%` included multiple endpoints.
+
+Do not apply the hostname fallback to an API, authentication, SQL, table, column, or endpoint execution error. Diagnose those errors through the normal failure-recovery path; changing the selector would not repair the query.
+
+After showing a multi-endpoint wildcard result, ask exactly: `Multiple hosts matched host:NAME%. Please clarify the device definition. Reply re-do to resolve the right computer name through Secure Endpoint and XDR Assets.` If the user replies `re-do`, query the Secure Endpoint Computers API with `GET /v1/computers?hostname=NAME&limit=10`, then use the `xdr-apis` Asset guidance and its current documented asset-search contract to compare candidate device identities. Show the candidate names and identity relationships, ask the user to choose the canonical device definition, and only then re-run the original query against the selected stable selector.
+
 ## Known Method Direct Execution
 
 Treat tested or validated query-method memory as executable operational knowledge, not as documentation to re-derive. Submit the stored SQL immediately when all of these are true:
@@ -83,7 +99,7 @@ Show the returned Job ID immediately, then retrieve it once with `--job-id JOB_I
 
 ## Required Safety Checks
 
-Before every real submission, confirm the exact target selector, SQL, and query purpose. Reject ambiguous identifiers and unapproved broad scope. `all`, `random`, OS selectors, CIDR ranges, multiple broad wildcards, and wildcard host matching require explicit approval plus `--approve-broad-target`.
+Before every real submission, confirm the exact target selector, SQL, and query purpose. Reject ambiguous identifiers and unapproved broad scope. `all`, `random`, OS selectors, CIDR ranges, multiple broad wildcards, and wildcard host matching require explicit approval plus `--approve-broad-target`, except for the documented post-failure `host:NAME%` FQDN-resolution fallback above.
 
 For a known short hostname that might be stored as an FQDN, retry only with a narrow trailing wildcard such as `host:slate%`. Do not use contains matching such as `host:%late%`.
 
@@ -102,7 +118,7 @@ For a real failure, keep the initial error visible and use this bounded recovery
 3. Submit at most one corrected replacement query only when the correction is clear, remains read-only, keeps the same exact target, and is no broader or more expensive than the initial query. A transient read-only request may be retried once unchanged. Do not retry authentication, credential, ORG mapping, or target-scope failures until their cause is resolved.
 4. If the corrected query also fails, stop and report both attempts, their error classes, and the next required action. Do not probe with unrelated health checks or create an unbounded retry loop.
 
-An exact-host no-response can justify the documented trailing-FQDN selector fallback only after its wildcard scope has passed the normal broad-target safety check. Never use a contains hostname match.
+An exact-host no-response uses the documented trailing-FQDN selector fallback. Never use a contains hostname match.
 
 ## ORG And Credentials
 

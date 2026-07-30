@@ -12,7 +12,9 @@ Use documented selectors such as `host:NAME`, `hostname:NAME`, `orb:ID`, `amp:GU
 - Do not combine `all` with another selector or `allowOS`.
 - Treat `host:` and `hostname:` wildcards as potentially multi-device. A trailing wildcard is narrow only when the literal hostname stem has at least four characters and contains no other wildcard.
 
-Require explicit user approval and `--approve-broad-target` for broad target scope. Never infer it from words such as "any", "online", "all", or "every".
+Require explicit user approval and `--approve-broad-target` for broad target scope. Never infer it from words such as "any", "online", "all", or "every". The sole automatic exception is the endpoint-operation skill's hostname-resolution fallback: after `host:NAME` returns zero answered endpoints without an API or endpoint query error, it may retry `host:NAME%` with `--approve-broad-target`. The fallback can return multiple endpoints and must never silently select one.
+
+When a hostname selector returns exactly one endpoint, its response `nodeId` is the Orbital ID for `orb:NODE_ID`. Re-submit the requested read-only SQL to that stable selector before treating it as the final single-device result. When a selector returns multiple endpoints, show all host results and request device-definition clarification rather than choosing a node ID.
 
 ## Design Queries
 

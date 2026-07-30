@@ -26,6 +26,7 @@ The project is not only a collection of SQL snippets. It now contains:
 - [Local Logs](#local-logs)
 - [Query-Method Memory](#query-method-memory)
 - [Orbital Query Work](#orbital-query-work)
+  - [Hostname Resolution](#hostname-resolution)
 - [Orbital Script Work](#orbital-script-work)
 - [Orbital API And Catalog Data](#orbital-api-and-catalog-data)
 - [Credentials](#credentials)
@@ -393,9 +394,21 @@ finalizing query work:
   in `queries_and_scripts/custom_queries/` only when explicitly asked to save it
   as a custom query.
 
-For host-targeted API investigations, this project prefers scheduled one-shot
-queries with a short expiry so Orbital returns a Job ID for follow-up through
-`/v0/jobs/{id}` and `/v0/jobs/{id}/results`.
+### Hostname Resolution
+
+For a read-only named-host operation, start with the exact selector
+`host:NAME`. If no endpoint answers and there is no API, SQL, or endpoint
+error, use the narrow FQDN fallback `host:NAME%`; never use a contains selector
+such as `host:%NAME%`. When exactly one endpoint answers, re-run against its
+returned `orb:NODE_ID` for a stable single-device result. If the wildcard
+fallback returns multiple endpoints, report all returned results and require a
+device clarification before selecting one. The `re-do` flow resolves candidates
+through Secure Endpoint and XDR Assets. The complete contract is in
+[`project-context/Orbital_Target_Node_Selectors.md`](project-context/Orbital_Target_Node_Selectors.md).
+
+Exact single-host probes use interactive execution. The FQDN fallback is a
+bounded broad target and uses a short-lived scheduled job so its results can be
+retrieved through `/v0/jobs/{id}` and `/v0/jobs/{id}/results`.
 
 Default query interaction should stay compact but traceable. Codex should still
 use the full project capability stack internally: project/product context,

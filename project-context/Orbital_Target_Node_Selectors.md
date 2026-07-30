@@ -147,6 +147,14 @@ Recommended wording:
 
 > In the Orbital API, endpoint targets are specified in the `nodes` array. Each entry is a selector string. For example, `host:DESKTOP-XYZ` targets by hostname, `ipv4:10.0.0.1` targets by IPv4 address, and `netmask:192.168.1.168/24` targets an IPv4 CIDR range.
 
+## Hostname Resolution Workflow
+
+For a user-supplied short hostname, start with the exact `host:NAME` selector. If it returns exactly one endpoint, use its returned `nodeId` as the Orbital ID and repeat the requested read-only query with `orb:NODE_ID` for stable targeting.
+
+If the exact selector returns no answered endpoint without an API or endpoint query error, the endpoint-operation workflow may use the trailing FQDN fallback `host:NAME%`. This selector can return multiple endpoints. When it does, report all matching hosts and result rows; do not choose one node. Ask the user to clarify the device definition and offer a `re-do` that compares Secure Endpoint Computers API candidates with the documented XDR Asset search surface.
+
+Do not use `host:%NAME%`. Do not use hostname fallback to mask SQL, API, authentication, or endpoint execution errors.
+
 ## Project Rules
 
 - Always record whether a target selector is exact, wildcard-based, random, OS-based, network-based, or query-derived.

@@ -6,6 +6,7 @@ import base64
 import hashlib
 import json
 import os
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -168,6 +169,17 @@ def parse_args() -> argparse.Namespace:
         help="Force a live query with POST /query/run instead of the default scheduled mode for host targets.",
     )
     parser.add_argument(
+        "--execution-profile",
+        choices=("tracked", "interactive"),
+        default="tracked",
+        help="tracked preserves default Job-ID behavior; interactive uses live mode without status polling for one narrow read-only host query.",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate and print the planned new-query request without acquiring a token or contacting Orbital.",
+    )
+    parser.add_argument(
         "--target",
         action="append",
         default=[],
@@ -307,6 +319,72 @@ def read_sql(args: argparse.Namespace) -> str:
     if not sql:
         raise RuntimeError("No SQL provided. Use --sql-file or pipe SQL on stdin.")
     return sql
+
+
+SQL_TABLE_REFERENCE = re.compile(
+    r"\b(?:from|join)\s+(\[[^\]]+\]|`[^`]+`|\"[^\"]+\"|[A-Za-z_][A-Za-z0-9_]*)",
+    re.IGNORECASE,
+)
+SQL_CTE_REFERENCE = re.compile(
+    r"(?:\bwith|,)\s*([A-Za-z_][A-Za-z0-9_]*)\s+as\s*\(",
+    re.IGNORECASE,
+)
+
+
+def sql_without_literals_and_comments(sql: str) -> str:
+    """Mask SQL string literals and comments while retaining quoted identifiers."""
+    characters: list[str] = []
+    index = 0
+    length = len(sql)
+
+    while index < length:
+        character = sql[index]
+        next_two = sql[index : index + 2]
+        if character == "'":
+            characters.append(" ")
+            index += 1
+            while index < length:
+                if sql[index] == "'":
+                    if index + 1 < length and sql[index + 1] == "'":
+                        index += 2
+                        continue
+                    index += 1
+                    break
+                index += 1
+            continue
+        if next_two == "--":
+            characters.append("\n")
+            index = sql.find("\n", index + 2)
+            if index == -1:
+                break
+            index += 1
+            continue
+        if next_two == "/*":
+            characters.append(" ")
+            closing_index = sql.find("*/", index + 2)
+            index = length if closing_index == -1 else closing_index + 2
+            continue
+        characters.append(character)
+        index += 1
+
+    return "".join(characters)
+
+
+def extract_osquery_tables(sql: str) -> list[str]:
+    """Return unique physical table names referenced by common SQL FROM/JOIN clauses."""
+    searchable_sql = sql_without_literals_and_comments(sql)
+    cte_names = {
+        match.group(1).lower() for match in SQL_CTE_REFERENCE.finditer(searchable_sql)
+    }
+    tables: list[str] = []
+
+    for match in SQL_TABLE_REFERENCE.finditer(searchable_sql):
+        table = match.group(1).strip("[]`\"").lower()
+        if table in cte_names or table in tables:
+            continue
+        tables.append(table)
+
+    return tables
 
 
 def utc_now() -> str:
@@ -786,6 +864,35 @@ def uses_host_target(targets: list[str]) -> bool:
     return any(target.startswith("host:") or target.startswith("hostname:") for target in targets)
 
 
+def is_explicit_host_target(target: str) -> bool:
+    return (
+        (target.startswith("host:") or target.startswith("hostname:"))
+        and "%" not in target
+        and "_" not in target
+    )
+
+
+def is_read_only_sql(sql: str) -> bool:
+    normalized = sql_without_literals_and_comments(sql).lstrip().lower()
+    return normalized.startswith("select") or normalized.startswith("with")
+
+
+def resolve_query_mode(args: argparse.Namespace, targets: list[str], sql: str) -> bool:
+    if args.live and args.scheduled:
+        raise RuntimeError("Use only one of --live or --scheduled.")
+    if args.execution_profile != "interactive":
+        return bool(args.scheduled or (uses_host_target(targets) and not args.live))
+    if args.scheduled:
+        raise RuntimeError("--execution-profile interactive cannot be combined with --scheduled.")
+    if len(targets) != 1 or not is_explicit_host_target(targets[0]):
+        raise RuntimeError(
+            "--execution-profile interactive requires exactly one explicit non-wildcard host: or hostname: selector."
+        )
+    if not is_read_only_sql(sql):
+        raise RuntimeError("--execution-profile interactive requires a read-only SELECT or WITH query.")
+    return False
+
+
 def meaningful_error(value: object) -> object:
     """Return a non-empty Orbital error value, or None for empty placeholders."""
     if value is None:
@@ -1102,11 +1209,14 @@ def should_fetch_results_after_poll(polls: list[dict]) -> bool:
 
 
 def main() -> int:
+    started_at = time.monotonic()
     args = parse_args()
     task = task_context(args)
     configure_error_context(args, task)
     set_error_phase("mapping_resolution")
+    mapping_started_at = time.monotonic()
     codex_mapping = load_codex_org_mapping(args.org_mapping_state_file)
+    mapping_resolution_ms = round((time.monotonic() - mapping_started_at) * 1000)
     mapping_region = str(codex_mapping.get("region") or "").strip().lower()
     region = (
         args.region
@@ -1118,16 +1228,23 @@ def main() -> int:
     if region not in SERVERS:
         raise RuntimeError(f"Unsupported region: {region}")
     set_error_phase("org_context_resolution", region=region)
+    context_started_at = time.monotonic()
     validate_org_context_against_mapping(args, codex_mapping)
     org_context = resolve_org_context(args, region)
     set_error_phase("credential_resolution", region=region)
     credential_context = resolve_credential_context(args, codex_mapping)
     context_summary = public_context_summary(org_context, credential_context)
-
-    token = fetch_access_token(region, args.timeout)
+    context_resolution_ms = round((time.monotonic() - context_started_at) * 1000)
 
     if args.job_id:
+        if args.dry_run:
+            raise RuntimeError("--dry-run supports planned new queries only; it cannot retrieve an existing Job ID.")
+        token_started_at = time.monotonic()
+        token = fetch_access_token(region, args.timeout)
+        token_acquisition_ms = round((time.monotonic() - token_started_at) * 1000)
+        request_started_at = time.monotonic()
         job_response = fetch_job(region, token, args.job_id, args.timeout, args.job_results)
+        request_ms = round((time.monotonic() - request_started_at) * 1000)
         payload = job_response["payload"]
         rows, meta = parse_any_rows(payload if isinstance(payload, dict) else {})
         data_rows, query_errors = split_query_errors(rows)
@@ -1137,6 +1254,8 @@ def main() -> int:
             "mode": "job_results" if args.job_results else "job_status",
             "orbital_queryID": args.job_id,
             "response_id": args.job_id,
+            "osquery_tables": [],
+            "osquery_tables_status": "not_available_existing_job_lookup",
             "context": context_summary,
             "task_id": args.task_id,
             "task_name": args.task_name,
@@ -1145,6 +1264,13 @@ def main() -> int:
             "query_error_count": len(query_errors),
             "table_columns": infer_table_columns(data_rows),
             "meta": meta,
+            "timing_ms": {
+                "mapping_resolution": mapping_resolution_ms,
+                "context_resolution": context_resolution_ms,
+                "token_acquisition": token_acquisition_ms,
+                "job_request": request_ms,
+                "total": round((time.monotonic() - started_at) * 1000),
+            },
         }
         if query_errors:
             output["query_errors"] = query_errors
@@ -1185,11 +1311,10 @@ def main() -> int:
         raise RuntimeError("--label is required when running a new live query.")
 
     sql = read_sql(args)
+    osquery_tables = extract_osquery_tables(sql)
     targets = normalize_targets(args)
     validate_target_scope(args, targets)
-    scheduled_mode = bool(args.scheduled or (uses_host_target(targets) and not args.live))
-    if args.live and args.scheduled:
-        raise RuntimeError("Use only one of --live or --scheduled.")
+    scheduled_mode = resolve_query_mode(args, targets, sql)
     expiry_minutes = int(args.expiry_minutes)
     interval_seconds = int(args.interval_seconds)
 
@@ -1209,6 +1334,34 @@ def main() -> int:
         body["allowOS"] = args.allow_os
 
     api_path = "/query" if scheduled_mode else "/query/run"
+    timing_ms: dict[str, int] = {
+        "mapping_resolution": mapping_resolution_ms,
+        "context_resolution": context_resolution_ms,
+    }
+    if args.dry_run:
+        output = {
+            "status": "dry_run",
+            "execution_profile": args.execution_profile,
+            "query_mode": "scheduled" if scheduled_mode else "live",
+            "api_path": api_path,
+            "targets": targets,
+            "submitted_sql": sql,
+            "osquery_tables": osquery_tables,
+            "query_label": args.label,
+            "query_name": args.name or args.label,
+            "context": context_summary,
+            "task_id": args.task_id,
+            "task_name": args.task_name,
+            "request_body": body,
+            "timing_ms": timing_ms
+            | {"total": round((time.monotonic() - started_at) * 1000)},
+        }
+        print(json.dumps(output, indent=2))
+        return 0
+
+    token_started_at = time.monotonic()
+    token = fetch_access_token(region, args.timeout)
+    timing_ms["token_acquisition"] = round((time.monotonic() - token_started_at) * 1000)
     set_error_phase(
         "query_submission",
         region=region,
@@ -1225,21 +1378,25 @@ def main() -> int:
         },
         method="POST",
     )
+    request_started_at = time.monotonic()
     with urlopen(request, timeout=args.timeout) as response:
         payload = json.loads(response.read().decode("utf-8") or "{}")
         status = response.status
         response_headers = dict(response.headers.items())
+    timing_ms["submission_request"] = round((time.monotonic() - request_started_at) * 1000)
 
     rows, meta = parse_immediate_rows(payload)
     data_rows, query_errors = split_query_errors(rows)
     orbital_query_id = top_level_orbital_query_id(payload, response_headers)
     output = {
         "status": status,
+        "execution_profile": args.execution_profile,
         "region": region,
         "query_mode": "scheduled" if scheduled_mode else "live",
         "api_path": api_path,
         "targets": targets,
         "submitted_sql": sql,
+        "osquery_tables": osquery_tables,
         "query_label": args.label,
         "query_name": args.name or args.label,
         "orbital_queryID": orbital_query_id,
@@ -1254,6 +1411,7 @@ def main() -> int:
         "table_columns": infer_table_columns(data_rows),
         "meta": meta,
         "rows": data_rows,
+        "timing_ms": timing_ms,
     }
     if query_errors:
         output["query_errors"] = query_errors
@@ -1268,6 +1426,7 @@ def main() -> int:
         "query_label": args.label,
         "query_name": args.name or args.label,
         "targets": targets,
+        "osquery_tables": osquery_tables,
         "sql_sha256": sha256_text(sql),
         "response_had_immediate_rows": bool(data_rows),
         "immediate_answered_endpoint_count": len(meta),
@@ -1300,6 +1459,7 @@ def main() -> int:
                 "query_label": args.label,
                 "query_name": args.name or args.label,
                 "targets": targets,
+                "osquery_tables": osquery_tables,
                 "sql_sha256": sha256_text(sql),
                 "status": status,
             }
@@ -1310,7 +1470,7 @@ def main() -> int:
             scope="foundational",
             error=f"POST {api_path} response did not expose a Job ID.",
         )
-    if orbital_query_id and not args.no_status_poll:
+    if orbital_query_id and not args.no_status_poll and args.execution_profile != "interactive":
         try:
             polls, poll_message = poll_job_status(
                 region,
@@ -1322,6 +1482,9 @@ def main() -> int:
             )
             output["job_status_polls"] = polls
             output["wait_status"] = poll_message
+            output["timing_ms"]["status_poll"] = round(
+                (time.monotonic() - request_started_at) * 1000
+            )
             append_run_ledger(
                 args.run_ledger,
                 {
@@ -1400,6 +1563,7 @@ def main() -> int:
                 | task,
             )
             record_foundational_error(exc)
+    output["timing_ms"]["total"] = round((time.monotonic() - started_at) * 1000)
     print(json.dumps(output, indent=2))
     return 0
 

@@ -1,0 +1,106 @@
+title: "Resolve a hostname to a stable Orbital ID before a repeat query"
+status: "tested"
+created: "2026-07-30"
+updated: "2026-07-30"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Run a query against a named endpoint."
+    - "The hostname might be stored as an FQDN in Orbital."
+    - "Re-do device resolution when a hostname wildcard matches multiple devices."
+  raw_input_handling:
+    store_raw_chat: false
+    sanitization_required: true
+    notes:
+      - "Replace all endpoint names and identifiers with placeholders."
+  keywords:
+    - "hostname"
+    - "FQDN"
+    - "host selector"
+    - "Orbital ID"
+    - "nodeId"
+    - "re-do"
+  threat_context:
+    category: "other"
+    platforms:
+      - "cross_platform"
+
+query_goal:
+  question: "Which exact Orbital endpoint should receive a requested read-only query when a short hostname may resolve differently?"
+  expected_information:
+    - "answered endpoint count for an exact hostname selector"
+    - "returned Orbital node ID for a single endpoint"
+    - "all matching endpoints for a trailing-FQDN fallback"
+  answers:
+    - "Whether the exact hostname resolves to one endpoint."
+    - "How to repeat a query against a stable Orbital ID."
+    - "When device definition must be clarified instead of selecting a wildcard match."
+  use_when:
+    - "A user supplies a short hostname for an Orbital read-only query."
+    - "The exact hostname may differ from the registered FQDN."
+  do_not_use_when:
+    - "The first query has an API, authentication, SQL, table, column, or endpoint execution error."
+    - "The operation changes endpoint state."
+  does_not_answer:
+    - "Which of multiple matching endpoints the user intends."
+    - "Whether a Secure Endpoint or XDR asset record is a one-to-one mirror of an Orbital node."
+  preferred_next_queries:
+    - "Secure Endpoint Computers API hostname lookup when a wildcard returns multiple endpoints."
+    - "XDR Asset search with its current documented contract when device identity remains ambiguous."
+
+catalog_context:
+  searched_terms:
+    - "Orbital node selectors"
+  matches: []
+  notes:
+    - "This is API target-resolution guidance, not a catalog query."
+
+osquery_context:
+  tables: []
+  joins: []
+  constraints:
+    - "Re-submit the original read-only SQL unchanged after obtaining a stable Orbital ID."
+
+orbital_guidance:
+  preferred_query_type: "depends"
+  allow_os: []
+  target_selector_guidance:
+    - "Start with host:<hostname>."
+    - "If one endpoint answers, use its nodeId as orb:<orbital_id> for the stable re-query."
+    - "If zero endpoints answer without an execution error, use only the trailing fallback host:<hostname>%."
+    - "If multiple endpoints answer, show all results and ask the user to reply re-do for device-definition resolution."
+  broad_targeting_risk:
+    level: "medium"
+    notes:
+      - "The trailing wildcard can select multiple endpoints and must be reported as such."
+
+sql_patterns: []
+
+validation:
+  osquery_schema_checked: false
+  orbital_catalog_checked: false
+  live_query_tested: true
+  notes:
+    - "Exact host targeting, trailing-FQDN fallback, and returned nodeId handling were tested in Orbital query workflows."
+    - "The Orbital API selector reference documents orb:<orbital_id> as the stable node selector."
+
+lessons:
+  - date: "2026-07-30"
+    note: "Use answered endpoint count, not data-row count, to decide whether hostname resolution found one device."
+  - date: "2026-07-30"
+    note: "A wildcard match with multiple endpoints is valid evidence but is not permission to choose one endpoint."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<orbital_id>"
+  forbidden_values:
+    - "hostnames"
+    - "orbital_ids"
+    - "secure_endpoint_guids"
+    - "secure_client_guids"
+    - "ip_addresses"
+    - "raw_api_responses"
+    - "credentials"
