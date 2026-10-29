@@ -25,6 +25,8 @@ installation_id
 # macOS / editor noise
 .DS_Store
 **/.DS_Store
+**/__pycache__/
+*.py[cod]
 
 # API snapshots can contain tenant-specific catalog data. Regenerate locally.
 local/orbital-catalog-api-cache/

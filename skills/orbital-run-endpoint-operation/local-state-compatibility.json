@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "current_version": "2.5.0",
+  "local_state_impact": "none",
+  "requires_environment_profile": false,
+  "checks": [],
+  "write_requires_confirmation": true,
+  "write_behavior": "never-automatic"
+}

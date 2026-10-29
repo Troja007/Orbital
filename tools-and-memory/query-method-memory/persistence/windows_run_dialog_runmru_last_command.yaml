@@ -1,0 +1,239 @@
+title: "Query Windows Run dialog history"
+status: "tested"
+created: "2026-08-13"
+updated: "2026-08-13"
+category: "persistence"
+platforms:
+  - "windows"
+
+investigation_inputs:
+  source_type: "analyst_question"
+  examples:
+    - "Check the last command executed using the Windows Run app on a specific endpoint."
+    - "Investigate the Windows Run dialog history for a specific endpoint."
+    - "Query the Run dialog history for the most recent command on a Windows host."
+    - "Show the list of cached commands from the Windows Run app."
+    - "Show the latest command cached in RunMRU for a Windows user."
+  raw_input_handling:
+    store_raw_chat: false
+    sanitization_required: true
+    notes:
+      - "Store the request pattern only. Do not store hostnames, SIDs, returned commands, or query result rows."
+  keywords:
+    - "RunMRU"
+    - "Run dialog"
+    - "Win+R"
+    - "Start Run"
+    - "run command history"
+    - "registry"
+  threat_context:
+    category: "registry"
+    platforms:
+      - "windows"
+
+query_goal:
+  question: "Determine cached Windows Run dialog commands for each loaded user hive on a target endpoint, either as the full MRU-ordered history or only the latest entry."
+  expected_information:
+    - "User SID and RunMRU registry key path."
+    - "Registry value name selected by the first character of MRUList."
+    - "Most recent Run dialog command string after removing the RunMRU terminator."
+    - "MRU-ordered Run dialog command list when the investigation needs more than the latest entry."
+    - "Full MRUList ordering string for interpretation."
+  answers:
+    - "Which command appears most recent in the Windows Run dialog history for each loaded user hive."
+    - "Which commands are cached in the Windows Run dialog history and their MRU order."
+  use_when:
+    - "The analyst asks for the last command entered through the Windows Run dialog or Start menu Run app."
+    - "The analyst asks to investigate Run dialog history rather than only the latest Run command."
+    - "The target is a specific Windows host or a narrow explicitly approved Windows target set."
+    - "The investigation needs lightweight per-user Run dialog artifact evidence."
+  do_not_use_when:
+    - "The analyst needs complete process execution history."
+    - "The command may have been launched through PowerShell, cmd.exe, Explorer, scheduled task, service control, or another mechanism instead of the Run dialog."
+    - "The user hive may not be loaded and offline NTUSER.DAT parsing is required."
+  does_not_answer:
+    - "Who typed the command beyond the loaded user SID context."
+    - "Whether the command actually completed successfully."
+    - "All commands ever executed on the endpoint."
+    - "Commands launched outside the Windows Run dialog."
+  preferred_next_queries:
+    - "UserAssist registry evidence for Explorer-launched GUI applications."
+    - "Prefetch evidence for executable launches if Prefetch is enabled."
+    - "PowerShell logs for script or command-line activity."
+    - "Security 4688 or Sysmon process creation telemetry if available."
+
+catalog_context:
+  searched_terms:
+    - "RunMRU"
+    - "Start Run"
+    - "registry"
+  matches:
+    - name: "Windows Start Run History Monitoring"
+      id: "windows_start_run_commands_monitoring"
+      source: "stock_catalog"
+      relevance: "Related stock catalog query for Run dialog history; useful as catalog context when explaining this artifact family."
+      os:
+        - "windows"
+      category: ""
+      mitre: []
+      updated: ""
+  notes:
+    - "Use the stock catalog entry for broad history interpretation. Use the SQL pattern here when the analyst specifically asks for the most recent Run dialog command."
+
+catalog_table_context:
+  - table: "registry"
+    matches:
+      - name: "Registry Key Search"
+        id: "registry_parameterized_search"
+        source: "stock_catalog"
+        relevance: "Generic catalog-backed registry lookup pattern."
+        os:
+          - "windows"
+        categories: []
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: ""
+      - name: "Windows Start Run History Monitoring"
+        id: "windows_start_run_commands_monitoring"
+        source: "stock_catalog"
+        relevance: "Catalog query family that monitors Run dialog history artifacts."
+        os:
+          - "windows"
+        categories: []
+        mitre:
+          tactics: []
+          techniques: []
+          subtechniques: []
+        updated: ""
+    notes:
+      - "The registry table is the primary osquery table for loaded RunMRU hives."
+
+osquery_context:
+  tables:
+    - name: "registry"
+      columns:
+        - "key"
+        - "path"
+        - "name"
+        - "type"
+        - "data"
+        - "mtime"
+      platform_notes:
+        - "Windows table. Queries loaded registry hives visible to osquery."
+        - "RunMRU history is per user under HKEY_USERS/<SID>/Software/Microsoft/Windows/CurrentVersion/Explorer/RunMRU."
+  joins:
+    - "Self-join RunMRU values to the MRUList value by registry key."
+  constraints:
+    - "Constrain key to HKEY_USERS\\%\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\RunMRU."
+    - "Use the first character of MRUList to select the most recent value."
+
+orbital_guidance:
+  preferred_query_type: "live_query"
+  allow_os:
+    - "windows"
+  target_selector_guidance:
+    - "Use one exact host:<hostname> or orb:<node_id> selector for triage."
+    - "Use broad Windows targeting only with explicit approval."
+  broad_targeting_risk:
+    level: "low"
+    notes:
+      - "Registry-only query is lightweight, but broad user-history collection can have privacy impact and should remain scoped."
+
+sql_patterns:
+  - name: "Most recent RunMRU command for loaded user hives"
+    description: "Returns one row per loaded user RunMRU key where MRUList exists and the most recent value is present."
+    sql: |
+      WITH runmru AS (
+        SELECT
+          key,
+          name,
+          data
+        FROM registry
+        WHERE key LIKE 'HKEY_USERS\%\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU'
+      ),
+      mru_order AS (
+        SELECT
+          key,
+          data AS mru_list,
+          substr(data, 1, 1) AS most_recent_value_name
+        FROM runmru
+        WHERE name = 'MRUList'
+      )
+      SELECT
+        replace(r.key, 'HKEY_USERS\', '') AS user_sid_and_key,
+        r.name AS mru_value,
+        replace(r.data, '\1', '') AS last_run_command,
+        m.mru_list
+      FROM runmru r
+      JOIN mru_order m
+        ON r.key = m.key
+       AND r.name = m.most_recent_value_name
+      ORDER BY r.key;
+  - name: "Full RunMRU command list for loaded user hives"
+    description: "Returns all cached Run dialog commands per loaded user RunMRU key, ordered from most recent to oldest according to MRUList."
+    sql: |
+      WITH runmru AS (
+        SELECT
+          key,
+          name,
+          data
+        FROM registry
+        WHERE key LIKE 'HKEY_USERS\%\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU'
+      ),
+      mru_order AS (
+        SELECT
+          key,
+          data AS mru_list
+        FROM runmru
+        WHERE name = 'MRUList'
+      )
+      SELECT
+        replace(r.key, 'HKEY_USERS\', '') AS user_sid_and_key,
+        r.name AS mru_value,
+        replace(r.data, '\1', '') AS run_command,
+        instr(m.mru_list, r.name) AS mru_position,
+        m.mru_list
+      FROM runmru r
+      JOIN mru_order m
+        ON r.key = m.key
+      WHERE r.name <> 'MRUList'
+        AND instr(m.mru_list, r.name) > 0
+      ORDER BY r.key, mru_position;
+
+validation:
+  osquery_schema_checked: true
+  orbital_catalog_checked: true
+  live_query_tested: true
+  notes:
+    - "The registry table columns were checked against the local osquery 5.23.0 schema."
+    - "The method was live-tested through Orbital against one Windows host and returned one RunMRU last-command row."
+    - "The full-list SQL pattern uses the same checked registry table and RunMRU artifact logic; it should be live-tested during the next Run history investigation before changing the whole method status to validated."
+    - "Endpoint-specific values, hostnames, user SIDs, node IDs, query IDs, and returned commands were not stored."
+
+lessons:
+  - date: "2026-08-13"
+    note: "Windows Run dialog history is stored per user in RunMRU. MRUList gives the ordering; the first character identifies the most recent command value."
+  - date: "2026-08-13"
+    note: "For Run dialog history investigations, prefer collecting the full MRU-ordered RunMRU list rather than only the latest entry when the analyst asks to investigate the Run app activity."
+  - date: "2026-08-13"
+    note: "RunMRU is not complete process execution evidence. Use it with UserAssist, Prefetch, PowerShell logs, Security 4688, Sysmon, or EDR telemetry when the investigation needs execution corroboration."
+
+privacy:
+  stores_endpoint_results: false
+  sanitized_placeholders:
+    - "<hostname>"
+    - "<user_sid>"
+    - "<run_command>"
+  forbidden_values:
+    - "hostnames"
+    - "usernames"
+    - "user_sids_from_results"
+    - "run_dialog_result_values"
+    - "ip_addresses"
+    - "orbital_ids"
+    - "query_ids"
+    - "tenant_identifiers"
+    - "bearer_tokens"
+    - "raw_api_responses"

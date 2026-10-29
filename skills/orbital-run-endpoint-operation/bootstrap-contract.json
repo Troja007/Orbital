@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "skill": "orbital-run-endpoint-operation",
+  "environment_variables": [],
+  "credential_requirements": [
+    {
+      "authentication": "Orbital OAuth credentials resolved through Cisco Security API access",
+      "storage_boundary": "local credential store",
+      "never_commit": true
+    }
+  ],
+  "local_storage": [],
+  "templates": [],
+  "dependencies": ["cisco-security-api-access"],
+  "manual_setup": [
+    "Configure a local Cisco Security API environment mapping before running a live endpoint operation."
+  ],
+  "path_resolution": "Resolve operation helpers, environment mappings, and project context from installed skills and the active task; do not infer local paths."
+}

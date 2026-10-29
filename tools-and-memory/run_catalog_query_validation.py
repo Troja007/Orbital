@@ -15,12 +15,15 @@ from urllib.request import Request, urlopen
 
 
 ROOT = Path(__file__).resolve().parents[1]
-HELPER_PATH = Path("/Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py")
+HELPER_PATH = ROOT / "skills/orbital-run-endpoint-operation/scripts/run_live_query.py"
 CATALOG_PATH = ROOT / "local/orbital-catalog-api-cache/stock_query_catalog.json"
 MAX_RAW_SAMPLE_ROWS_PER_LABEL = 3
 
 
 def load_helper():
+    helper_dir = str(HELPER_PATH.parent)
+    if helper_dir not in sys.path:
+        sys.path.insert(0, helper_dir)
     spec = importlib.util.spec_from_file_location("orbital_live_query_helper", HELPER_PATH)
     if not spec or not spec.loader:
         raise RuntimeError(f"Could not load helper from {HELPER_PATH}")
