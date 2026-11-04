@@ -86,7 +86,7 @@ For a concrete short hostname that may be stored as an FQDN, try a narrow traili
 Run from the project root. The helper never prints credentials.
 
 ```bash
-python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
+python3 $HOME/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
   --target host:EXAMPLE-HOST \
   --label codex_system_info \
   --name "codex scheduled system information" \
@@ -97,7 +97,7 @@ python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run
 The preceding command uses scheduled mode automatically. Use `--live` only for an explicitly requested immediate probe:
 
 ```bash
-python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
+python3 $HOME/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
   --live \
   --target host:EXAMPLE-HOST \
   --label codex_system_info \
@@ -107,7 +107,7 @@ python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run
 Use a broad selector only after explicit approval:
 
 ```bash
-python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
+python3 $HOME/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
   --target netmask:192.168.1.168/24 \
   --approve-broad-target \
   --label codex_system_info \
@@ -117,7 +117,7 @@ python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run
 Check an existing job without rerunning the endpoint query:
 
 ```bash
-python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
+python3 $HOME/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
   --job-id "{{orbital_queryID}}" \
   --job-results
 ```
@@ -137,7 +137,7 @@ Before invoking a catalog script, inspect its ID, source, supported operating sy
 Run an observational catalog script:
 
 ```bash
-python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_script.py \
+python3 $HOME/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_script.py \
   --catalog-id check_cisco_nvm_module \
   --target host:EXAMPLE-HOST \
   --os windows \
@@ -162,7 +162,7 @@ When no suitable catalog script exists, use the closest catalog script as an imp
 Run reviewed inline Python through the helper. Use a local-only source file for one-time work; do not retain endpoint-specific action scripts unless the user explicitly asks.
 
 ```bash
-python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_script.py \
+python3 $HOME/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_script.py \
   --script-content-file /private/tmp/reviewed_endpoint_action.py \
   --target host:EXAMPLE-HOST \
   --os windows \

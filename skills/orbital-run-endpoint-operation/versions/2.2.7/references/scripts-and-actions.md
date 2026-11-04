@@ -9,7 +9,7 @@ Inspect the catalog ID, source, supported operating systems, arguments, and beha
 Use a narrow `host:` or `hostname:` selector. The Script API requires `os`; a platform list is a compatibility filter, not permission to broaden the target set. Live script responses use `result_id`, endpoint stdout/stderr, and exit codes; they do not produce an `orbital_queryID`.
 
 ```bash
-python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_script.py \
+python3 $HOME/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_script.py \
   --catalog-id check_cisco_nvm_module \
   --target host:EXAMPLE-HOST \
   --os windows \
