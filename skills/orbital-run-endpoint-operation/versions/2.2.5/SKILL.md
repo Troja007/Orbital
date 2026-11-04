@@ -21,7 +21,7 @@ For this path, do not search catalog snapshots, project memory, or project-relat
 Submit with the interactive profile. It uses `POST /query/run`, skips Job-status polling, and returns after the API response:
 
 ```bash
-python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
+python3 $HOME/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
   --execution-profile interactive \
   --target host:EXAMPLE-HOST \
   --label codex_system_info \
@@ -34,7 +34,7 @@ The interactive profile accepts only one explicit host selector and a read-only 
 Use the tracked profile when a Job ID, scheduled expiry window, multiple targets, a wildcard, an endpoint that may be offline, or later result retrieval is required. Submit it without initial polling when fast acknowledgement matters:
 
 ```bash
-python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
+python3 $HOME/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
   --execution-profile tracked \
   --no-status-poll \
   --target host:EXAMPLE-HOST \
@@ -67,7 +67,7 @@ Never print or store credentials, tokens, product IDs, endpoint evidence, raw re
 Use `--dry-run` to validate a planned new query without acquiring a token, calling Orbital, or contacting an endpoint. It prints the selected profile, API path, request body, osquery tables, sanitized context summary, and local preflight timing.
 
 ```bash
-python3 /Users/tschranz/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
+python3 $HOME/.codex/skills/orbital-run-endpoint-operation/scripts/run_live_query.py \
   --dry-run \
   --execution-profile interactive \
   --target host:EXAMPLE-HOST \
