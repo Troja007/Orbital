@@ -63,7 +63,7 @@ Use documented selectors from `project-context/Orbital_Target_Node_Selectors.md`
 
 `allowOS:<platform>` inside `nodes` and `--allow-os <platform>` are alternative representations. Use only one and always include another endpoint selector. `queryId:<id>` is a selector, not a Job ID; this helper still requires explicit `osQuery` SQL.
 
-For a concrete short hostname that may be stored as an FQDN, try a narrow trailing wildcard such as `host:slate%` or `hostname:slate%` before treating the endpoint as unavailable. Do not begin with contains matching such as `host:%late%`; it can match unrelated devices. The helper considers a single trailing hostname wildcard with a four-character-or-longer stem narrow; every other wildcard requires broad-target approval.
+For a concrete short hostname that may be stored as an FQDN, try a narrow trailing wildcard such as `host:lab-host-02%` or `hostname:lab-host-02%` before treating the endpoint as unavailable. Do not begin with contains matching such as `host:%host-02%`; it can match unrelated devices. The helper considers a single trailing hostname wildcard with a four-character-or-longer stem narrow; every other wildcard requires broad-target approval.
 
 ## Execution Workflow
 
@@ -129,7 +129,7 @@ Use `--raw-response` only for response-shape troubleshooting. Do not expose raw 
 Before invoking a catalog script, inspect its ID, source, supported operating systems, arguments, and behavior. Use the read-only catalog snapshot or authenticated catalog API. Do not infer that a script is observational from its title.
 
 - The user must explicitly identify the script and targets.
-- Use a narrow `host:` or `hostname:` selector. For a previously confirmed short name that may be an FQDN, `host:slate%` is a narrow fallback; do not use contains matching such as `host:%late%`.
+- Use a narrow `host:` or `hostname:` selector. For a previously confirmed short name that may be an FQDN, `host:lab-host-02%` is a narrow fallback; do not use contains matching such as `host:%host-02%`.
 - The Script API requires `os`. Supplying all platforms for a single explicit host is an OS compatibility filter, not permission to broaden the `nodes` target set.
 - A live script returns immediate `result_id`, endpoint stdout/stderr, and exit codes. It does not produce an `orbital_queryID`; do not use query-job endpoints to poll it.
 - Store every API or foundational script error in `local/orbital_script_runs/live_script_runs.jsonl`. Store only operation metadata and error text/hash: never endpoint stdout/stderr, host/node identity, raw response, ORG data, or credentials.

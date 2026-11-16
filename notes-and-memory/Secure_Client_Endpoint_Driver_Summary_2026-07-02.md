@@ -7,11 +7,11 @@
 This summary is generated from stored project working files only, especially:
 
 - `product-context/Cisco_Secure_Client_Endpoint_Context.md`
-- `queries_and_scripts/Generated_Queries/windows_secure_endpoint_secure_client_driver_set_marble.sql`
-- `queries_and_scripts/Generated_Queries/windows_secure_endpoint_user_and_kernel_driver_set_slate.sql`
-- `queries_and_scripts/Generated_Queries/windows_additional_cisco_endpoint_drivers_marble.sql`
-- `queries_and_scripts/Generated_Queries/windows_secure_endpoint_isolation_driver_marble.sql`
-- `queries_and_scripts/Generated_Queries/windows_endpoint_isolation_driver_disk_location_marble.sql`
+- `queries_and_scripts/Generated_Queries/windows_secure_endpoint_secure_client_driver_set_lab_host_01.sql`
+- `queries_and_scripts/Generated_Queries/windows_secure_endpoint_user_and_kernel_driver_set_lab_host_02.sql`
+- `queries_and_scripts/Generated_Queries/windows_additional_cisco_endpoint_drivers_lab_host_01.sql`
+- `queries_and_scripts/Generated_Queries/windows_secure_endpoint_isolation_driver_lab_host_01.sql`
+- `queries_and_scripts/Generated_Queries/windows_endpoint_isolation_driver_disk_location_lab_host_01.sql`
 - `queries_and_scripts/Generated_Queries/windows_tdnr_secure_client_module_status.sql`
 
 The summary stores product artifact knowledge only. It does not store endpoint
