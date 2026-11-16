@@ -2,7 +2,7 @@
 
 Scope: Corporate
 
-Classification: Corporate confidential; technical finding based on public API documentation.
+Classification: Public; technical finding derived from public API documentation.
 
 Status: Defined project outcome; retained in this project pending a separately authorized migration.
 
