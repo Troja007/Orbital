@@ -459,7 +459,7 @@ sql_patterns:
       ORDER BY service_name;
   - name: "Secure Endpoint and Secure Client driver artifact set"
     description: "Check known Secure Endpoint / Secure Client connector driver artifacts using services, drivers, and exact-path file evidence."
-    sql_file: "queries_and_scripts/Generated_Queries/windows_secure_endpoint_secure_client_driver_set_marble.sql"
+    sql_file: "queries_and_scripts/Generated_Queries/windows_secure_endpoint_secure_client_driver_set_lab_host_01.sql"
     evidence_tables:
       - "drivers"
       - "services"
@@ -630,7 +630,7 @@ sql_patterns:
       LIMIT 50;
   - name: "Secure Endpoint user-mode and kernel-mode component separation"
     description: "Show Secure Endpoint user-mode services/processes separately from kernel driver services and exact driver-file evidence."
-    sql_file: "queries_and_scripts/Generated_Queries/windows_secure_endpoint_user_and_kernel_driver_set_slate.sql"
+    sql_file: "queries_and_scripts/Generated_Queries/windows_secure_endpoint_user_and_kernel_driver_set_lab_host_02.sql"
     evidence_tables:
       - "drivers"
       - "services"

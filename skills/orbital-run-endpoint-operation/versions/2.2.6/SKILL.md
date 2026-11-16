@@ -72,7 +72,7 @@ Show the returned Job ID immediately, then retrieve it once with `--job-id JOB_I
 
 Before every real submission, confirm the exact target selector, SQL, and query purpose. Reject ambiguous identifiers and unapproved broad scope. `all`, `random`, OS selectors, CIDR ranges, multiple broad wildcards, and wildcard host matching require explicit approval plus `--approve-broad-target`.
 
-For a known short hostname that might be stored as an FQDN, retry only with a narrow trailing wildcard such as `host:slate%`. Do not use contains matching such as `host:%late%`.
+For a known short hostname that might be stored as an FQDN, retry only with a narrow trailing wildcard such as `host:lab-host-02%`. Do not use contains matching such as `host:%host-02%`.
 
 Use project context, schema validation, catalog data, or query-method memory only when the query is new, complex, potentially expensive, platform-specific, incident-sensitive, or a returned table/column error needs correction. Read [references/targeting-and-query-design.md](references/targeting-and-query-design.md) for those cases. In another project, do not search relative `project-context` paths that are not present.
 

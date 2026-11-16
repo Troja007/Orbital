@@ -35,7 +35,7 @@ The interactive profile accepts only one explicit host selector and a read-only 
 
 ## Hostname Resolution And Stable Targeting
 
-When the user supplies a hostname such as `victim3`, start the requested read-only query directly with `host:victim3`. Treat endpoint resolution as the number of answered endpoints, not the number of data rows: a response with zero data rows can still identify exactly one target.
+When the user supplies a hostname such as `lab-host-03`, start the requested read-only query directly with `host:lab-host-03`. Treat endpoint resolution as the number of answered endpoints, not the number of data rows: a response with zero data rows can still identify exactly one target.
 
 Apply this sequence before reporting the final result:
 
@@ -101,7 +101,7 @@ Show the returned Job ID immediately, then retrieve it once with `--job-id JOB_I
 
 Before every real submission, confirm the exact target selector, SQL, and query purpose. Reject ambiguous identifiers and unapproved broad scope. `all`, `random`, OS selectors, CIDR ranges, multiple broad wildcards, and wildcard host matching require explicit approval plus `--approve-broad-target`, except for the documented post-failure `host:NAME%` FQDN-resolution fallback above.
 
-For a known short hostname that might be stored as an FQDN, retry only with a narrow trailing wildcard such as `host:slate%`. Do not use contains matching such as `host:%late%`.
+For a known short hostname that might be stored as an FQDN, retry only with a narrow trailing wildcard such as `host:lab-host-02%`. Do not use contains matching such as `host:%host-02%`.
 
 Use project context, schema validation, catalog data, or query-method memory only when the query is new, complex, potentially expensive, platform-specific, incident-sensitive, or a returned table/column error needs correction. Read [references/targeting-and-query-design.md](references/targeting-and-query-design.md) for those cases. In another project, do not search relative `project-context` paths that are not present.
 

@@ -550,6 +550,14 @@ Before syncing to GitHub:
 - Exclude real credentials, local runtime state, `.DS_Store`, local SQLite files,
   raw tenant snapshots, and generated endpoint result data.
 - Commit reusable method/context/source changes only after checking privacy rules.
+- Run `python3 tools-and-memory/check_publish_safety.py` before every push or
+  share. It scans tracked file names and contents for user paths, e-mail
+  addresses, private IPs, GUIDs, and secrets, plus the literals in the local-only
+  deny list `local/publish-denylist.txt` (lab hostnames, test host names,
+  usernames; one per line, never committed). The same check runs in GitHub
+  Actions without the deny list. Documented example values go into
+  `.publish-check-allow.txt`. Use placeholders such as `lab-host-01` for lab
+  hosts in file names, examples, and notes.
 - Sync global Codex skills only when workspace skill folders with `SKILL.md`
   differ from their global copies.
 

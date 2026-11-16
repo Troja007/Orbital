@@ -725,7 +725,7 @@ Validation note:
 - The 64-bit `Protector64.dll` SQL was tested through Orbital on 2026-06-11.
 - `nodes = ["random:2", "allowOS:windows"]` returned no endpoint coverage in this API path.
 - A rerun with `nodes = ["random:2"]` also returned no rows/coverage.
-- A two-host Windows validation excluding `victim3` executed successfully but returned no `Protector64.dll` rows in that sample.
+- A two-host Windows validation excluding `lab-host-03` executed successfully but returned no `Protector64.dll` rows in that sample.
 - The same catalog query was later verified directly in the Orbital UI against one exact Windows host and returned positive protected-process rows.
 - The UI target selector used lowercase `host:<hostname>`. If API live query returns `answered_endpoint_count = 0` for an exact host while the UI returns rows, retry with the exact UI selector spelling/case before interpreting the result as no protected processes.
 - Repeated execution of this `process_memory_map` query can destabilize or crash the Orbital query on the endpoint. Store the job ID for every run and use `/jobs/{id}` and `/jobs/{id}/results` for follow-up instead of rerunning the endpoint query.

@@ -1,0 +1,19 @@
+# Exact values that tools-and-memory/check_publish_safety.py accepts.
+# Only documented placeholders or public references belong here. One per line.
+
+# Documented selector examples (project-context/Orbital_Target_Node_Selectors.md, skill docs)
+10.0.0.1
+192.168.1.168
+348301bf-2082-4d83-b340-e6ab2e58579c
+528601bf-2082-4d83-b340-e6ab2e58579c
+
+# GitHub attachment IDs of published screenshots
+05b7ebca-d255-41d1-91e0-96b6f8897aa6
+dffa6baa-818b-483d-b185-c59ced880086
+
+# Public ANY.RUN report reference
+ab633cbb-8c81-471e-b941-aeb8307c666d
+
+# Example paths in Cisco stock catalog descriptions
+C:\\Users\\Admin
+C:\\Users\\foo

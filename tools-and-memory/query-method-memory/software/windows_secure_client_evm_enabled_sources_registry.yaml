@@ -191,12 +191,22 @@ validation:
     - "Windows Registry Editor can display EnabledSources 0xffffffff as 4294967295, while osquery can return the same REG_DWORD as -1. Treat -1, 4294967295, 0xffffffff, and 0xFFFFFFFF as equivalent for all event classes."
     - "A value of 32 is equivalent to 0x20 and means the Kernel Extensions source bit is enabled."
     - "The matrix query pattern was tested after the direct lookup pattern and returns one row per answering host while preserving exact registry constraints in the CTE."
-    - "WebEx engineering context: in EVM 1.7.x builds, Kernel Extension Activity and Module Activity are disabled by default; setting EnabledSources to 0xffffffff enables all event classes and includes those activities. They are expected to be enabled by default in EVM 1.8."
+    - "WebEx engineering context: in EVM 1.7.x builds, Kernel Extension Activity and Module Activity are disabled by default; setting EnabledSources to 0xffffffff enables all event classes and includes those activities."
+    - "Open test hypothesis (engineering information, not yet verified): Kernel Extension Activity and Module Activity are expected to be enabled by default in EVM 1.8. Re-test when EVM 1.8 is available."
 lessons:
   - "For osquery registry table lookups, prefer exact key and name constraints. Avoid wrapping key/path constraints in lower() when querying a specific Windows registry value."
   - "For REG_DWORD comparisons, account for signed, unsigned decimal, and hexadecimal representations."
   - "0xffffffff includes the 0x20 bit, so Kernel Extensions should be true when all event classes are enabled."
   - "Changing EnabledSources config is not enough to prove telemetry arrival. After setting the value, restart EVM and use separate runtime/backend checks if telemetry is still missing."
+retest:
+  - trigger: "EVM 1.8 or later is available"
+    hypothesis: "Kernel Extension Activity and Module Activity are enabled by default without setting EnabledSources."
+    setup_notes:
+      - "Use a freshly installed host, or record the EnabledSources value and mtime before and after the upgrade; a value set manually under 1.7.x can persist and mask the new default."
+      - "A missing EnabledSources value does not prove the activities are disabled; confirm with Kernel Extension Activity and Module Activity events in EVM telemetry."
+      - "Record the exact EVM version from the programs table and restart EVM, or reboot if a driver update is pending."
+      - "Prefer a control pair: one 1.7.x host and one 1.8 host with identical configuration and test steps."
+    on_result: "Update validation notes and known_value_semantics, then remove or confirm the open hypothesis."
 privacy:
   stores_endpoint_results: false
   notes:
