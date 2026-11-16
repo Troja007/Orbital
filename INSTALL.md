@@ -17,6 +17,12 @@ The project must be installed in two parts:
 
 The skills alone are not enough. They depend on the repository content for project context, product context, query-method memory, catalog snapshots, catalog result profiles, helper scripts, and decision records.
 
+The owner-only `Troja007/ai_projects` Orbital project README also points to
+`.agents/skills/`, while this guide installs from this repository's `skills/`.
+The source/distribution relationship has not yet been reconciled. Before
+updating an existing global installation, verify which version is intended;
+this guide does not establish that the two copies are identical or different.
+
 ## Prompt For A New Codex Chat
 
 ```text

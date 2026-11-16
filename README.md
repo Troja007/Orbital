@@ -15,8 +15,23 @@ The project is not only a collection of SQL snippets. It now contains:
 - Codex skill working copies for Orbital API access, query-method memory, live or
   scheduled osquery execution, and catalog update work.
 
+## Open Repository Documentation Question
+
+The owner-only `Troja007/ai_projects` Orbital project README describes the
+Corporate-LLM-Wiki as the location of Orbital memory and this public repository
+as an E1 location for anonymized results and query methods. This README also
+describes GitHub-synced context, method memory, and result profiles. The two
+descriptions have not yet been reconciled into a precise content boundary.
+
+The `ai_projects` project README points to `.agents/skills/`, while this
+repository's `INSTALL.md` installs from `skills/`. Their intended source and
+distribution relationship remains to be confirmed. This note documents the
+current difference; it does not change ownership, move content, or establish
+that the skill copies differ.
+
 ## Table Of Contents
 
+- [Open Repository Documentation Question](#open-repository-documentation-question)
 - [Continuous Improvement Model](#continuous-improvement-model)
 - [Project Knowledge Model](#project-knowledge-model)
   - [Diagram Box Descriptions](#diagram-box-descriptions)
